@@ -37,11 +37,17 @@
 
     <style>
         body { 
-            background: linear-gradient(135deg, rgba(0, 45, 98, 0.15) 0%, #0a0a0a 40%, #0a0a0a 60%, rgba(206, 17, 38, 0.12) 100%);
-            background-attachment: fixed;
+            /* Se removió background-attachment: fixed porque rompe el diseño en iPhones (iOS Safari) */
+            background-color: #0a0a0a;
             color: #ffffff; overflow-x: hidden; font-family: 'Montserrat', sans-serif; 
         }
         
+        /* Nuevo fondo fijo compatible con TODOS los celulares */
+        .mobile-safe-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background: linear-gradient(135deg, rgba(0, 45, 98, 0.15) 0%, #0a0a0a 40%, #0a0a0a 60%, rgba(206, 17, 38, 0.12) 100%);
+        }
+
         .glass-panel { background: rgba(20, 20, 20, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .glass-nav { background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
         
@@ -93,18 +99,21 @@
 </head>
 <body class="antialiased selection:bg-papa-fire selection:text-white relative">
 
+    <!-- Fondo elegante compatible con móviles -->
+    <div class="mobile-safe-bg"></div>
+
     <audio id="kds-alert" src="data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
 
-    <div id="toast-container" class="fixed top-24 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-24 right-4 sm:right-6 z-[9999] flex flex-col gap-3 pointer-events-none w-[calc(100vw-2rem)] sm:w-auto"></div>
 
     <header id="main-header" class="fixed top-0 w-full z-50 transition-[top] duration-300 ease-in-out">
-        <div class="bg-gradient-to-r from-papa-drblue via-papa-fire to-papa-prred text-white text-center py-2 px-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest relative z-[70]">
+        <div class="bg-gradient-to-r from-papa-drblue via-papa-fire to-papa-prred text-white text-center py-2 px-2 sm:px-4 text-[8px] sm:text-xs font-bold uppercase tracking-widest relative z-[70] leading-tight sm:leading-normal">
             🔥 EL AUTÉNTICO SABOR CARIBEÑO - ORDENA EN TIEMPO REAL 🔥
         </div>
-        <nav id="navbar" class="w-full glass-nav h-20 flex items-center justify-between px-6 md:px-12 transition-all duration-300 relative z-50">
-            <a href="#inicio" class="flex items-center gap-3 text-2xl font-black text-white tracking-tighter">
-                <img id="store-logo" src="https://placehold.co/100x100/FF3D00/FFF?text=PC" alt="Logo" class="site-logo h-12 w-12 object-cover drop-shadow-[0_0_12px_rgba(255,61,0,0.6)] rounded-full">
-                <span class="hidden sm:block uppercase">LA PAPA <span class="text-papa-fire">CALIENTE</span></span>
+        <nav id="navbar" class="w-full glass-nav h-16 sm:h-20 flex items-center justify-between px-4 sm:px-6 md:px-12 transition-all duration-300 relative z-50">
+            <a href="#inicio" class="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-black text-white tracking-tighter">
+                <img id="store-logo" src="https://placehold.co/100x100/FF3D00/FFF?text=PC" alt="Logo" class="site-logo h-10 w-10 sm:h-12 sm:w-12 object-cover drop-shadow-[0_0_12px_rgba(255,61,0,0.6)] rounded-full">
+                <span class="uppercase">LA PAPA <span class="text-papa-fire hidden sm:inline">CALIENTE</span></span>
             </a>
             
             <div class="flex items-center gap-4 md:hidden">
@@ -178,10 +187,11 @@
     <section id="inicio" class="relative min-h-screen flex items-center justify-center text-center px-4 overflow-hidden bg-cover bg-center bg-fixed transition-all duration-700">
         <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-[#0a0a0a] z-0"></div>
         <div class="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-20">
-            <h1 class="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-tight mb-6 drop-shadow-2xl opacity-0 animate-[slideUp_1s_forwards] tracking-tight text-white text-center">
+            <!-- Textos ajustados para que no se corten en pantallas pequeñas -->
+            <h1 class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold leading-tight mb-4 md:mb-6 drop-shadow-2xl opacity-0 animate-[slideUp_1s_forwards] tracking-tight text-white text-center">
                 El Sabor que<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-papa-fire to-papa-yellow">Quema de Placer</span>
             </h1>
-            <p class="text-base md:text-lg text-zinc-300 mb-10 max-w-2xl mx-auto opacity-0 animate-[slideUp_1s_0.2s_forwards] leading-relaxed font-medium text-center">
+            <p class="text-sm sm:text-base md:text-lg text-zinc-300 mb-8 md:mb-10 max-w-2xl mx-auto opacity-0 animate-[slideUp_1s_0.2s_forwards] leading-relaxed font-medium text-center px-2">
                 Auténtica experiencia Food Truck. Ingredientes frescos, recetas exclusivas y el calor del Caribe en cada bocado.
             </p>
             <div class="opacity-0 animate-[slideUp_1s_0.4s_forwards]">
@@ -275,12 +285,12 @@
             </div>
         </div>
     </section>
-
-    <button onclick="document.getElementById('chat-window').classList.toggle('active')" class="fixed bottom-6 right-6 w-14 h-14 bg-papa-fire text-white rounded-full shadow-[0_0_20px_rgba(255,61,0,0.5)] flex items-center justify-center hover:scale-110 transition-transform z-50 group">
-        <i class="ph-fill ph-robot text-2xl group-hover:hidden"></i>
-        <i class="ph-bold ph-x text-2xl hidden group-hover:block"></i>
+    <button onclick="document.getElementById('chat-window').classList.toggle('active')" class="fixed bottom-6 right-4 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-papa-fire text-white rounded-full shadow-[0_0_20px_rgba(255,61,0,0.5)] flex items-center justify-center hover:scale-110 transition-transform z-50 group">
+        <i class="ph-fill ph-robot text-xl sm:text-2xl group-hover:hidden"></i>
+        <i class="ph-bold ph-x text-xl sm:text-2xl hidden group-hover:block"></i>
     </button>
-    <div id="chat-window" class="chat-window fixed bottom-24 right-6 w-[340px] bg-[#111] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[110] h-[450px]">
+    <!-- Chatbot ajustado al ancho del celular -->
+    <div id="chat-window" class="chat-window fixed bottom-20 sm:bottom-24 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-[340px] bg-[#111] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[110] h-[400px] sm:h-[450px]">
         <div class="bg-gradient-to-r from-papa-drblue to-papa-fire p-4 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 bg-black rounded-full flex items-center justify-center border border-white/15"><i class="ph-fill ph-robot text-white"></i></div>
