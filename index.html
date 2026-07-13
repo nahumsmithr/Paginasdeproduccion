@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth" style="scroll-behavior: smooth; scroll-padding-top: 80px;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>La Papa Caliente | ERP & Premium Food Truck</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Librerías Externas Profesionales -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        window.tailwind = {
+            config: {
+                theme: {
+                    extend: {
+                        colors: {
+                            papa: { black: '#0a0a0a', dark: '#141414', yellow: '#FFB800', fire: '#FF3D00', dim: '#888888', drblue: '#002D62', prred: '#CE1126' }
+                        },
+                        fontFamily: { sans: ['Montserrat', 'sans-serif'], ticket: ['Space Mono', 'monospace'] },
+                        animation: { 'float': 'float 6s ease-in-out infinite', 'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        body { 
+            background: linear-gradient(135deg, rgba(0, 45, 98, 0.15) 0%, #0a0a0a 40%, #0a0a0a 60%, rgba(206, 17, 38, 0.12) 100%);
+            background-attachment: fixed;
+            color: #ffffff; overflow-x: hidden; font-family: 'Montserrat', sans-serif; 
+        }
+        
+        .glass-panel { background: rgba(20, 20, 20, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .glass-nav { background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF3D00; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .toast-custom { opacity: 0; transform: translateX(100%); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 99999; }
+        .toast-custom.show { opacity: 1; transform: translateX(0); }
+        .modal-overlay { opacity: 0; pointer-events: none; transition: all 0.3s ease; backdrop-filter: blur(8px); z-index: 200; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content { transform: scale(0.95) translateY(-20px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
+        
+        #cart-sidebar { transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #cart-sidebar.open { transform: translateX(0); }
+        
+        .ticket-bg { background-color: #ffffff; color: #000; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .menu-card { transition: all 0.4s ease; border: 1px solid rgba(255,255,255,0.03); }
+        .menu-card:hover { transform: translateY(-8px); border-color: rgba(255,61,0,0.4); box-shadow: 0 20px 40px rgba(255,61,0,0.12); }
+        .menu-img-wrap img { transition: transform 0.6s ease; }
+        .menu-card:hover .menu-img-wrap img { transform: scale(1.08); }
+        
+        .chat-window { transform: translateY(20px) scale(0.95); opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .chat-window.active { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+        
+        .sidebar-btn.active { background-color: rgba(255, 61, 0, 0.15); color: #FF3D00; border-left: 4px solid #FF3D00; }
+        
+        .kds-card.time-ok { border-top: 4px solid #22c55e; }
+        .kds-card.time-warn { border-top: 4px solid #eab308; }
+        .kds-card.time-danger { border-top: 4px solid #ef4444; animation: pulse-border 2s infinite; }
+        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        /* Print Styles for Reports - Factura Profesional */
+        @media print {
+            body * { visibility: hidden; }
+            #print-area { visibility: visible; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; }
+            #print-area * { visibility: visible; color: black !important; border-color: #ddd !important; }
+            .no-print { display: none !important; }
+            canvas { display: none !important; }
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-papa-fire selection:text-white relative">
+
+    <audio id="kds-alert" src="data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
+
+    <div id="toast-container" class="fixed top-24 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+
+    <header id="main-header" class="fixed top-0 w-full z-50 transition-[top] duration-300 ease-in-out">
+        <div class="bg-gradient-to-r from-papa-drblue via-papa-fire to-papa-prred text-white text-center py-2 px-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest relative z-[70]">
+            🔥 EL AUTÉNTICO SABOR CARIBEÑO - ORDENA EN TIEMPO REAL 🔥
+        </div>
+        <nav id="navbar" class="w-full glass-nav h-20 flex items-center justify-between px-6 md:px-12 transition-all duration-300 relative z-50">
+            <a href="#inicio" class="flex items-center gap-3 text-2xl font-black text-white tracking-tighter">
+                <img id="store-logo" src="https://placehold.co/100x100/FF3D00/FFF?text=PC" alt="Logo" class="site-logo h-12 w-12 object-cover drop-shadow-[0_0_12px_rgba(255,61,0,0.6)] rounded-full">
+                <span class="hidden sm:block uppercase">LA PAPA <span class="text-papa-fire">CALIENTE</span></span>
+            </a>
+            
+            <div class="flex items-center gap-4 md:hidden">
+                <button onclick="window.toggleCart()" class="relative text-white text-2xl">
+                    <i class="ph ph-shopping-cart"></i>
+                    <span id="mobile-cart-badge" class="absolute -top-2 -right-2 bg-papa-fire text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                </button>
+                <button class="text-white text-3xl focus:outline-none" onclick="document.getElementById('nav-links').classList.toggle('right-[-100%]'); document.getElementById('nav-links').classList.toggle('right-0');">
+                    <i class="ph ph-list"></i>
+                </button>
+            </div>
+            
+            <ul id="nav-links" class="fixed md:static top-0 right-[-100%] md:right-0 w-72 md:w-auto h-screen md:h-auto pt-24 md:pt-0 glass-panel md:bg-transparent md:border-none flex flex-col md:flex-row items-center gap-6 lg:gap-8 px-6 pb-10 md:p-0 transition-all duration-300 z-[-1]">
+                <li><a href="#inicio" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Inicio</a></li>
+                <li><a href="#nosotros" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Nosotros</a></li>
+                <li><a href="#catalogo" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Menú</a></li>
+                <li><a href="#galeria" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Galería</a></li>
+                <li><a href="#ubicacion" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Ubicación</a></li>
+                
+                <li class="hidden md:block">
+                    <button onclick="window.toggleCart()" class="relative text-white hover:text-papa-fire transition-colors flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
+                        <i class="ph-bold ph-shopping-cart text-xl"></i> Tu Orden
+                        <span id="desktop-cart-badge" class="bg-papa-fire text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center transition-transform">0</span>
+                    </button>
+                </li>
+                <li>
+                    <button onclick="window.openModal('loginModal')" class="bg-papa-dark border border-papa-fire/50 text-papa-fire px-4 py-2 rounded-full font-bold text-xs uppercase hover:bg-papa-fire hover:text-white transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(255,61,0,0.2)]">
+                        <i class="ph-fill ph-user-circle"></i> ERP Login
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div id="cart-sidebar" class="fixed top-0 right-0 w-full md:w-[450px] h-screen bg-[#0d0d0d] border-l border-white/10 z-[100] flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.9)]">
+        <div class="h-20 bg-black border-b border-white/10 flex items-center justify-between px-6 shrink-0">
+            <h2 class="font-black text-xl uppercase tracking-wider flex items-center gap-2"><i class="ph-bold ph-shopping-cart text-papa-fire text-2xl"></i> Mi Orden</h2>
+            <button onclick="window.toggleCart()" class="text-zinc-500 hover:text-white transition-colors"><i class="ph-bold ph-x text-2xl"></i></button>
+        </div>
+        <div id="cart-items-view" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar"></div>
+        <div id="checkout-form-view" class="flex-1 overflow-y-auto p-6 bg-[#070707] hidden flex-col border-t border-white/10 no-scrollbar">
+            <h3 class="font-bold uppercase text-papa-fire mb-4 text-sm border-b border-white/10 pb-2"><i class="ph-bold ph-user-circle"></i> Datos de Entrega</h3>
+            <div class="space-y-4 mb-6">
+                <input type="text" id="order-name" placeholder="Nombre Completo" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold">
+                <input type="tel" id="order-phone" placeholder="WhatsApp (Ej: +18091234567)" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold">
+                <select id="order-type" onchange="window.toggleAddressField()" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold">
+                    <option value="Para Comer en Mesa">Comer en el Local (Mesa)</option>
+                    <option value="Para Llevar (Pick-up)">Retirar en Local (Pick-up)</option>
+                    <option value="Delivery">Envío a Domicilio (Delivery)</option>
+                </select>
+                <textarea id="order-address" rows="2" placeholder="Dirección Exacta..." class="hidden w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold resize-none"></textarea>
+            </div>
+            <h3 class="font-bold uppercase text-papa-fire mb-4 text-sm border-t border-white/10 pt-4"><i class="ph-bold ph-wallet"></i> Forma de Pago</h3>
+            <select id="payment-method" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold mb-4">
+                <option value="Efectivo al recibir">Efectivo</option>
+                <option value="Transferencia / Tarjeta">Transferencia / Tarjeta</option>
+            </select>
+            <button onclick="window.toggleCheckoutView()" class="mt-auto text-papa-dim font-bold text-xs uppercase hover:text-white py-2 text-center w-full">← Volver al carrito</button>
+        </div>
+        <div class="bg-black border-t border-white/10 p-6 shrink-0">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-zinc-400 font-bold uppercase tracking-wider text-sm">Total:</span>
+                <span class="font-black text-3xl text-papa-yellow" id="cart-total">$0.00</span>
+            </div>
+            <div id="btn-goto-checkout"><button onclick="window.toggleCheckoutView()" class="w-full bg-gradient-to-r from-papa-fire to-orange-600 text-white font-black uppercase tracking-widest py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-transform">Procesar Pedido</button></div>
+            <div id="btn-confirm-order" class="hidden"><button onclick="window.generateTicket()" class="w-full bg-green-500 hover:bg-green-600 text-white font-black uppercase tracking-widest py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-transform flex justify-center gap-2"><i class="ph-bold ph-receipt text-xl"></i> Confirmar Orden</button></div>
+        </div>
+    </div>
+    <div id="cart-overlay" onclick="window.toggleCart()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] hidden opacity-0 transition-opacity"></div>
+
+    <section id="inicio" class="relative min-h-screen flex items-center justify-center text-center px-4 overflow-hidden bg-cover bg-center bg-fixed transition-all duration-700">
+        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-[#0a0a0a] z-0"></div>
+        <div class="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-20">
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-tight mb-6 drop-shadow-2xl opacity-0 animate-[slideUp_1s_forwards] tracking-tight text-white text-center">
+                El Sabor que<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-papa-fire to-papa-yellow">Quema de Placer</span>
+            </h1>
+            <p class="text-base md:text-lg text-zinc-300 mb-10 max-w-2xl mx-auto opacity-0 animate-[slideUp_1s_0.2s_forwards] leading-relaxed font-medium text-center">
+                Auténtica experiencia Food Truck. Ingredientes frescos, recetas exclusivas y el calor del Caribe en cada bocado.
+            </p>
+            <div class="opacity-0 animate-[slideUp_1s_0.4s_forwards]">
+                <a href="#catalogo" class="bg-gradient-to-r from-papa-fire to-orange-500 text-white px-12 py-4 rounded-full font-black uppercase text-xs tracking-wider hover:scale-105 transition-transform shadow-[0_0_25px_rgba(255,61,0,0.5)] flex items-center gap-2">
+                    <i class="ph-bold ph-fork-knife text-base"></i> Ver Menú y Pedir
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="nosotros" class="py-24 px-6 relative border-t border-white/5 bg-black">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-12 items-center">
+            <div class="flex-1 animate-on-scroll relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-papa-fire/20 to-transparent rounded-3xl blur-2xl"></div>
+                <img src="https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?auto=format&fit=crop&w=800&q=80" class="relative rounded-3xl shadow-[0_0_40px_rgba(255,61,0,0.3)] object-cover h-[450px] w-full border border-white/10 z-10">
+                <div class="absolute -bottom-6 -right-6 bg-papa-yellow text-black p-6 rounded-2xl shadow-2xl z-20 font-black flex flex-col items-center justify-center transform rotate-3">
+                    <span class="text-4xl">#1</span>
+                    <span class="text-[10px] uppercase tracking-widest text-center mt-1">Food Truck<br>Premium</span>
+                </div>
+            </div>
+            <div class="flex-1 space-y-6 animate-on-scroll">
+                <span class="text-papa-fire font-bold tracking-widest uppercase text-xs flex items-center gap-2"><i class="ph-fill ph-fire"></i> Nuestra Historia</span>
+                <h2 class="text-3xl md:text-5xl font-black uppercase tracking-tight">Más que comida, <span class="text-papa-yellow">una familia</span></h2>
+                <p class="text-zinc-400 text-sm leading-relaxed text-justify">Nacimos en las calles con un solo sueño: llevar el auténtico calor y sabor de nuestra tierra a cada esquina. No somos una franquicia de comida rápida genérica; somos artesanos urbanos del buen comer.</p>
+                <p class="text-zinc-400 text-sm leading-relaxed text-justify">Cada ingrediente que usamos es seleccionado a mano diariamente. Cada receta tiene meses de perfeccionamiento, y cada cliente que prueba nuestras papas se convierte instantáneamente en parte de nuestra mesa. Bienvenidos a la verdadera experiencia Food Truck de alto nivel.</p>
+                <div class="flex gap-4 pt-4">
+                    <div class="bg-zinc-900 border border-white/10 p-5 rounded-2xl text-center flex-1 shadow-lg hover:border-papa-fire/50 transition-colors">
+                        <i class="ph-fill ph-clock-countdown text-4xl text-papa-fire mb-3"></i>
+                        <h4 class="font-black text-white text-xl">+5 Años</h4>
+                        <p class="text-[10px] text-zinc-500 uppercase font-bold mt-1">Encendiendo el sabor</p>
+                    </div>
+                    <div class="bg-zinc-900 border border-white/10 p-5 rounded-2xl text-center flex-1 shadow-lg hover:border-papa-yellow/50 transition-colors">
+                        <i class="ph-fill ph-star text-4xl text-papa-yellow mb-3"></i>
+                        <h4 class="font-black text-white text-xl">100%</h4>
+                        <p class="text-[10px] text-zinc-500 uppercase font-bold mt-1">Calidad Garantizada</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="catalogo" class="py-24 px-6 relative border-t border-white/5 min-h-[800px] overflow-hidden">
+        <!-- Banderas PR y RD de fondo sutil (Opacity ajustada para elegancia) -->
+        <div class="absolute inset-0 z-0 flex opacity-[0.06] pointer-events-none mix-blend-screen">
+            <div class="flex-1 bg-[url('https://upload.wikimedia.org/wikipedia/commons/9/9f/Flag_of_the_Dominican_Republic.svg')] bg-cover bg-center"></div>
+            <div class="flex-1 bg-[url('https://upload.wikimedia.org/wikipedia/commons/2/28/Flag_of_Puerto_Rico.svg')] bg-cover bg-center"></div>
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black z-0 pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="text-center mb-8 animate-on-scroll">
+                <span class="text-papa-fire font-bold tracking-[0.2em] uppercase text-xs drop-shadow-md">Menú Premium</span>
+                <h2 class="text-3xl md:text-5xl font-black uppercase tracking-tight mt-2 text-white drop-shadow-lg">Nuestra <span class="text-papa-yellow">Carta</span></h2>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-3 mb-10 animate-on-scroll bg-black/60 backdrop-blur-md p-2 rounded-2xl border border-white/10 w-fit mx-auto shadow-2xl">
+                <button onclick="window.setFilterType(event, 'all')" id="flt-all" class="flt-btn active px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all bg-papa-fire text-white shadow-lg">Todos</button>
+                <button onclick="window.setFilterType(event, 'Más Vendidos')" id="flt-vendidos" class="flt-btn px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all text-zinc-400 hover:text-white">🔥 Más Vendidos</button>
+                <button onclick="window.setFilterType(event, 'Promociones')" id="flt-promos" class="flt-btn px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all text-zinc-400 hover:text-white">💰 Promociones</button>
+                <button onclick="window.setFilterType(event, 'Nuevos')" id="flt-nuevos" class="flt-btn px-4 py-2 rounded-xl text-xs font-bold uppercase transition-all text-zinc-400 hover:text-white">✨ Nuevos</button>
+            </div>
+            <div id="catalogo-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        </div>
+    </section>
+
+    <section id="galeria" class="py-20 px-6 bg-black border-t border-white/5">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12 animate-on-scroll">
+                <span class="text-papa-fire font-bold tracking-widest uppercase text-xs">Experiencia Visual</span>
+                <h2 class="text-3xl font-extrabold uppercase mt-2">Nuestra <span class="text-papa-yellow">Galería</span></h2>
+            </div>
+            <div id="public-gallery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 animate-on-scroll"></div>
+        </div>
+    </section>
+
+    <section id="ubicacion" class="py-20 px-6 bg-gradient-to-t from-[#0a0a0a] to-black border-t border-white/5">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 animate-on-scroll">
+            <div class="flex-1 glass-panel p-8 rounded-3xl relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 text-white/5 text-[150px]"><i class="ph-fill ph-map-pin"></i></div>
+                <h2 class="text-3xl font-extrabold uppercase mb-6 text-white relative z-10"><i class="ph-fill ph-map-pin text-papa-fire"></i> Dónde <span class="text-papa-fire">Encontrarnos</span></h2>
+                <div class="space-y-4 text-zinc-300 text-sm mb-8 relative z-10">
+                    <p class="flex items-center gap-3"><i class="ph-bold ph-clock text-xl text-papa-yellow"></i> <b>Horarios:</b> Mar-Dom 18:00 a 00:00</p>
+                    <p class="flex items-center gap-3"><i class="ph-bold ph-phone text-xl text-papa-yellow"></i> <b>Contacto:</b> <span id="pub-contact">Cargando...</span></p>
+                    <p class="flex items-center gap-3"><i class="ph-bold ph-map-trifold text-xl text-papa-yellow"></i> <b>Dirección:</b> Food Truck Park Central.</p>
+                </div>
+                <a id="pub-map-link" href="#" target="_blank" class="relative z-10 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full font-bold uppercase text-xs transition-colors border border-white/10"><i class="ph-bold ph-navigation-arrow"></i> Abrir en Google Maps</a>
+            </div>
+            <div class="flex-1 h-80 md:h-auto rounded-3xl overflow-hidden border border-white/10 bg-zinc-900 relative">
+                <iframe id="pub-map-embed" src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15137.9515570077!2d-69.9328!3d18.4861!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sdo!4v1710000000000!5m2!1sen!2sdo" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+    </section>
+
+    <button onclick="document.getElementById('chat-window').classList.toggle('active')" class="fixed bottom-6 right-6 w-14 h-14 bg-papa-fire text-white rounded-full shadow-[0_0_20px_rgba(255,61,0,0.5)] flex items-center justify-center hover:scale-110 transition-transform z-50 group">
+        <i class="ph-fill ph-robot text-2xl group-hover:hidden"></i>
+        <i class="ph-bold ph-x text-2xl hidden group-hover:block"></i>
+    </button>
+    <div id="chat-window" class="chat-window fixed bottom-24 right-6 w-[340px] bg-[#111] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[110] h-[450px]">
+        <div class="bg-gradient-to-r from-papa-drblue to-papa-fire p-4 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-black rounded-full flex items-center justify-center border border-white/15"><i class="ph-fill ph-robot text-white"></i></div>
+                <div><h3 class="font-black text-white text-xs leading-none">Chef IA</h3><p class="text-[9px] text-white/80 font-bold uppercase mt-1">Conectado al Menú</p></div>
+            </div>
+            <button onclick="document.getElementById('chat-window').classList.remove('active')" class="text-white/80 hover:text-white"><i class="ph-bold ph-x text-lg"></i></button>
+        </div>
+        <div id="chat-history" class="flex-1 p-4 overflow-y-auto flex flex-col gap-3 bg-zinc-950/40 no-scrollbar">
+            <div class="flex items-start gap-3 w-5/6">
+                <div class="bg-zinc-900 text-white text-xs p-3 rounded-2xl rounded-tl-none border border-white/5 shadow-md">
+                    ¡Hola! Soy tu asistente de sabor. Dime qué ingredientes te gustan (ej: "queso y tocino") y te recomendaré el plato ideal de nuestro menú. 🔥
+                </div>
+            </div>
+        </div>
+        <div class="p-3 bg-[#0a0a0a] border-t border-white/10 flex gap-2 shrink-0">
+            <input type="text" id="chat-input" placeholder="Me gusta la carne..." class="flex-1 bg-black border border-white/10 rounded-full px-4 py-2 text-xs text-white focus:outline-none focus:border-papa-fire" onkeypress="if(event.key === 'Enter') window.sendChat()">
+            <button onclick="window.sendChat()" class="w-9 h-9 bg-papa-fire text-white rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors shrink-0"><i class="ph-fill ph-paper-plane-right text-sm"></i></button>
+        </div>
+    </div>
+
+    <div id="ticketModal" class="modal-overlay fixed inset-0 z-[300] flex items-center justify-center p-4">
+        <div class="modal-content w-full max-w-sm flex flex-col items-center">
+            <div class="ticket-bg w-full p-6 text-black font-ticket shadow-2xl rounded-b-sm">
+                <div class="text-center mb-4">
+                    <h2 class="font-black text-xl uppercase tracking-tighter">LA PAPA CALIENTE</h2>
+                    <p class="text-[10px] uppercase text-gray-500 font-bold">Ticket de Orden</p>
+                </div>
+                <div class="border-t border-b border-dashed border-gray-400 py-3 text-center">
+                    <h3 id="ticket-turn" class="font-black text-4xl text-papa-fire">#0000</h3>
+                </div>
+                <div class="py-3 text-xs font-bold text-gray-800" id="ticket-items"></div>
+                <div class="flex justify-between items-center font-black text-base border-t border-black pt-2">
+                    <span>TOTAL:</span><span id="ticket-total-price">$0.00</span>
+                </div>
+            </div>
+            <div class="mt-4 w-full flex flex-col gap-2">
+                <button onclick="window.sendOrder()" class="w-full bg-[#25D366] hover:bg-[#20b858] text-white py-3.5 rounded-xl font-black uppercase text-xs shadow-lg transition-transform flex items-center justify-center gap-2"><i class="ph-fill ph-whatsapp-logo text-xl"></i> Confirmar y Enviar Cocina</button>
+                <button onclick="window.closeModal('ticketModal')" class="w-full mt-2 text-white/50 text-xs font-bold uppercase underline">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal-overlay fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div class="modal-content bg-papa-dark border border-white/10 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
+            <button onclick="window.closeModal('loginModal')" class="absolute top-5 right-5 text-zinc-500 hover:text-white"><i class="ph-bold ph-x text-lg"></i></button>
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 mx-auto bg-papa-fire/10 rounded-full flex items-center justify-center mb-3"><i class="ph-fill ph-shield-check text-2xl text-papa-fire"></i></div>
+                <h2 class="font-black text-xl uppercase tracking-tight">Acceso ERP</h2>
+                <p class="text-zinc-500 text-[10px] mt-1 uppercase font-bold tracking-widest">Admin: admin/1234 | Cocina: cocina/1234</p>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="login-user" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl outline-none text-xs" placeholder="Usuario">
+                <input type="password" id="login-pass" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl outline-none text-xs" placeholder="Contraseña">
+                <button onclick="window.handleLogin()" class="w-full bg-papa-fire text-white font-black uppercase tracking-wider py-3.5 rounded-xl text-xs shadow-[0_0_15px_rgba(255,61,0,0.4)] hover:bg-orange-600 transition-colors">Ingresar al Sistema</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminDashboard" class="fixed inset-0 z-[300] bg-[#070707] hidden flex-col transition-all duration-300 opacity-0 pointer-events-none">
+        <div class="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-[#0f0f0f] shrink-0 no-print">
+            <div class="flex items-center gap-3">
+                <span class="font-black text-sm uppercase text-white"><i class="ph-fill ph-laptop"></i> ERP <span class="text-papa-fire">LA PAPA CALIENTE</span> <span class="text-[9px] text-green-500 ml-2 animate-pulse"><i class="ph-fill ph-cloud"></i> EN VIVO</span></span>
+                <span id="role-badge" class="bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[9px] px-2 py-0.5 rounded font-bold uppercase">Admin</span>
+            </div>
+            <button onclick="window.logoutAdmin()" class="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-colors"><i class="ph-bold ph-sign-out"></i> Salir</button>
+        </div>
+        
+        <div class="flex-1 flex overflow-hidden">
+            <aside class="w-64 bg-[#0a0a0a] border-r border-white/10 flex flex-col py-4 overflow-y-auto no-print" id="erp-sidebar">
+                <div class="space-y-1 px-3 admin-only">
+                    <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Inteligencia</p>
+                    <button onclick="window.switchAdminPanel('dashboard')" id="btn-side-dashboard" class="sidebar-btn active w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-squares-four text-lg"></i> Dashboard</button>
+                    <button onclick="window.switchAdminPanel('stats')" id="btn-side-stats" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-chart-line-up text-lg"></i> Estadísticas</button>
+                </div>
+                
+                <div class="space-y-1 px-3 mt-6">
+                    <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Operaciones</p>
+                    <button onclick="window.switchAdminPanel('kds')" id="btn-side-kds" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-cooking-pot text-lg"></i> Cocina (KDS)</button>
+                    <button onclick="window.switchAdminPanel('pos')" id="btn-side-pos" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all admin-only"><i class="ph-bold ph-cash-register text-lg"></i> Caja y POS Avanzado</button>
+                </div>
+
+                <div class="space-y-1 px-3 mt-6 admin-only">
+                    <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Inventario & Menú</p>
+                    <button onclick="window.switchAdminPanel('inventory')" id="btn-side-inventory" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-hamburger text-lg"></i> Menú / Catálogo</button>
+                    <button onclick="window.switchAdminPanel('ingredients')" id="btn-side-ingredients" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-scales text-lg"></i> Control Stock Materia</button>
+                </div>
+
+                <div class="space-y-1 px-3 mt-6 admin-only">
+                    <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Sistema</p>
+                    <button onclick="window.switchAdminPanel('reports')" id="btn-side-reports" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-file-pdf text-lg"></i> Reportes Contables</button>
+                    <button onclick="window.switchAdminPanel('gallery')" id="btn-side-gallery" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-image text-lg"></i> Galería Web</button>
+                    <button onclick="window.switchAdminPanel('settings')" id="btn-side-settings" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-gear text-lg"></i> Ajustes y Branding</button>
+                </div>
+            </aside>
+
+            <main class="flex-1 overflow-y-auto p-6 bg-[#050505] no-scrollbar relative" id="print-area">
+                
+                <!-- DASHBOARD -->
+                <div id="panel-admin-dashboard" class="admin-panel-tab space-y-6">
+                    <h2 class="text-2xl font-black uppercase text-white no-print">Resumen Operativo</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-zinc-900 border border-white/5 p-4 rounded-2xl shadow-lg relative overflow-hidden">
+                            <div class="absolute -right-4 -bottom-4 text-white/5 text-6xl"><i class="ph-fill ph-currency-dollar"></i></div>
+                            <p class="text-[10px] font-bold text-zinc-400 uppercase">Ventas de Hoy</p>
+                            <p class="text-2xl font-black text-papa-yellow mt-1" id="dash-ventas-hoy">$0.00</p>
+                        </div>
+                        <div class="bg-zinc-900 border border-white/5 p-4 rounded-2xl shadow-lg relative overflow-hidden">
+                            <div class="absolute -right-4 -bottom-4 text-white/5 text-6xl"><i class="ph-fill ph-shopping-bag"></i></div>
+                            <p class="text-[10px] font-bold text-zinc-400 uppercase">Órdenes Hoy</p>
+                            <p class="text-2xl font-black text-white mt-1" id="dash-ordenes-hoy">0</p>
+                        </div>
+                        <div class="bg-zinc-900 border border-white/5 p-4 rounded-2xl shadow-lg relative overflow-hidden">
+                            <div class="absolute -right-4 -bottom-4 text-white/5 text-6xl"><i class="ph-fill ph-trend-up"></i></div>
+                            <p class="text-[10px] font-bold text-zinc-400 uppercase">Ticket Promedio</p>
+                            <p class="text-2xl font-black text-green-400 mt-1" id="dash-ticket-prom">$0.00</p>
+                        </div>
+                        <div class="bg-zinc-900 border border-white/5 p-4 rounded-2xl shadow-lg relative overflow-hidden">
+                            <div class="absolute -right-4 -bottom-4 text-white/5 text-6xl"><i class="ph-fill ph-warning"></i></div>
+                            <p class="text-[10px] font-bold text-zinc-400 uppercase">Alertas Stock</p>
+                            <p class="text-2xl font-black text-papa-fire mt-1" id="dash-alertas-stock">0</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 no-print">
+                        <div class="bg-black border border-white/10 p-5 rounded-2xl">
+                            <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4">Ingresos Últimos 7 Días</h3>
+                            <canvas id="chart-sales-week" height="150"></canvas>
+                        </div>
+                        <div class="bg-black border border-white/10 p-5 rounded-2xl">
+                            <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4">Productos Más Vendidos</h3>
+                            <canvas id="chart-top-products" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STATS -->
+                <div id="panel-admin-stats" class="admin-panel-tab hidden space-y-6 no-print">
+                    <h2 class="text-2xl font-black uppercase text-white">Estadísticas Detalladas</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-black border border-white/10 p-5 rounded-2xl md:col-span-2">
+                            <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4">Ventas Mensuales (Año)</h3>
+                            <canvas id="chart-sales-year" height="120"></canvas>
+                        </div>
+                        <div class="bg-black border border-white/10 p-5 rounded-2xl">
+                            <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4">Métodos de Pago</h3>
+                            <canvas id="chart-payments" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KDS -->
+                <div id="panel-admin-kds" class="admin-panel-tab hidden flex flex-col h-full space-y-4 no-print">
+                    <div class="flex justify-between items-center shrink-0">
+                        <h2 class="text-2xl font-black uppercase text-white"><i class="ph-bold ph-cooking-pot text-papa-fire"></i> Display de Cocina (KDS)</h2>
+                        <div class="flex gap-3 text-[10px] font-bold uppercase">
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-green-500 rounded-full"></div> A tiempo (< 10m)</span>
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-yellow-500 rounded-full"></div> Atención (> 10m)</span>
+                            <span class="flex items-center gap-1"><div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div> Crítico (> 20m)</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 overflow-hidden">
+                        <div class="bg-zinc-950 border border-white/10 rounded-2xl flex flex-col overflow-hidden">
+                            <div class="bg-black p-3 border-b border-white/10 font-black text-xs uppercase text-zinc-300 flex justify-between">Pendientes <span id="kds-cnt-pen" class="bg-zinc-800 px-2 rounded">0</span></div>
+                            <div class="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar" id="kds-col-pen"></div>
+                        </div>
+                        <div class="bg-zinc-950 border border-blue-500/20 rounded-2xl flex flex-col overflow-hidden">
+                            <div class="bg-blue-950/30 p-3 border-b border-blue-500/20 font-black text-xs uppercase text-blue-400 flex justify-between">Preparando <span id="kds-cnt-prep" class="bg-blue-500/20 px-2 rounded">0</span></div>
+                            <div class="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar" id="kds-col-prep"></div>
+                        </div>
+                        <div class="bg-zinc-950 border border-yellow-500/20 rounded-2xl flex flex-col overflow-hidden">
+                            <div class="bg-yellow-950/30 p-3 border-b border-yellow-500/20 font-black text-xs uppercase text-yellow-400 flex justify-between">Empacando <span id="kds-cnt-pack" class="bg-yellow-500/20 px-2 rounded">0</span></div>
+                            <div class="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar" id="kds-col-pack"></div>
+                        </div>
+                        <div class="bg-zinc-950 border border-green-500/20 rounded-2xl flex flex-col overflow-hidden">
+                            <div class="bg-green-950/30 p-3 border-b border-green-500/20 font-black text-xs uppercase text-green-400 flex justify-between">Para Entregar <span id="kds-cnt-ready" class="bg-green-500/20 px-2 rounded">0</span></div>
+                            <div class="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar" id="kds-col-ready"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INVENTORY / RECIPES -->
+                <div id="panel-admin-ingredients" class="admin-panel-tab hidden space-y-6 no-print">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-black uppercase text-white">Inventario Inteligente</h2>
+                            <p class="text-xs text-zinc-500">Materia prima. Se descuenta automáticamente al vender mediante las Fórmulas de Consumo.</p>
+                        </div>
+                        <button onclick="window.openIngModal()" class="bg-papa-fire text-white px-4 py-2 rounded-xl text-xs font-bold uppercase shadow-lg shadow-papa-fire/20 hover:scale-105 transition"><i class="ph-bold ph-plus"></i> Nuevo Ingrediente</button>
+                    </div>
+                    <div class="bg-black border border-white/10 rounded-2xl p-6">
+                        <table class="w-full text-left text-xs">
+                            <thead class="text-zinc-500 uppercase border-b border-white/10">
+                                <tr><th class="pb-3">Ingrediente</th><th class="pb-3">Unidad</th><th class="pb-3">Stock Actual</th><th class="pb-3">Mínimo Alerta</th><th class="pb-3 text-right">Acción</th></tr>
+                            </thead>
+                            <tbody id="ingredients-table" class="divide-y divide-white/5 font-bold text-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MENU / CATALOG -->
+                <div id="panel-admin-inventory" class="admin-panel-tab hidden space-y-6 no-print">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-black uppercase text-white">Catálogo Profesional</h2>
+                        <button onclick="window.openEditModal()" class="bg-papa-fire text-white px-4 py-2 rounded-xl text-xs font-bold uppercase hover:scale-105 transition"><i class="ph-bold ph-plus"></i> Crear Plato</button>
+                    </div>
+                    <div id="admin-catalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                </div>
+
+                <!-- CAJA & POS AVANZADO -->
+                <div id="panel-admin-pos" class="admin-panel-tab hidden space-y-6 no-print">
+                    <h2 class="text-2xl font-black uppercase text-white">Control de Caja y Pagos</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl space-y-4">
+                            <h3 class="text-sm font-black uppercase text-papa-fire">Estado del Turno</h3>
+                            <div id="caja-status" class="text-xl font-bold text-zinc-400">Caja Cerrada</div>
+                            <input type="number" id="caja-monto" placeholder="Monto Inicial en Efectivo ($)" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-sm outline-none focus:border-papa-fire transition">
+                            <button id="btn-caja-action" onclick="window.toggleCaja()" class="w-full bg-green-600 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform">Abrir Caja</button>
+                        </div>
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl md:col-span-2 flex flex-col">
+                            <h3 class="text-sm font-black uppercase text-white mb-4">Movimientos de Sesión</h3>
+                            <div class="flex-1 overflow-y-auto no-scrollbar space-y-2 border-t border-b border-white/10 py-2 min-h-[150px]" id="caja-moves"></div>
+                            <div class="pt-4 flex justify-between items-center text-sm font-black uppercase">
+                                <span>Total Efectivo en Caja Fuerte:</span>
+                                <span id="caja-total-calc" class="text-papa-yellow text-2xl">$0.00</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Calculadoras Inteligentes -->
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl md:col-span-3 mt-2 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-sm font-black uppercase text-papa-yellow mb-4"><i class="ph-fill ph-math-operations"></i> Calculadora Estándar</h3>
+                                <div class="bg-zinc-950 p-4 rounded-xl border border-white/5 w-full">
+                                    <input type="text" id="std-calc-display" class="w-full bg-black text-right text-2xl font-black text-white p-3 rounded-lg mb-4 border border-white/10 outline-none" disabled placeholder="0">
+                                    <div class="grid grid-cols-4 gap-2">
+                                        <button onclick="window.stdCalc('7')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">7</button>
+                                        <button onclick="window.stdCalc('8')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">8</button>
+                                        <button onclick="window.stdCalc('9')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">9</button>
+                                        <button onclick="window.stdCalc('/')" class="bg-papa-fire hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">/</button>
+                                        <button onclick="window.stdCalc('4')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">4</button>
+                                        <button onclick="window.stdCalc('5')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">5</button>
+                                        <button onclick="window.stdCalc('6')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">6</button>
+                                        <button onclick="window.stdCalc('*')" class="bg-papa-fire hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">x</button>
+                                        <button onclick="window.stdCalc('1')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">1</button>
+                                        <button onclick="window.stdCalc('2')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">2</button>
+                                        <button onclick="window.stdCalc('3')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">3</button>
+                                        <button onclick="window.stdCalc('-')" class="bg-papa-fire hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">-</button>
+                                        <button onclick="window.stdCalc('C')" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg transition">C</button>
+                                        <button onclick="window.stdCalc('0')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">0</button>
+                                        <button onclick="window.stdCalc('=')" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition">=</button>
+                                        <button onclick="window.stdCalc('+')" class="bg-papa-fire hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-sm font-black uppercase text-papa-fire mb-4"><i class="ph-fill ph-cash-register"></i> Asistente Rápido de Vueltos</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Costo Total del Pedido ($)</label>
+                                        <input type="number" id="calc-total" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black outline-none focus:border-papa-fire" oninput="window.calcularVuelto()" placeholder="Ej: 1500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Efectivo Recibido (Billete del Cliente)</label>
+                                        <input type="number" id="calc-pago" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black text-green-400 outline-none focus:border-green-500" oninput="window.calcularVuelto()" placeholder="Ej: 2000">
+                                    </div>
+                                    <div class="flex justify-between items-center bg-zinc-950 border border-white/5 rounded-xl p-4 shadow-inner">
+                                        <span class="text-xs font-bold text-zinc-500 uppercase">Cambio Exacto (Vuelto a dar)</span>
+                                        <span id="calc-cambio" class="text-3xl font-black text-white">$0.00</span>
+                                    </div>
+                                    <button onclick="window.registrarCobroCalculadora()" class="w-full bg-papa-fire hover:bg-orange-600 text-white font-black py-4 rounded-xl uppercase text-xs shadow-[0_0_15px_rgba(255,61,0,0.4)] transition-transform">Sumar Venta a la Caja Fuerte</button>
+                                    <p class="text-[10px] text-zinc-500 text-center font-bold px-4">Lógica de caja: El vuelto entra y sale en el instante. Al apretar este botón, sólo se guardará el <span class="text-white font-black">Costo Total del Pedido</span> como ingreso real en la caja registradora.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTS -->
+                <div id="panel-admin-reports" class="admin-panel-tab hidden space-y-6">
+                    <div class="flex justify-between items-center no-print">
+                        <h2 class="text-2xl font-black uppercase text-white">Reportes Financieros Profesionales</h2>
+                    </div>
+                    
+                    <div class="hidden print:block text-center border-b pb-4 mb-4">
+                        <h1 class="font-black text-3xl">LA PAPA CALIENTE</h1>
+                        <p class="font-bold text-sm text-gray-600">Reporte de Ventas Consolidado</p>
+                        <p class="text-xs text-gray-500 mt-2" id="print-date-range"></p>
+                    </div>
+
+                    <div class="bg-black border border-white/10 p-6 rounded-2xl space-y-6 print:border-none print:p-0 print:bg-white">
+                        <div class="flex gap-4 items-end no-print">
+                            <div>
+                                <label class="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Desde</label>
+                                <input type="date" id="rep-date-start" class="bg-zinc-900 border border-white/10 text-white px-3 py-2 rounded-lg text-xs outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Hasta</label>
+                                <input type="date" id="rep-date-end" class="bg-zinc-900 border border-white/10 text-white px-3 py-2 rounded-lg text-xs outline-none">
+                            </div>
+                            <button onclick="window.generateReport()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase h-fit transition">Generar</button>
+                        </div>
+                        <div class="border-t border-white/10 pt-4 flex gap-3 no-print">
+                            <button onclick="window.exportCSV()" class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase flex gap-1 transition"><i class="ph-bold ph-microsoft-excel"></i> CSV / Excel</button>
+                            <button onclick="window.print()" class="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase flex gap-1 transition"><i class="ph-bold ph-file-pdf"></i> Imprimir Informe PDF</button>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 border-b border-white/10 pb-4 print:border-black print:pb-2">
+                            <div><p class="text-[10px] font-bold text-zinc-500 uppercase print:text-black">Órdenes Totales</p><p id="rep-tot-orders" class="text-xl font-black text-white print:text-black">0</p></div>
+                            <div><p class="text-[10px] font-bold text-zinc-500 uppercase print:text-black">Ingreso Bruto</p><p id="rep-tot-money" class="text-xl font-black text-green-400 print:text-black">$0.00</p></div>
+                            <div><p class="text-[10px] font-bold text-zinc-500 uppercase print:text-black">Ticket Promedio</p><p id="rep-tot-avg" class="text-xl font-black text-papa-yellow print:text-black">$0.00</p></div>
+                        </div>
+
+                        <div class="overflow-x-auto mt-4">
+                            <table class="w-full text-left text-xs print:text-[10px]">
+                                <thead class="text-zinc-500 uppercase border-b border-white/10 print:text-black print:border-black"><tr><th class="py-2">Orden ID</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th class="text-right">Total</th></tr></thead>
+                                <tbody id="report-table" class="divide-y divide-white/5 font-bold text-white print:text-black print:divide-gray-300"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GALLERY ADMIN -->
+                <div id="panel-admin-gallery" class="admin-panel-tab hidden space-y-6 no-print">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-black uppercase text-white">Gestor de Galería Web</h2>
+                        <div class="relative overflow-hidden inline-block">
+                            <button class="bg-papa-fire text-white px-4 py-2 rounded-xl text-xs font-bold uppercase shadow-lg"><i class="ph-bold ph-upload-simple"></i> Subir Foto Local</button>
+                            <input type="file" accept="image/*" onchange="window.uploadGalleryImage(event)" class="absolute left-0 top-0 opacity-0 cursor-pointer w-full h-full">
+                        </div>
+                    </div>
+                    <div id="admin-gallery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                </div>
+
+                <!-- SETTINGS & BRANDING -->
+                <div id="panel-admin-settings" class="admin-panel-tab hidden space-y-6 no-print">
+                    <h2 class="text-2xl font-black uppercase text-white">Ajustes Generales y Branding</h2>
+                    <div class="bg-black border border-white/10 p-6 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-paint-brush"></i> Identidad Visual</h3></div>
+                        <div>
+                            <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Logo del Food Truck (Archivo)</label>
+                            <input type="file" accept="image/*" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.logo = url; window.renderStorefront(); window.showToast('Logo listo'); })" class="w-full bg-zinc-900 border border-white/10 text-zinc-400 px-4 py-2 rounded-xl text-xs outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Fondo Portada Inicio (Archivo)</label>
+                            <input type="file" accept="image/*" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.cover = url; window.renderStorefront(); window.showToast('Fondo listo'); })" class="w-full bg-zinc-900 border border-white/10 text-zinc-400 px-4 py-2 rounded-xl text-xs outline-none">
+                        </div>
+
+                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2 mt-4"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-link"></i> Datos y Conexiones</h3></div>
+                        <div>
+                            <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">WhatsApp Contacto (Formato Int.)</label>
+                            <input type="text" id="set-phone" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="+1809...">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Clave API IA (Chatbot Gemini)</label>
+                            <input type="password" id="set-api-key" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="Gemini Key...">
+                        </div>
+                        
+                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2 mt-4"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-map-pin"></i> Ubicación y Mapas</h3></div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Google Maps Embed URL (Iframe SRC)</label>
+                            <input type="text" id="set-map-embed" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="https://www.google.com/maps/embed?...">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Link del Botón "Abrir Mapa"</label>
+                            <input type="text" id="set-map-link" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="https://maps.app.goo.gl/...">
+                        </div>
+                        
+                        <div class="md:col-span-2 flex justify-end pt-6 border-t border-white/10">
+                            <button onclick="window.saveSettings()" class="bg-papa-fire hover:bg-orange-600 text-white font-black uppercase text-xs px-8 py-3.5 rounded-xl shadow-[0_0_15px_rgba(255,61,0,0.4)] transition">Guardar Cambios Permanentemente</button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal-overlay fixed inset-0 z-[400] flex items-center justify-center p-2">
+        <div class="modal-content bg-[#111] border border-white/10 w-full max-w-4xl rounded-3xl overflow-hidden flex flex-col shadow-2xl max-h-[95vh]">
+            <div class="bg-black px-6 py-4 border-b border-white/10 flex justify-between items-center shrink-0">
+                <h2 id="modal-edit-title" class="font-black text-lg uppercase text-papa-fire">Editor de Plato</h2>
+                <button onclick="window.closeModal('editModal')" class="text-zinc-500 hover:text-white"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto no-scrollbar flex-1 space-y-6">
+                <input type="hidden" id="edit-id">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2"><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Nombre Comercial</label><input type="text" id="edit-title" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-xs font-bold outline-none focus:border-papa-fire"></div>
+                    <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Etiqueta Especial</label>
+                        <select id="edit-tag" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-xs font-bold outline-none focus:border-papa-fire">
+                            <option value="">Normal (Sin etiqueta)</option><option value="Más Vendidos">🔥 Más Vendido</option><option value="Promociones">💰 Promoción</option><option value="Nuevos">✨ Nuevo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Categoría</label><input type="text" id="edit-cat" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-xs font-bold outline-none focus:border-papa-fire" placeholder="Ej: Premium, Bebida"></div>
+                    <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Precio de Venta ($)</label><input type="number" id="edit-price" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-xs font-black text-papa-yellow outline-none focus:border-papa-fire"></div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Subir Foto del Plato</label>
+                        <input type="file" accept="image/*" onchange="window.processImageUpload(event, (url) => { const img = document.getElementById('edit-img-preview'); img.src = url; img.classList.remove('hidden'); img.dataset.src = url; })" class="w-full bg-black border border-white/10 text-zinc-500 px-2 py-2 rounded-xl text-[10px] outline-none">
+                        <img id="edit-img-preview" src="" data-src="" class="w-12 h-12 mt-2 object-cover rounded border border-white/10 hidden">
+                    </div>
+                </div>
+                <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Descripción Atractiva</label><textarea id="edit-desc" rows="2" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-xs font-bold outline-none focus:border-papa-fire"></textarea></div>
+                
+                <div class="border-t border-white/10 pt-4 bg-zinc-900/30 p-4 rounded-xl">
+                    <h3 class="text-sm font-black text-white uppercase mb-1"><i class="ph-bold ph-scales text-papa-fire"></i> Fórmula de Consumo (Inventario)</h3>
+                    <p class="text-[10px] text-zinc-400 font-bold mb-4">¿Qué gasta este plato al venderse? El sistema lo descontará automáticamente del stock de ingredientes.</p>
+                    
+                    <div id="recipe-list" class="space-y-2 mb-3 max-h-32 overflow-y-auto pr-2"></div>
+                    <div class="flex gap-2 items-center bg-black p-2 rounded-xl border border-white/5">
+                        <select id="recipe-ing-select" class="flex-1 bg-transparent text-white px-2 py-2 text-xs font-bold outline-none"></select>
+                        <input type="number" id="recipe-ing-qty" placeholder="Cantidad que Gasta..." class="w-32 bg-zinc-900 border border-white/10 text-white px-3 py-2 rounded-lg text-xs outline-none focus:border-papa-fire">
+                        <button type="button" onclick="window.addRecipeRow()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-black uppercase transition">Agregar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-black border-t border-white/10 px-6 py-4 flex justify-end shrink-0">
+                <button onclick="window.saveProduct()" class="bg-papa-fire hover:bg-orange-600 text-white px-8 py-3 rounded-xl font-black uppercase text-xs shadow-lg shadow-papa-fire/20 transition">Guardar Plato en Menú</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Importando módulos exactos de Firebase Realtime Database
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+        // CONFIGURACIÓN EXACTA PROPORCIONADA POR EL USUARIO
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmNIL7yk48zqe6Hdk__eG48qwuj3SPdtE",
+            authDomain: "lapapacaliente.firebaseapp.com",
+            databaseURL: "https://lapapacaliente-default-rtdb.firebaseio.com", // <-- AÑADIDO: URL Esencial para Realtime DB
+            projectId: "lapapacaliente",
+            storageBucket: "lapapacaliente.firebasestorage.app",
+            messagingSenderId: "259622247837",
+            appId: "1:259622247837:web:ad1b49c5f35aef988ee374",
+            measurementId: "G-D37V8Z3W13"
+        };
+        
+        // Mock Initial Data (En caso de que la Nube esté 100% vacía al iniciar)
+        const initialMenu = [
+            { id: 'p1', title: 'La Clásica Trufada', desc: 'Papa gigante con crema agria, cebollín y tocino crujiente.', price: 12.00, cat: 'Papas Premium', tag: 'Más Vendidos', img: 'https://images.unsplash.com/photo-1596450514735-11003b57edec?auto=format&fit=crop&w=600&q=80', recipe: [{id: 'i1', qty: 1}, {id: 'i3', qty: 50}] }
+        ];
+        const initialIngredients = [
+            { id: 'i1', name: 'Papa Gigante', unit: 'uds', stock: 100, min: 20 },
+            { id: 'i3', name: 'Tocino Premium', unit: 'gr', stock: 2000, min: 500 }
+        ];
+
+        // Estado Global Mixto
+        window.STATE = {
+            menu: initialMenu, ingredients: initialIngredients, orders: [], gallery: [],
+            caja: { isOpen: false, startAmt: 0, total: 0, moves: [] },
+            settings: { 
+                apiKey: '', phone: '+18095550000', mapEmbed: '', mapLink: '',
+                logo: 'https://placehold.co/100x100/FF3D00/FFF?text=PC', cover: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920&auto=format&fit=crop'
+            },
+            cart: [], currentUser: null, currentFilter: 'all', tempRecipe: []
+        };
+
+        // Variables Firebase
+        let app, db, analytics;
+        let isCloudSyncing = false; 
+
+        // --- FUNCIONES LOCALES DE RESPALDO ---
+        function loadLocalData() {
+            try {
+                const localData = localStorage.getItem('erp_local_state');
+                if (localData) {
+                    const parsed = JSON.parse(localData);
+                    window.STATE.menu = parsed.menu || window.STATE.menu;
+                    window.STATE.ingredients = parsed.ingredients || window.STATE.ingredients;
+                    window.STATE.orders = parsed.orders || window.STATE.orders;
+                    window.STATE.gallery = parsed.gallery || window.STATE.gallery;
+                    window.STATE.caja = parsed.caja || window.STATE.caja;
+                    if (!window.STATE.caja.moves) window.STATE.caja.moves = [];
+                    if(parsed.settings) window.STATE.settings = parsed.settings;
+                }
+            } catch(e) { console.error(e); }
+            window.renderApp();
+        }
+
+        // --- SISTEMA FIREBASE CLOUD (REALTIME DATABASE) ---
+        async function initCloudSystem() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getDatabase(app);
+                try { analytics = getAnalytics(app); } catch(e){} // Opcional por si AdBlocker lo bloquea
+
+                const dbRef = ref(db, 'lapapacaliente/erp_state');
+                
+                // onValue escucha cambios en tiempo real automáticamente
+                onValue(dbRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        isCloudSyncing = true;
+                        const cloudData = snapshot.val();
+                        
+                        // Fusionar datos de la Nube manteniendo el carrito intacto
+                        window.STATE.menu = cloudData.menu || [];
+                        window.STATE.ingredients = cloudData.ingredients || [];
+                        window.STATE.orders = cloudData.orders || [];
+                        window.STATE.gallery = cloudData.gallery || [];
+                        window.STATE.caja = cloudData.caja || { isOpen: false, startAmt: 0, total: 0, moves: [] };
+                        if (!window.STATE.caja.moves) window.STATE.caja.moves = [];
+                        if(cloudData.settings) window.STATE.settings = cloudData.settings;
+                        
+                        window.renderApp();
+                        setTimeout(() => { isCloudSyncing = false; }, 500);
+                    } else {
+                        // Si está vacío, guardar el estado inicial Mock
+                        window.secureSave();
+                        window.renderApp();
+                    }
+                }, (error) => {
+                    console.error("Cloud Error (Permisos/Red):", error);
+                    window.showToast("Cargando Modo Híbrido (Offline)", "error");
+                    loadLocalData();
+                });
+            } catch(e) {
+                console.error("Firebase Init Error:", e);
+                loadLocalData(); // Fallback Local
+            }
+        }
+
+        window.secureSave = async () => {
+            const payload = {
+                menu: window.STATE.menu, ingredients: window.STATE.ingredients,
+                orders: window.STATE.orders, gallery: window.STATE.gallery,
+                caja: window.STATE.caja, settings: window.STATE.settings
+            };
+
+            // Guardar local siempre como respaldo extra
+            localStorage.setItem('erp_local_state', JSON.stringify(payload));
+            
+            // Subir a Realtime Database si está conectado
+            if(db && !isCloudSyncing) {
+                try {
+                    await set(ref(db, 'lapapacaliente/erp_state'), payload);
+                } catch(e) {
+                    console.error("Error guardando en la Nube", e);
+                }
+            }
+        };
+
+        window.showToast = (msg, type = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const icon = type === 'success' ? '<i class="ph-fill ph-check-circle text-green-500"></i>' : '<i class="ph-fill ph-warning text-red-500"></i>';
+            toast.className = `glass-panel border ${type === 'success' ? 'border-green-500/30' : 'border-red-500/30'} rounded-xl p-3 flex items-center gap-2 toast-custom`;
+            toast.innerHTML = `${icon} <span class="font-bold text-xs text-white">${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+        };
+        window.openModal = (id) => document.getElementById(id).classList.add('active');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+        window.cerrarMenuMovil = () => { document.getElementById('nav-links').classList.add('right-[-100%]'); document.getElementById('nav-links').classList.remove('right-0'); };
+        
+        // Sanidad de Datos Optimizado: Previene XSS sin arruinar textos normales (como el + del teléfono)
+        window.sanitize = (str) => {
+            if (!str) return '';
+            return str.toString().replace(/[<>"'&]/g, (c) => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]));
+        };
+
+        window.processImageUpload = (event, callback) => {
+            const file = event.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600; 
+                    let scaleSize = MAX_WIDTH / img.width;
+                    if(scaleSize > 1) scaleSize = 1;
+                    
+                    canvas.width = img.width * scaleSize;
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
+                    callback(dataUrl);
+                }
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.renderApp = () => {
+            window.renderStorefront();
+            window.renderAdminViews();
+            window.updateCartUI();
+        };
+
+        window.renderStorefront = () => {
+            document.getElementById('store-logo').src = window.STATE.settings.logo;
+            document.getElementById('inicio').style.backgroundImage = `url('${window.STATE.settings.cover}')`;
+            document.getElementById('pub-contact').innerText = window.STATE.settings.phone || '';
+            
+            if(window.STATE.settings.mapEmbed) document.getElementById('pub-map-embed').src = window.STATE.settings.mapEmbed;
+            if(window.STATE.settings.mapLink) document.getElementById('pub-map-link').href = window.STATE.settings.mapLink;
+
+            document.getElementById('public-gallery-grid').innerHTML = window.STATE.gallery.map(url => `<div class="h-48 rounded-2xl overflow-hidden border border-white/10"><img src="${url}" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"></div>`).join('');
+
+            const catGrid = document.getElementById('catalogo-grid');
+            let items = window.STATE.menu;
+            if (window.STATE.currentFilter !== 'all') items = items.filter(i => i.tag === window.STATE.currentFilter);
+            
+            catGrid.innerHTML = items.map(item => `
+                <div class="glass-panel rounded-3xl overflow-hidden menu-card flex flex-col relative border-white/10 shadow-lg">
+                    ${item.tag ? `<span class="absolute top-3 left-3 bg-papa-fire text-white text-[9px] font-black uppercase px-2 py-1 rounded shadow-lg z-20">${item.tag}</span>` : ''}
+                    <div class="h-48 menu-img-wrap relative bg-[#111] overflow-hidden">
+                        <img src="${item.img}" class="w-full h-full object-cover">
+                        <div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur text-papa-yellow font-black text-lg px-3 py-1 rounded-xl border border-white/10 z-20">$${parseFloat(item.price).toFixed(2)}</div>
+                    </div>
+                    <div class="p-5 flex flex-col flex-1">
+                        <h3 class="text-base font-bold uppercase tracking-tight text-white mb-1">${item.title}</h3>
+                        <p class="text-zinc-400 text-[10px] leading-relaxed mb-4 flex-1">${item.desc}</p>
+                        <button onclick="window.addToCart('${item.id}')" class="w-full bg-white/5 border border-white/10 hover:bg-papa-fire hover:border-papa-fire text-white font-black py-2.5 rounded-xl uppercase text-[10px] tracking-wider transition-all flex justify-center items-center gap-2">
+                            <i class="ph-bold ph-plus"></i> Ordenar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.setFilterType = (event, tag) => {
+            window.STATE.currentFilter = tag;
+            document.querySelectorAll('.flt-btn').forEach(b => {
+                b.classList.remove('bg-papa-fire', 'text-white', 'shadow-lg');
+                b.classList.add('bg-transparent', 'text-zinc-400');
+            });
+            if(event && event.currentTarget) {
+                event.currentTarget.classList.remove('text-zinc-400', 'bg-transparent');
+                event.currentTarget.classList.add('bg-papa-fire', 'text-white', 'shadow-lg');
+            }
+            window.renderStorefront();
+        };
+
+        window.addToCart = (id) => {
+            const item = window.STATE.menu.find(i => i.id === id);
+            if(item) { window.STATE.cart.push(item); window.updateCartUI(); window.showToast('Agregado a tu orden'); }
+        };
+
+        window.toggleCart = () => {
+            document.getElementById('cart-sidebar').classList.toggle('open');
+            document.getElementById('cart-overlay').classList.toggle('hidden');
+            setTimeout(() => document.getElementById('cart-overlay').classList.toggle('opacity-100'), 10);
+            window.updateCartUI();
+        };
+
+        window.updateCartUI = () => {
+            document.querySelectorAll('#mobile-cart-badge, #desktop-cart-badge').forEach(b => b.innerText = window.STATE.cart.length);
+            const view = document.getElementById('cart-items-view');
+            let sum = 0;
+            
+            if(window.STATE.cart.length === 0) {
+                view.innerHTML = '<p class="text-center text-zinc-500 font-bold mt-10 text-xs">Aún no has agregado platos a tu orden.</p>';
+            } else {
+                view.innerHTML = window.STATE.cart.map((item, idx) => {
+                    sum += parseFloat(item.price);
+                    return `<div class="flex items-center gap-3 bg-zinc-900/60 p-2 rounded-xl border border-white/5"><img src="${item.img}" class="w-10 h-10 object-cover rounded-lg shrink-0"><div class="flex-1 min-w-0"><p class="font-bold text-white text-xs truncate uppercase">${item.title}</p><p class="font-black text-papa-yellow text-xs">$${parseFloat(item.price).toFixed(2)}</p></div><button onclick="window.STATE.cart.splice(${idx},1); window.updateCartUI();" class="text-red-500 hover:bg-red-500/20 p-2 rounded"><i class="ph-bold ph-trash"></i></button></div>`;
+                }).join('');
+            }
+            document.getElementById('cart-total').innerText = `$${sum.toFixed(2)}`;
+        };
+
+        window.toggleCheckoutView = () => {
+            if (window.STATE.cart.length === 0) return window.showToast('Agrega productos primero', 'error');
+            const v1 = document.getElementById('cart-items-view'), v2 = document.getElementById('checkout-form-view');
+            const b1 = document.getElementById('btn-goto-checkout'), b2 = document.getElementById('btn-confirm-order');
+            v1.classList.toggle('hidden'); v2.classList.toggle('hidden'); v2.classList.toggle('flex');
+            b1.classList.toggle('hidden'); b2.classList.toggle('hidden');
+        };
+
+        window.toggleAddressField = () => {
+            const isDel = document.getElementById('order-type').value === 'Delivery';
+            document.getElementById('order-address').classList.toggle('hidden', !isDel);
+        };
+
+        let tempOrder = null;
+        window.generateTicket = () => {
+            const name = window.sanitize(document.getElementById('order-name').value);
+            const type = document.getElementById('order-type').value;
+            if(!name) return window.showToast('Nombre requerido para confirmar', 'error');
+            
+            let sum = 0;
+            const itemsHtml = window.STATE.cart.map(i => { sum+=parseFloat(i.price); return `<div class="flex justify-between border-b border-gray-100 py-1"><span class="truncate pr-2">- ${i.title}</span><span>$${i.price.toFixed(2)}</span></div>`; }).join('');
+            
+            const id = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('ticket-turn').innerText = id;
+            document.getElementById('ticket-items').innerHTML = itemsHtml;
+            document.getElementById('ticket-total-price').innerText = `$${sum.toFixed(2)}`;
+            
+            tempOrder = { id, name, type, items: [...window.STATE.cart], total: sum, status: 'Pendiente', timestamp: Date.now() };
+            window.toggleCart(); window.openModal('ticketModal');
+        };
+
+        window.sendOrder = () => {
+            window.STATE.orders.push(tempOrder);
+            
+            tempOrder.items.forEach(cartItem => {
+                const menuItem = window.STATE.menu.find(m => m.id === cartItem.id);
+                if(menuItem && menuItem.recipe) {
+                    menuItem.recipe.forEach(rec => {
+                        const ing = window.STATE.ingredients.find(i => i.id === rec.id);
+                        if(ing) {
+                            ing.stock -= rec.qty;
+                            if(ing.stock <= ing.min) window.showToast(`¡OJO! ${ing.name} bajó del mínimo`, 'error');
+                        }
+                    });
+                }
+            });
+
+            window.secureSave();
+            window.closeModal('ticketModal');
+            window.STATE.cart = []; window.updateCartUI(); window.toggleCheckoutView();
+            document.getElementById('order-name').value = '';
+            window.showToast('¡Pedido enviado a cocina (Nube)!', 'success');
+            
+            try { document.getElementById('kds-alert').play(); } catch(e){}
+        };
+
+        window.handleLogin = () => {
+            const u = window.sanitize(document.getElementById('login-user').value);
+            const p = document.getElementById('login-pass').value;
+            
+            if(u === 'admin' && p === '1234') window.STATE.currentUser = 'admin';
+            else if(u === 'cocina' && p === '1234') window.STATE.currentUser = 'cocina';
+            else return window.showToast('Credenciales Inválidas', 'error');
+
+            window.closeModal('loginModal');
+            document.getElementById('adminDashboard').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            document.getElementById('adminDashboard').classList.add('flex', 'opacity-100', 'pointer-events-auto');
+            document.getElementById('role-badge').innerText = window.STATE.currentUser;
+            
+            document.querySelectorAll('.admin-only').forEach(el => { el.style.display = window.STATE.currentUser === 'admin' ? 'block' : 'none'; });
+
+            const defaultTab = window.STATE.currentUser === 'admin' ? 'dashboard' : 'kds';
+            window.switchAdminPanel(defaultTab);
+            window.renderAdminViews();
+            window.showToast(`Módulo Iniciado. Rol: ${window.STATE.currentUser}`, 'success');
+        };
+
+        window.logoutAdmin = () => {
+            window.STATE.currentUser = null;
+            document.getElementById('adminDashboard').classList.add('hidden', 'opacity-0', 'pointer-events-none');
+            document.getElementById('adminDashboard').classList.remove('flex', 'opacity-100', 'pointer-events-auto');
+        };
+
+        window.switchAdminPanel = (tab) => {
+            document.querySelectorAll('.admin-panel-tab').forEach(e => e.classList.add('hidden'));
+            document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`panel-admin-${tab}`).classList.remove('hidden');
+            if(document.getElementById(`btn-side-${tab}`)) document.getElementById(`btn-side-${tab}`).classList.add('active');
+            
+            if(tab === 'dashboard' || tab === 'stats') window.renderCharts();
+        };
+
+        window.renderAdminViews = () => {
+            if(!window.STATE.currentUser) return;
+            window.renderKDS();
+            if(window.STATE.currentUser === 'admin') {
+                window.renderDashboardMetrics(); window.renderIngredients(); window.renderAdminCatalog();
+                window.renderCaja(); window.renderGalleryAdmin();
+                document.getElementById('set-api-key').value = window.STATE.settings.apiKey || '';
+                document.getElementById('set-phone').value = window.STATE.settings.phone || '';
+                document.getElementById('set-map-embed').value = window.STATE.settings.mapEmbed || '';
+                document.getElementById('set-map-link').value = window.STATE.settings.mapLink || '';
+            }
+        };
+
+        window.renderKDS = () => {
+            const cols = { 'Pendiente': 'pen', 'Preparando': 'prep', 'Empacando': 'pack', 'Lista': 'ready' };
+            Object.values(cols).forEach(c => { document.getElementById(`kds-col-${c}`).innerHTML = ''; document.getElementById(`kds-cnt-${c}`).innerText = '0'; });
+            let counts = { pen:0, prep:0, pack:0, ready:0 };
+            const now = Date.now();
+
+            window.STATE.orders.forEach(o => {
+                if(o.status === 'Entregada' || o.status === 'Cancelada') return;
+                const colId = cols[o.status];
+                if(!colId) return;
+
+                counts[colId]++;
+                const mins = Math.floor((now - o.timestamp) / 60000);
+                let timeClass = 'time-ok';
+                if(mins > 10) timeClass = 'time-warn';
+                if(mins > 20) timeClass = 'time-danger';
+
+                const itemsStr = o.items.map(i => `<div class="text-[10px] font-bold text-zinc-300">- ${i.title}</div>`).join('');
+                
+                let btn = '';
+                if(o.status === 'Pendiente') btn = `<button onclick="window.chgStatus('${o.id}','Preparando')" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black py-2 rounded uppercase mt-2 transition">Empezar a Cocinar</button>`;
+                else if(o.status === 'Preparando') btn = `<button onclick="window.chgStatus('${o.id}','Empacando')" class="w-full bg-yellow-600 hover:bg-yellow-500 text-white text-[9px] font-black py-2 rounded uppercase mt-2 transition">Mandar a Empaque</button>`;
+                else if(o.status === 'Empacando') btn = `<button onclick="window.chgStatus('${o.id}','Lista')" class="w-full bg-green-600 hover:bg-green-500 text-white text-[9px] font-black py-2 rounded uppercase mt-2 transition">Despachar (Terminado)</button>`;
+                else if(o.status === 'Lista') btn = `<button onclick="window.chgStatus('${o.id}','Entregada')" class="w-full bg-zinc-600 hover:bg-zinc-500 text-white text-[9px] font-black py-2 rounded uppercase mt-2 transition">Entregar al Cliente</button>`;
+
+                document.getElementById(`kds-col-${colId}`).innerHTML += `<div class="bg-black p-3 rounded-xl border border-white/5 kds-card shadow-lg ${timeClass}"><div class="flex justify-between items-start mb-2"><span class="font-black text-xs text-white">${o.id}</span><span class="text-[10px] text-zinc-400 font-bold bg-zinc-900 px-1.5 py-0.5 rounded">${mins} min</span></div><div class="text-[10px] text-papa-yellow font-bold uppercase mb-2">${o.type} | <span class="text-white">${o.name}</span></div><div class="bg-zinc-900 p-2 rounded-lg border border-white/5 space-y-1">${itemsStr}</div>${btn}</div>`;
+            });
+            Object.keys(counts).forEach(k => document.getElementById(`kds-cnt-${k}`).innerText = counts[k]);
+        };
+
+        window.chgStatus = (id, stat) => {
+            const o = window.STATE.orders.find(x => x.id === id);
+            if(o) { o.status = stat; window.secureSave(); }
+        };
+        setInterval(() => { if(window.STATE.currentUser && document.getElementById('panel-admin-kds').classList.contains('hidden') === false) window.renderKDS(); }, 30000);
+
+        window.renderDashboardMetrics = () => {
+            const today = new Date().toDateString();
+            const todayOrders = window.STATE.orders.filter(o => new Date(o.timestamp).toDateString() === today && o.status !== 'Cancelada');
+            const ventasHoy = todayOrders.reduce((sum, o) => sum + o.total, 0);
+            const alertas = window.STATE.ingredients.filter(i => i.stock <= i.min).length;
+
+            document.getElementById('dash-ventas-hoy').innerText = `$${ventasHoy.toFixed(2)}`;
+            document.getElementById('dash-ordenes-hoy').innerText = todayOrders.length;
+            document.getElementById('dash-ticket-prom').innerText = todayOrders.length ? `$${(ventasHoy/todayOrders.length).toFixed(2)}` : '$0.00';
+            document.getElementById('dash-alertas-stock').innerText = alertas;
+        };
+
+        window.renderIngredients = () => {
+            document.getElementById('ingredients-table').innerHTML = window.STATE.ingredients.map(i => `<tr class="hover:bg-white/5 transition"><td class="py-3 pl-2">${i.name}</td><td class="py-3 text-zinc-500">${i.unit}</td><td class="py-3 ${i.stock <= i.min ? 'text-red-500 animate-pulse' : 'text-green-400'}">${i.stock}</td><td class="py-3 text-zinc-500">${i.min}</td><td class="py-3 text-right"><button onclick="window.addStock('${i.id}')" class="text-white text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded transition">Reabastecer</button></td></tr>`).join('');
+        };
+
+        window.addStock = async (id) => {
+            const ing = window.STATE.ingredients.find(i => i.id === id);
+            const { value: amt } = await Swal.fire({ title: `Agregar Stock: ${ing.name}`, input: 'number', background:'#111', color:'#fff', inputPlaceholder: `Cantidad en ${ing.unit}` });
+            if(amt && amt > 0) { ing.stock += parseInt(amt); window.secureSave(); window.showToast('Stock Actualizado'); }
+        };
+
+        window.openIngModal = async () => {
+            const { value: form } = await Swal.fire({
+                title: 'Nuevo Ingrediente', html: `<input id="swal-ing-n" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Nombre (Ej: Queso Cheddar)"><input id="swal-ing-u" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Unidad de Medida (Ej: gr, uds)"><input type="number" id="swal-ing-s" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Stock Inicial"><input type="number" id="swal-ing-m" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Alerta Mínimo">`,
+                focusConfirm: false, background:'#111', color:'#fff', confirmButtonColor: '#FF3D00',
+                preConfirm: () => ({ name: window.sanitize(document.getElementById('swal-ing-n').value), unit: window.sanitize(document.getElementById('swal-ing-u').value), stock: parseInt(document.getElementById('swal-ing-s').value||0), min: parseInt(document.getElementById('swal-ing-m').value||0) })
+            });
+            if(form && form.name) { window.STATE.ingredients.push({ id:'i'+Date.now(), ...form }); window.secureSave(); window.showToast('Ingrediente creado'); }
+        };
+
+        window.renderAdminCatalog = () => {
+            document.getElementById('admin-catalog-grid').innerHTML = window.STATE.menu.map(m => `<div class="bg-black border border-white/10 rounded-2xl p-4 flex gap-4 items-center shadow-lg hover:border-papa-fire/50 transition"><img src="${m.img}" class="w-16 h-16 rounded-xl object-cover border border-white/10"><div class="flex-1 min-w-0"><p class="text-xs font-black text-white uppercase truncate">${m.title}</p><p class="text-[10px] text-papa-yellow font-black mt-1">$${m.price.toFixed(2)} <span class="text-zinc-500 font-medium">| ${m.cat}</span></p></div><div class="flex flex-col gap-2 shrink-0"><button onclick="window.openEditModal('${m.id}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2 rounded-lg transition"><i class="ph-bold ph-pencil"></i></button><button onclick="window.duplicateProduct('${m.id}')" class="bg-zinc-800 text-white hover:bg-zinc-700 p-2 rounded-lg transition"><i class="ph-bold ph-copy"></i></button></div></div>`).join('');
+        };
+
+        window.duplicateProduct = (id) => {
+            const orig = window.STATE.menu.find(m => m.id === id);
+            const dup = JSON.parse(JSON.stringify(orig)); 
+            dup.id = 'p' + Date.now(); dup.title += ' (Clon)';
+            window.STATE.menu.push(dup); window.secureSave(); window.showToast('Plato duplicado');
+        };
+
+        window.openEditModal = (id = null) => {
+            window.STATE.tempRecipe = [];
+            document.getElementById('recipe-ing-select').innerHTML = window.STATE.ingredients.map(i => `<option value="${i.id}">${i.name} (${i.unit})</option>`).join('');
+            
+            const imgPreview = document.getElementById('edit-img-preview');
+            if(id) {
+                const p = window.STATE.menu.find(x => x.id === id);
+                document.getElementById('edit-id').value = p.id;
+                document.getElementById('edit-title').value = p.title;
+                document.getElementById('edit-tag').value = p.tag || '';
+                document.getElementById('edit-cat').value = p.cat;
+                document.getElementById('edit-price').value = p.price;
+                document.getElementById('edit-desc').value = p.desc;
+                
+                imgPreview.src = p.img; imgPreview.dataset.src = p.img;
+                imgPreview.classList.remove('hidden');
+                window.STATE.tempRecipe = JSON.parse(JSON.stringify(p.recipe || []));
+            } else {
+                ['edit-id','edit-title','edit-tag','edit-cat','edit-price','edit-desc'].forEach(i => document.getElementById(i).value = '');
+                imgPreview.classList.add('hidden'); imgPreview.src = ''; imgPreview.dataset.src = '';
+            }
+            window.renderRecipeList(); window.openModal('editModal');
+        };
+
+        window.addRecipeRow = () => {
+            const id = document.getElementById('recipe-ing-select').value;
+            const qty = parseInt(document.getElementById('recipe-ing-qty').value);
+            if(id && qty > 0) {
+                const ex = window.STATE.tempRecipe.find(r => r.id === id);
+                if(ex) ex.qty += qty; else window.STATE.tempRecipe.push({id, qty});
+                window.renderRecipeList(); document.getElementById('recipe-ing-qty').value = '';
+            }
+        };
+
+        window.renderRecipeList = () => {
+            document.getElementById('recipe-list').innerHTML = window.STATE.tempRecipe.map((r, idx) => {
+                const ing = window.STATE.ingredients.find(i => i.id === r.id);
+                if(!ing) return '';
+                return `<div class="flex justify-between items-center bg-black border border-white/5 p-2 rounded text-[10px] font-bold text-zinc-300"><span><i class="ph-fill ph-arrow-right text-papa-fire"></i> ${ing.name}</span><span class="bg-zinc-800 px-2 py-0.5 rounded text-white">${r.qty} ${ing.unit} <button onclick="window.STATE.tempRecipe.splice(${idx},1); window.renderRecipeList();" class="text-red-500 ml-2 hover:scale-125 transition">X</button></span></div>`;
+            }).join('');
+        };
+
+        window.saveProduct = () => {
+            const title = window.sanitize(document.getElementById('edit-title').value);
+            if(!title) return window.showToast('El nombre es obligatorio', 'error');
+            
+            const previewSrc = document.getElementById('edit-img-preview').dataset.src;
+            const finalImg = previewSrc || 'https://placehold.co/600x400/222/FFF?text=Plato';
+
+            const p = {
+                id: document.getElementById('edit-id').value || 'p'+Date.now(),
+                title: title, tag: document.getElementById('edit-tag').value,
+                cat: window.sanitize(document.getElementById('edit-cat').value),
+                price: parseFloat(document.getElementById('edit-price').value || 0),
+                img: finalImg, desc: window.sanitize(document.getElementById('edit-desc').value),
+                recipe: window.STATE.tempRecipe
+            };
+            const idx = window.STATE.menu.findIndex(x => x.id === p.id);
+            if(idx > -1) window.STATE.menu[idx] = p; else window.STATE.menu.push(p);
+            
+            window.secureSave(); window.closeModal('editModal'); window.showToast('Plato guardado');
+        };
+
+        window.renderCaja = () => {
+            const c = window.STATE.caja || { isOpen: false, startAmt: 0, total: 0, moves: [] };
+            const moves = c.moves || [];
+            document.getElementById('caja-status').innerText = c.isOpen ? 'Caja Abierta y Operativa' : 'Caja Cerrada';
+            document.getElementById('caja-status').className = `text-xl font-bold ${c.isOpen ? 'text-green-500' : 'text-zinc-500'}`;
+            document.getElementById('btn-caja-action').innerText = c.isOpen ? 'Hacer Cierre de Caja' : 'Abrir Turno de Caja';
+            document.getElementById('btn-caja-action').className = `w-full font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition text-white ${c.isOpen ? 'bg-red-600 hover:bg-red-500' : 'bg-green-600 hover:bg-green-500'}`;
+            
+            document.getElementById('caja-total-calc').innerText = `$${(c.total || 0).toFixed(2)}`;
+            document.getElementById('caja-moves').innerHTML = moves.map(m => `<div class="flex justify-between items-center bg-zinc-900/50 p-2 rounded text-xs font-bold border border-white/5 ${m.type==='in'?'text-green-400':'text-red-400'}"><span class="truncate pr-2">${m.time} - ${m.desc}</span><span>${m.type==='in'?'+':'-'}$${m.amt.toFixed(2)}</span></div>`).join('');
+        };
+
+        window.toggleCaja = () => {
+            if(!window.STATE.caja.isOpen) {
+                const amt = parseFloat(document.getElementById('caja-monto').value || 0);
+                window.STATE.caja = { isOpen: true, startAmt: amt, total: amt, moves: [{type:'in', desc:'Apertura Inicial Turno', amt, time: new Date().toLocaleTimeString()}] };
+                window.showToast(`Turno Abierto con $${amt}`);
+            } else {
+                window.STATE.caja.isOpen = false;
+                window.showToast(`Cierre de Caja Exitoso. Total: $${window.STATE.caja.total}`);
+            }
+            window.secureSave();
+        };
+
+        window.calcularVuelto = () => {
+            const total = parseFloat(document.getElementById('calc-total').value || 0);
+            const pago = parseFloat(document.getElementById('calc-pago').value || 0);
+            const cambio = pago - total;
+            const cambioEl = document.getElementById('calc-cambio');
+            
+            if(total === 0) { cambioEl.innerText = '$0.00'; cambioEl.className = 'text-3xl font-black text-white relative z-10'; return; }
+            
+            if(cambio < 0 && pago > 0) {
+                cambioEl.innerText = 'Falta Dinero'; cambioEl.className = 'text-3xl font-black text-red-500 relative z-10 animate-pulse';
+            } else {
+                cambioEl.innerText = `$${Math.max(0, cambio).toFixed(2)}`; cambioEl.className = `text-4xl font-black relative z-10 ${cambio > 0 ? 'text-green-400' : 'text-white'}`;
+            }
+        };
+
+        window.registrarCobroCalculadora = () => {
+            if(!window.STATE.caja.isOpen) return window.showToast('Abre la caja primero', 'error');
+            const total = parseFloat(document.getElementById('calc-total').value || 0);
+            if(total <= 0) return window.showToast('Agrega un total a cobrar', 'error');
+            
+            window.STATE.caja.total += total; 
+            if (!window.STATE.caja.moves) window.STATE.caja.moves = [];
+            window.STATE.caja.moves.push({ type: 'in', desc: 'Cobro Manual Asistido', amt: total, time: new Date().toLocaleTimeString() });
+            window.secureSave();
+            
+            document.getElementById('calc-total').value = ''; document.getElementById('calc-pago').value = '';
+            window.calcularVuelto(); window.showToast('Ingreso Neto registrado en caja', 'success');
+            window.renderCaja(); // Actualizamos la interfaz de la caja inmediatamente
+        };
+
+        let calcInput = '';
+        window.stdCalc = (val) => {
+            const display = document.getElementById('std-calc-display');
+            if(val === 'C') { calcInput = ''; display.value = ''; }
+            else if(val === '=') { 
+                try { calcInput = Function('"use strict";return (' + calcInput + ')')().toString(); display.value = calcInput; } 
+                catch(e) { display.value = 'Error'; calcInput = ''; }
+            } else { if(/^[0-9+\-*/.]$/.test(val)) { calcInput += val; display.value = calcInput; } }
+        };
+
+        window.generateReport = () => {
+            const st = new Date(document.getElementById('rep-date-start').value || 0).getTime();
+            const en = new Date(document.getElementById('rep-date-end').value || Date.now()).getTime() + 86400000;
+            const res = window.STATE.orders.filter(o => o.timestamp >= st && o.timestamp <= en);
+            
+            let totalMoney = 0; const validOrders = res.filter(o => o.status !== 'Cancelada');
+            validOrders.forEach(o => totalMoney += o.total);
+
+            document.getElementById('rep-tot-orders').innerText = validOrders.length;
+            document.getElementById('rep-tot-money').innerText = `$${totalMoney.toFixed(2)}`;
+            document.getElementById('rep-tot-avg').innerText = validOrders.length ? `$${(totalMoney/validOrders.length).toFixed(2)}` : '$0.00';
+            
+            document.getElementById('print-date-range').innerText = `Periodo Consultado: ${new Date(st).toLocaleDateString()} al ${new Date(en-1).toLocaleDateString()}`;
+            document.getElementById('report-table').innerHTML = res.map(o => `<tr><td class="py-2 border-b border-white/5 print:border-gray-200">${o.id}</td><td class="py-2 border-b border-white/5 print:border-gray-200">${new Date(o.timestamp).toLocaleDateString()}</td><td class="py-2 border-b border-white/5 print:border-gray-200 truncate max-w-[150px]">${o.name}</td><td class="py-2 border-b border-white/5 print:border-gray-200 font-black ${o.status==='Cancelada'?'text-red-500':'text-zinc-400'} print:text-black">${o.status}</td><td class="py-2 border-b border-white/5 print:border-gray-200 text-right text-papa-yellow print:text-black">$${o.total.toFixed(2)}</td></tr>`).join('');
+            window.lastReportData = res;
+        };
+
+        window.exportCSV = () => {
+            if(!window.lastReportData || window.lastReportData.length === 0) return window.showToast('Genera un reporte primero', 'error');
+            const headers = "OrdenID,Fecha,Cliente,Tipo,Estado,Total_USD\n";
+            const rows = window.lastReportData.map(o => `${o.id},${new Date(o.timestamp).toLocaleDateString()},${o.name},${o.type},${o.status},${o.total}`).join('\n');
+            const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "ERP_Reporte.csv"; link.click();
+        };
+
+        window.uploadGalleryImage = (event) => {
+            window.processImageUpload(event, (dataUrl) => {
+                window.STATE.gallery.push(dataUrl);
+                window.secureSave(); window.showToast('Foto subida (Nube)');
+            });
+        };
+
+        window.renderGalleryAdmin = () => {
+            document.getElementById('admin-gallery-grid').innerHTML = window.STATE.gallery.map((url, idx) => `<div class="h-32 bg-black rounded-xl border border-white/10 overflow-hidden relative group shadow-lg"><img src="${url}" class="w-full h-full object-cover"><button onclick="window.STATE.gallery.splice(${idx},1); window.secureSave();" class="absolute inset-0 bg-red-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i class="ph-bold ph-trash text-3xl drop-shadow-md"></i></button></div>`).join('');
+        };
+
+        window.saveSettings = () => {
+            window.STATE.settings.apiKey = window.sanitize(document.getElementById('set-api-key').value);
+            window.STATE.settings.phone = window.sanitize(document.getElementById('set-phone').value);
+            window.STATE.settings.mapEmbed = document.getElementById('set-map-embed').value;
+            window.STATE.settings.mapLink = document.getElementById('set-map-link').value;
+            window.secureSave(); window.showToast('Ajustes en Nube Guardados');
+        };
+
+        let charts = {};
+        window.renderCharts = () => {
+            if(!window.Chart) return;
+            Chart.defaults.color = '#888'; Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+            if(charts.w) charts.w.destroy(); if(charts.t) charts.t.destroy(); if(charts.y) charts.y.destroy();
+            
+            charts.w = new Chart(document.getElementById('chart-sales-week'), { type: 'line', data: { labels: ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'], datasets: [{ label: 'Ingresos', data: [120, 190, 300, 250, 400, 500, 450], borderColor: '#FFB800', backgroundColor: 'rgba(255,184,0,0.1)', fill: true }] }});
+            charts.t = new Chart(document.getElementById('chart-top-products'), { type: 'bar', data: { labels: ['Trufada', 'Brisket', 'Volcán', 'Drink'], datasets: [{ label: 'Cant.', data: [45, 30, 25, 60], backgroundColor: 'rgba(255,61,0,0.7)', borderRadius: 4 }] }});
+            charts.y = new Chart(document.getElementById('chart-sales-year'), { type: 'bar', data: { labels: ['Ene','Feb','Mar','Abr','May'], datasets: [{ label: 'Crecimiento', data: [4000, 4500, 3800, 5200, 6000], backgroundColor: 'rgba(255,184,0,0.7)', borderRadius: 4 }] }});
+        };
+
+        window.sendChat = async () => {
+            const input = document.getElementById('chat-input');
+            const text = window.sanitize(input.value.trim());
+            const history = document.getElementById('chat-history');
+            if (!text) return;
+
+            history.innerHTML += `<div class="flex items-start gap-3 w-5/6 ml-auto justify-end"><div class="bg-white text-black font-bold text-xs p-3 rounded-2xl rounded-tr-none shadow-md">${text}</div></div>`;
+            input.value = ''; history.scrollTop = history.scrollHeight;
+            const typingId = 'typing-' + Date.now();
+            history.innerHTML += `<div id="${typingId}" class="flex items-start gap-3 w-5/6 mt-1"><div class="w-7 h-7 rounded-full bg-papa-fire flex items-center justify-center shrink-0"><i class="ph-fill ph-robot text-white text-xs"></i></div><div class="bg-zinc-900 text-zinc-400 text-xs py-2 px-4 rounded-2xl rounded-tl-none animate-pulse">...</div></div>`;
+            history.scrollTop = history.scrollHeight;
+
+            if (!window.STATE.settings.apiKey) {
+                document.getElementById(typingId).remove();
+                history.innerHTML += `<div class="text-red-500 text-[10px] pl-10 mt-1 font-bold">Admin: Agrega Clave API en Ajustes.</div>`; return;
+            }
+
+            try {
+                const menuContext = window.STATE.menu.map(m => {
+                    const ings = m.recipe ? m.recipe.map(r => { const i = window.STATE.ingredients.find(x=>x.id===r.id); return i ? i.name : ''; }).join(',') : '';
+                    return `- ${m.title} (Gasta: ${ings}). $${m.price}`;
+                }).join('\n');
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.STATE.settings.apiKey}`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text }] }], systemInstruction: { parts: [{ text: `Eres camarero de La Papa Caliente. Base de Platos:\n${menuContext}\nRegla: NO inventes platos. Sugiere solo lo de la base.` }] } })
+                });
+
+                document.getElementById(typingId).remove();
+                if (!res.ok) throw new Error();
+                const aiOutput = (await res.json()).candidates?.[0]?.content?.parts?.[0]?.text;
+                if (aiOutput) history.innerHTML += `<div class="flex items-start gap-3 w-5/6 mt-1"><div class="w-7 h-7 rounded-full bg-papa-fire flex items-center justify-center shrink-0 shadow-lg"><i class="ph-fill ph-robot text-white text-xs"></i></div><div class="bg-zinc-900 text-white text-xs p-3 rounded-2xl rounded-tl-none border border-white/5 shadow-md leading-relaxed whitespace-pre-line">${aiOutput.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div></div>`;
+            } catch (e) {
+                if (document.getElementById(typingId)) document.getElementById(typingId).remove();
+                history.innerHTML += `<div class="text-red-500 text-[10px] pl-10 mt-1 font-bold">Fallo en conexión IA.</div>`;
+            }
+            history.scrollTop = history.scrollHeight;
+        };
+
+        window.addEventListener('scroll', () => { document.querySelectorAll('.animate-on-scroll').forEach(el => { if (el.getBoundingClientRect().top < window.innerHeight - 40) el.classList.add('visible'); }); });
+
+        // Inicializar Sistema en la Nube
+        initCloudSystem();
+
+    </script>
+</body>
+</html>
