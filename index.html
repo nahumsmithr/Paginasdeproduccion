@@ -253,7 +253,8 @@
                 <span class="text-papa-fire font-bold tracking-widest uppercase text-xs">Experiencia Visual</span>
                 <h2 class="text-3xl font-extrabold uppercase mt-2">Nuestra <span class="text-papa-yellow">Galería</span></h2>
             </div>
-            <div id="public-gallery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 animate-on-scroll"></div>
+            <!-- Cambiamos las columnas para que las imágenes sean más grandes -->
+            <div id="public-gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-on-scroll"></div>
         </div>
     </section>
 
@@ -328,7 +329,7 @@
             <div class="text-center mb-6">
                 <div class="w-14 h-14 mx-auto bg-papa-fire/10 rounded-full flex items-center justify-center mb-3"><i class="ph-fill ph-shield-check text-2xl text-papa-fire"></i></div>
                 <h2 class="font-black text-xl uppercase tracking-tight">Acceso ERP</h2>
-                <p class="text-zinc-500 text-[10px] mt-1 uppercase font-bold tracking-widest">Admin: admin/1234 | Cocina: cocina/1234</p>
+                <p class="text-zinc-500 text-[10px] mt-1 uppercase font-bold tracking-widest">Panel Administrativo Privado</p>
             </div>
             <div class="space-y-4">
                 <input type="text" id="login-user" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl outline-none text-xs" placeholder="Usuario">
@@ -664,11 +665,16 @@
             </div>
             <div class="p-6 overflow-y-auto no-scrollbar flex-1 space-y-6">
                 <input type="hidden" id="edit-id">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-2"><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Nombre Comercial</label><input type="text" id="edit-title" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-xs font-bold outline-none focus:border-papa-fire"></div>
                     <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Etiqueta Especial</label>
                         <select id="edit-tag" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-xs font-bold outline-none focus:border-papa-fire">
                             <option value="">Normal (Sin etiqueta)</option><option value="Más Vendidos">🔥 Más Vendido</option><option value="Promociones">💰 Promoción</option><option value="Nuevos">✨ Nuevo</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Disponibilidad</label>
+                        <select id="edit-available" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-xs font-bold outline-none focus:border-papa-fire">
+                            <option value="true">Disponible</option><option value="false">Agotado</option>
                         </select>
                     </div>
                 </div>
@@ -699,6 +705,11 @@
                 <button onclick="window.saveProduct()" class="bg-papa-fire hover:bg-orange-600 text-white px-8 py-3 rounded-xl font-black uppercase text-xs shadow-lg shadow-papa-fire/20 transition">Guardar Plato en Menú</button>
             </div>
         </div>
+    </div>
+
+    <!-- Visor de Imágenes (Lightbox) para la Galería -->
+    <div id="lightbox-modal" class="modal-overlay fixed inset-0 z-[500] flex items-center justify-center bg-black/95 p-4 cursor-zoom-out" onclick="window.closeLightbox()">
+        <img id="lightbox-img" src="" class="max-w-full max-h-full object-contain transform scale-95 transition-transform duration-300 shadow-2xl rounded-lg">
     </div>
 
     <script type="module">
@@ -837,6 +848,17 @@
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
         window.cerrarMenuMovil = () => { document.getElementById('nav-links').classList.add('right-[-100%]'); document.getElementById('nav-links').classList.remove('right-0'); };
         
+        window.openLightbox = (url) => {
+            const img = document.getElementById('lightbox-img');
+            img.src = url;
+            document.getElementById('lightbox-modal').classList.add('active');
+            setTimeout(() => img.classList.replace('scale-95', 'scale-100'), 10);
+        };
+        window.closeLightbox = () => {
+            document.getElementById('lightbox-img').classList.replace('scale-100', 'scale-95');
+            document.getElementById('lightbox-modal').classList.remove('active');
+        };
+        
         // Sanidad de Datos Optimizado: Previene XSS sin arruinar textos normales (como el + del teléfono)
         window.sanitize = (str) => {
             if (!str) return '';
@@ -882,15 +904,18 @@
             if(window.STATE.settings.mapEmbed) document.getElementById('pub-map-embed').src = window.STATE.settings.mapEmbed;
             if(window.STATE.settings.mapLink) document.getElementById('pub-map-link').href = window.STATE.settings.mapLink;
 
-            document.getElementById('public-gallery-grid').innerHTML = window.STATE.gallery.map(url => `<div class="h-48 rounded-2xl overflow-hidden border border-white/10"><img src="${url}" class="w-full h-full object-cover hover:scale-110 transition-transform duration-500"></div>`).join('');
+            document.getElementById('public-gallery-grid').innerHTML = window.STATE.gallery.map(url => `<div class="h-64 md:h-80 rounded-2xl overflow-hidden border border-white/10 cursor-zoom-in shadow-lg"><img src="${url}" onclick="window.openLightbox('${url}')" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"></div>`).join('');
 
             const catGrid = document.getElementById('catalogo-grid');
             let items = window.STATE.menu;
             if (window.STATE.currentFilter !== 'all') items = items.filter(i => i.tag === window.STATE.currentFilter);
             
-            catGrid.innerHTML = items.map(item => `
-                <div class="glass-panel rounded-3xl overflow-hidden menu-card flex flex-col relative border-white/10 shadow-lg">
-                    ${item.tag ? `<span class="absolute top-3 left-3 bg-papa-fire text-white text-[9px] font-black uppercase px-2 py-1 rounded shadow-lg z-20">${item.tag}</span>` : ''}
+            catGrid.innerHTML = items.map(item => {
+                const isAvail = item.available !== false; // Si no existe, es true por defecto
+                return `
+                <div class="glass-panel rounded-3xl overflow-hidden menu-card flex flex-col relative border-white/10 shadow-lg ${!isAvail ? 'opacity-70 grayscale-[30%]' : ''}">
+                    ${!isAvail ? `<div class="absolute inset-0 bg-black/60 z-30 flex items-center justify-center backdrop-blur-[2px]"><span class="bg-red-600 text-white font-black text-2xl px-6 py-2 rounded-xl transform -rotate-12 border-2 border-white/20 shadow-2xl tracking-widest">AGOTADO</span></div>` : ''}
+                    ${item.tag && isAvail ? `<span class="absolute top-3 left-3 bg-papa-fire text-white text-[9px] font-black uppercase px-2 py-1 rounded shadow-lg z-20">${item.tag}</span>` : ''}
                     <div class="h-48 menu-img-wrap relative bg-[#111] overflow-hidden">
                         <img src="${item.img}" class="w-full h-full object-cover">
                         <div class="absolute bottom-3 right-3 bg-black/80 backdrop-blur text-papa-yellow font-black text-lg px-3 py-1 rounded-xl border border-white/10 z-20">$${parseFloat(item.price).toFixed(2)}</div>
@@ -898,12 +923,12 @@
                     <div class="p-5 flex flex-col flex-1">
                         <h3 class="text-base font-bold uppercase tracking-tight text-white mb-1">${item.title}</h3>
                         <p class="text-zinc-400 text-[10px] leading-relaxed mb-4 flex-1">${item.desc}</p>
-                        <button onclick="window.addToCart('${item.id}')" class="w-full bg-white/5 border border-white/10 hover:bg-papa-fire hover:border-papa-fire text-white font-black py-2.5 rounded-xl uppercase text-[10px] tracking-wider transition-all flex justify-center items-center gap-2">
-                            <i class="ph-bold ph-plus"></i> Ordenar
+                        <button onclick="${isAvail ? `window.addToCart('${item.id}')` : ''}" class="w-full ${isAvail ? 'bg-white/5 border border-white/10 hover:bg-papa-fire hover:border-papa-fire text-white' : 'bg-zinc-900 border border-white/5 text-zinc-600 cursor-not-allowed'} font-black py-2.5 rounded-xl uppercase text-[10px] tracking-wider transition-all flex justify-center items-center gap-2">
+                            ${isAvail ? '<i class="ph-bold ph-plus"></i> Ordenar' : '<i class="ph-bold ph-prohibit"></i> No Disponible'}
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         };
 
         window.setFilterType = (event, tag) => {
@@ -1007,8 +1032,9 @@
             const u = window.sanitize(document.getElementById('login-user').value);
             const p = document.getElementById('login-pass').value;
             
-            if(u === 'admin' && p === '1234') window.STATE.currentUser = 'admin';
-            else if(u === 'cocina' && p === '1234') window.STATE.currentUser = 'cocina';
+            // Nuevas credenciales oficiales dictadas
+            if(u === 'Papitacaliente' && p === '8494648650') window.STATE.currentUser = 'admin';
+            else if(u === 'Cocinapapitacaliente' && p === '11223344') window.STATE.currentUser = 'cocina';
             else return window.showToast('Credenciales Inválidas', 'error');
 
             window.closeModal('loginModal');
@@ -1120,7 +1146,23 @@
         };
 
         window.renderAdminCatalog = () => {
-            document.getElementById('admin-catalog-grid').innerHTML = window.STATE.menu.map(m => `<div class="bg-black border border-white/10 rounded-2xl p-4 flex gap-4 items-center shadow-lg hover:border-papa-fire/50 transition"><img src="${m.img}" class="w-16 h-16 rounded-xl object-cover border border-white/10"><div class="flex-1 min-w-0"><p class="text-xs font-black text-white uppercase truncate">${m.title}</p><p class="text-[10px] text-papa-yellow font-black mt-1">$${m.price.toFixed(2)} <span class="text-zinc-500 font-medium">| ${m.cat}</span></p></div><div class="flex flex-col gap-2 shrink-0"><button onclick="window.openEditModal('${m.id}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2 rounded-lg transition"><i class="ph-bold ph-pencil"></i></button><button onclick="window.duplicateProduct('${m.id}')" class="bg-zinc-800 text-white hover:bg-zinc-700 p-2 rounded-lg transition"><i class="ph-bold ph-copy"></i></button></div></div>`).join('');
+            document.getElementById('admin-catalog-grid').innerHTML = window.STATE.menu.map(m => {
+                const isAvail = m.available !== false;
+                return `<div class="bg-black border border-white/10 rounded-2xl p-4 flex gap-4 items-center shadow-lg hover:border-papa-fire/50 transition">
+                <img src="${m.img}" class="w-16 h-16 rounded-xl object-cover border border-white/10 ${!isAvail ? 'grayscale opacity-50' : ''}">
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-black text-white uppercase truncate">${m.title}</p>
+                    <p class="text-[10px] text-papa-yellow font-black mt-1">$${m.price.toFixed(2)} <span class="text-zinc-500 font-medium">| ${m.cat}</span></p>
+                    <div class="mt-1">${isAvail ? '<span class="bg-green-500/20 text-green-400 text-[8px] px-2 py-0.5 rounded font-bold uppercase">Disponible</span>' : '<span class="bg-red-500/20 text-red-400 text-[8px] px-2 py-0.5 rounded font-bold uppercase">Agotado</span>'}</div>
+                </div>
+                <div class="flex flex-col gap-2 shrink-0">
+                    <button onclick="window.openEditModal('${m.id}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2 rounded-lg transition"><i class="ph-bold ph-pencil"></i></button>
+                    <div class="flex gap-2">
+                        <button onclick="window.duplicateProduct('${m.id}')" class="bg-zinc-800 text-white hover:bg-zinc-700 p-2 rounded-lg transition"><i class="ph-bold ph-copy"></i></button>
+                        <button onclick="window.deleteProduct('${m.id}')" class="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white p-2 rounded-lg transition"><i class="ph-bold ph-trash"></i></button>
+                    </div>
+                </div>
+            </div>`}).join('');
         };
 
         window.duplicateProduct = (id) => {
@@ -1128,6 +1170,22 @@
             const dup = JSON.parse(JSON.stringify(orig)); 
             dup.id = 'p' + Date.now(); dup.title += ' (Clon)';
             window.STATE.menu.push(dup); window.secureSave(); window.showToast('Plato duplicado');
+        };
+
+        window.deleteProduct = async (id) => {
+            const prod = window.STATE.menu.find(m => m.id === id);
+            const { isConfirmed } = await Swal.fire({
+                title: '¿Eliminar Plato?',
+                text: `Se borrará "${prod.title}" del menú permanentemente. Esta acción no se puede deshacer.`,
+                icon: 'warning',
+                background: '#111', color: '#fff',
+                showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
+            });
+            if(isConfirmed) {
+                window.STATE.menu = window.STATE.menu.filter(m => m.id !== id);
+                window.secureSave();
+                window.showToast('Plato eliminado de la base de datos');
+            }
         };
 
         window.openEditModal = (id = null) => {
@@ -1142,6 +1200,7 @@
                 document.getElementById('edit-tag').value = p.tag || '';
                 document.getElementById('edit-cat').value = p.cat;
                 document.getElementById('edit-price').value = p.price;
+                document.getElementById('edit-available').value = p.available !== false ? "true" : "false";
                 document.getElementById('edit-desc').value = p.desc;
                 
                 imgPreview.src = p.img; imgPreview.dataset.src = p.img;
@@ -1149,6 +1208,7 @@
                 window.STATE.tempRecipe = JSON.parse(JSON.stringify(p.recipe || []));
             } else {
                 ['edit-id','edit-title','edit-tag','edit-cat','edit-price','edit-desc'].forEach(i => document.getElementById(i).value = '');
+                document.getElementById('edit-available').value = "true";
                 imgPreview.classList.add('hidden'); imgPreview.src = ''; imgPreview.dataset.src = '';
             }
             window.renderRecipeList(); window.openModal('editModal');
@@ -1182,6 +1242,7 @@
             const p = {
                 id: document.getElementById('edit-id').value || 'p'+Date.now(),
                 title: title, tag: document.getElementById('edit-tag').value,
+                available: document.getElementById('edit-available').value === 'true',
                 cat: window.sanitize(document.getElementById('edit-cat').value),
                 price: parseFloat(document.getElementById('edit-price').value || 0),
                 img: finalImg, desc: window.sanitize(document.getElementById('edit-desc').value),
