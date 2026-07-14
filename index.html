@@ -79,27 +79,21 @@
         .kds-card.time-danger { border-top: 4px solid #ef4444; animation: pulse-border 2s infinite; }
         @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
-        /* Reparación y Modo Oscuro para el Ícono del Calendario */
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; opacity: 0.8; transition: opacity 0.2s; }
         input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
         input[type="date"] { color-scheme: dark; }
 
         @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; }
-            .no-print { display: none !important; }
-            .admin-panel-tab:not(.active-print) { display: none !important; }
-            canvas { display: none !important; }
+            body > *:not(#printable-invoice) { display: none !important; }
+            #printable-invoice { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; z-index: 999999; }
+            #printable-invoice * { visibility: visible !important; color: black !important; }
         }
     </style>
 </head>
 <body class="antialiased selection:bg-papa-fire selection:text-white relative">
 
     <div class="mobile-safe-bg"></div>
-
     <audio id="kds-alert" src="data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
-
     <div id="toast-container" class="fixed top-24 right-4 sm:right-6 z-[9999] flex flex-col gap-3 pointer-events-none w-[calc(100vw-2rem)] sm:w-auto"></div>
 
     <header id="main-header" class="fixed top-0 w-full z-[80] transition-[top] duration-300 ease-in-out">
@@ -359,7 +353,6 @@
         </div>
     </div>
 
-    <!-- TICKET PROFESIONAL / FACTURA -->
     <div id="ticketModal" class="modal-overlay fixed inset-0 z-[300] flex items-center justify-center p-4">
         <div class="modal-content w-full max-w-sm flex flex-col items-center">
             <div class="ticket-bg w-full p-6 text-black font-ticket shadow-2xl rounded-b-sm text-sm">
@@ -475,13 +468,13 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 no-print">
-                        <div class="bg-black border border-white/10 p-5 rounded-2xl w-full flex flex-col">
+                        <div class="bg-black border border-white/10 p-5 rounded-2xl w-full flex flex-col min-w-0">
                             <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4 shrink-0">Ingresos Últimos 7 Días</h3>
                             <div class="relative w-full h-48 sm:h-64">
                                 <canvas id="chart-sales-week"></canvas>
                             </div>
                         </div>
-                        <div class="bg-black border border-white/10 p-5 rounded-2xl w-full flex flex-col">
+                        <div class="bg-black border border-white/10 p-5 rounded-2xl w-full flex flex-col min-w-0">
                             <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4 shrink-0">Productos Más Vendidos</h3>
                             <div class="relative w-full h-48 sm:h-64">
                                 <canvas id="chart-top-products"></canvas>
@@ -493,13 +486,13 @@
                 <div id="panel-admin-stats" class="admin-panel-tab hidden space-y-6 no-print">
                     <h2 class="text-xl sm:text-2xl font-black uppercase text-white">Estadísticas Detalladas</h2>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="bg-black border border-white/10 p-5 rounded-2xl lg:col-span-2 w-full flex flex-col">
+                        <div class="bg-black border border-white/10 p-5 rounded-2xl lg:col-span-2 w-full flex flex-col min-w-0">
                             <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4 shrink-0">Ventas Mensuales (Año)</h3>
                             <div class="relative w-full h-48 sm:h-64">
                                 <canvas id="chart-sales-year"></canvas>
                             </div>
                         </div>
-                        <div class="bg-black border border-white/10 p-5 rounded-2xl w-full flex flex-col">
+                        <div class="bg-black border border-white/10 p-5 rounded-2xl w-full flex flex-col min-w-0">
                             <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4 shrink-0">Métodos de Pago</h3>
                             <div class="relative w-full h-48 sm:h-64">
                                 <canvas id="chart-payments"></canvas>
@@ -541,8 +534,8 @@
                     <div class="flex justify-between items-center shrink-0">
                         <h2 class="text-xl sm:text-2xl font-black uppercase text-white"><i class="ph-bold ph-receipt text-papa-yellow"></i> Gestor de Órdenes Históricas</h2>
                     </div>
-                    <div class="bg-black border border-white/10 rounded-2xl p-4 sm:p-6 flex-1 flex flex-col min-h-0">
-                        <div class="w-full overflow-x-auto flex-1 no-scrollbar">
+                    <div class="bg-black border border-white/10 rounded-2xl p-4 sm:p-6 flex-1 flex flex-col min-h-0 w-full overflow-hidden">
+                        <div class="w-full overflow-x-auto flex-1 no-scrollbar pb-4">
                             <table class="w-full min-w-[600px] text-left text-xs">
                                 <thead class="text-zinc-500 uppercase border-b border-white/10">
                                     <tr><th class="pb-3">ID Orden</th><th class="pb-3">Fecha y Hora</th><th class="pb-3">Cliente / Detalle</th><th class="pb-3">Total</th><th class="pb-3">Estado</th><th class="pb-3 text-right">Modificar Estado</th></tr>
@@ -557,7 +550,6 @@
                     <h2 class="text-xl sm:text-2xl font-black uppercase text-white">Control de Caja, Mesas y Pagos</h2>
                     
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Cierre de Caja -->
                         <div class="bg-black border border-white/10 p-6 rounded-2xl space-y-4">
                             <h3 class="text-sm font-black uppercase text-papa-fire">Estado del Turno</h3>
                             <div id="caja-status" class="text-xl font-bold text-zinc-400">Caja Cerrada</div>
@@ -565,7 +557,6 @@
                             <button id="btn-caja-action" onclick="window.toggleCaja()" class="w-full bg-green-600 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform hover:scale-[1.02]">Abrir Caja</button>
                         </div>
                         
-                        <!-- Historial Caja -->
                         <div class="bg-black border border-white/10 p-6 rounded-2xl lg:col-span-2 flex flex-col">
                             <h3 class="text-sm font-black uppercase text-white mb-4">Movimientos de Sesión</h3>
                             <div class="flex-1 overflow-y-auto no-scrollbar space-y-2 border-t border-b border-white/10 py-2 min-h-[150px]" id="caja-moves"></div>
@@ -575,7 +566,6 @@
                             </div>
                         </div>
 
-                        <!-- 1. Calculadora Estándar -->
                         <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col">
                             <h3 class="text-sm font-black uppercase text-white mb-4"><i class="ph-bold ph-calculator text-blue-400"></i> Calculadora</h3>
                             <input type="text" id="std-calc-display" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-ticket text-right mb-4 outline-none" readonly>
@@ -587,7 +577,6 @@
                             </div>
                         </div>
 
-                        <!-- 2. Asistente Cobro Rápido (Lógica Real) -->
                         <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col relative overflow-hidden">
                             <h3 class="text-sm font-black uppercase text-white mb-4"><i class="ph-bold ph-coins text-papa-yellow"></i> Asistente de Cobro Rápido</h3>
                             <div class="space-y-4 z-10 relative">
@@ -603,7 +592,6 @@
                             <p class="text-[9px] text-zinc-500 mt-2 text-center relative z-10">* Al registrar, el sistema separa la ganancia del vuelto automáticamente.</p>
                         </div>
 
-                        <!-- 3. Calculadora Divisor de Cuentas (Split Bill) -->
                         <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col">
                             <h3 class="text-sm font-black uppercase text-white mb-4"><i class="ph-bold ph-users text-green-400"></i> Dividir Cuenta en Mesa</h3>
                             <div class="space-y-4">
@@ -636,7 +624,7 @@
                         </div>
                         <button onclick="window.openIngModal()" class="bg-papa-fire hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase shadow-[0_0_15px_rgba(255,61,0,0.4)] transition shrink-0 ml-2"><i class="ph-bold ph-plus"></i> Nuevo Insumo</button>
                     </div>
-                    <div class="bg-black border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col max-h-[600px] overflow-hidden">
+                    <div class="bg-black border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col max-h-[600px] overflow-hidden w-full">
                         <div class="flex justify-between items-center mb-4 pb-4 border-b border-white/5">
                             <span class="text-xs font-bold uppercase text-zinc-400">Costo Total del Inventario:</span>
                             <span class="text-xl sm:text-2xl font-black text-green-400" id="ing-total-valuation">$0.00</span>
@@ -720,7 +708,7 @@
                             <label class="block text-[10px] font-bold text-zinc-400 uppercase">Logo Principal</label>
                             <div class="flex items-center gap-4">
                                 <img id="adm-preview-logo" src="https://placehold.co/100x100/FF3D00/FFF?text=PC" class="w-16 h-16 rounded-full object-cover border border-white/20">
-                                <label class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase cursor-pointer transition text-center">Subir Logo <input type="file" accept="image/*" class="hidden" onchange="window.processImageUpload(event, (url) => { document.getElementById('adm-preview-logo').src = url; window.STATE.settings.logo = url; window.secureSave(); window.renderStorefront(); })"></label>
+                                <label class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase cursor-pointer transition text-center">Subir Logo <input type="file" accept="image/*" class="hidden" onchange="window.processImageUpload(event, (url) => { document.getElementById('adm-preview-logo').src = url; window.STATE.settings.logo = url; window.secureSave(); window.renderStorefront(); window.showToast('Logo Actualizado'); })"></label>
                             </div>
                         </div>
                         
@@ -728,7 +716,7 @@
                             <label class="block text-[10px] font-bold text-zinc-400 uppercase">Fondo de Portada (Hero)</label>
                             <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                                 <img id="adm-preview-cover" src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=200&auto=format&fit=crop" class="w-24 h-16 rounded-lg object-cover border border-white/20">
-                                <label class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase cursor-pointer transition text-center w-full sm:w-auto">Subir Portada <input type="file" accept="image/*" class="hidden" onchange="window.processImageUpload(event, (url) => { document.getElementById('adm-preview-cover').src = url; window.STATE.settings.cover = url; window.secureSave(); window.renderStorefront(); })"></label>
+                                <label class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase cursor-pointer transition text-center w-full sm:w-auto">Subir Portada <input type="file" accept="image/*" class="hidden" onchange="window.processImageUpload(event, (url) => { document.getElementById('adm-preview-cover').src = url; window.STATE.settings.cover = url; window.secureSave(); window.renderStorefront(); window.showToast('Portada Actualizada'); })"></label>
                             </div>
                         </div>
 
@@ -766,7 +754,6 @@
                         </div>
                     </div>
                 </div>
-
             </main>
         </div>
     </div>
@@ -824,7 +811,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBmNIL7yk48zqe6Hdk__eG48qwuj3SPdtE",
@@ -833,12 +819,11 @@
             projectId: "lapapacaliente",
             storageBucket: "lapapacaliente.firebasestorage.app",
             messagingSenderId: "259622247837",
-            appId: "1:259622247837:web:ad1b49c5f35aef988ee374",
-            measurementId: "G-D37V8Z3W13"
+            appId: "1:259622247837:web:ad1b49c5f35aef988ee374"
         };
         
         const initialMenu = [
-            { id: 'p1', title: 'La Clásica Trufada', desc: 'Papa gigante con crema agria, cebollín y tocino crujiente.', price: 12.00, cat: 'Papas Premium', tag: 'Más Vendidos', img: 'https://images.unsplash.com/photo-1596450514735-11003b57edec?auto=format&fit=crop&w=600&q=80', recipe: [{id: 'i1', qty: 1}, {id: 'i3', qty: 50}] }
+            { id: 'p1', title: 'La Clásica Trufada', desc: 'Papa gigante con crema agria, cebollín y tocino crujiente.', price: 12.00, cat: 'Papas Premium', tag: 'Más Vendidos', img: 'https://images.unsplash.com/photo-1596450514735-11003b57edec?auto=format&fit=crop&w=600&q=80', available: true, recipe: [{id: 'i1', qty: 1}, {id: 'i3', qty: 50}] }
         ];
         const initialIngredients = [
             { id: 'i1', name: 'Papa Gigante', unit: 'uds', stock: 100, min: 20, cost: 0.50 },
@@ -851,13 +836,12 @@
             settings: { 
                 apiKey: '', phone: '+18095550000', mapEmbed: '', mapLink: '',
                 logo: 'https://placehold.co/100x100/FF3D00/FFF?text=PC', cover: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920&auto=format&fit=crop',
-                banks: [],
-                customBasePrice: 6.00, customExtraPrice: 1.50
+                banks: [], customBasePrice: 6.00, customExtraPrice: 1.50, nos1: '', nos2: '', nos3: ''
             },
             cart: [], currentUser: null, currentFilter: 'all', tempRecipe: []
         };
 
-        let app, db, analytics;
+        let app, db;
         let isCloudSyncing = false; 
 
         function loadLocalData() {
@@ -882,7 +866,6 @@
             try {
                 app = initializeApp(firebaseConfig);
                 db = getDatabase(app);
-                try { analytics = getAnalytics(app); } catch(e){} 
 
                 const dbRef = ref(db, 'lapapacaliente/erp_state');
                 
@@ -1003,6 +986,26 @@
             }
         }, 3500);
 
+        window.processImageUpload = (event, callback) => {
+            const file = event.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600; 
+                    let scaleSize = MAX_WIDTH / img.width;
+                    if(scaleSize > 1) scaleSize = 1;
+                    canvas.width = img.width * scaleSize; canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    callback(canvas.toDataURL('image/jpeg', 0.6));
+                }
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
         window.customPapaData = { basePrice: 6.00, extraPrice: 1.50, selected: {} };
         
         window.openCustomPapaModal = () => {
@@ -1087,26 +1090,6 @@
         window.sanitize = (str) => {
             if (!str) return '';
             return str.toString().replace(/[<>]/g, (c) => ({'<':'&lt;','>':'&gt;'}[c]));
-        };
-
-        window.processImageUpload = (event, callback) => {
-            const file = event.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; 
-                    let scaleSize = MAX_WIDTH / img.width;
-                    if(scaleSize > 1) scaleSize = 1;
-                    canvas.width = img.width * scaleSize; canvas.height = img.height * scaleSize;
-                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    callback(canvas.toDataURL('image/jpeg', 0.6));
-                }
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
         };
 
         window.renderApp = () => {
@@ -1317,7 +1300,12 @@
             window.STATE.cart = []; window.updateCartUI(); window.toggleCheckoutView();
             document.getElementById('order-name').value = ''; document.getElementById('order-table').value = ''; document.getElementById('order-address').value = '';
             window.showToast('¡Pedido enviado a cocina!', 'success');
-            try { document.getElementById('kds-alert').play(); } catch(e){}
+            try { 
+                const playPromise = document.getElementById('kds-alert').play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => { console.log("Audio play prevented", error); });
+                }
+            } catch(e){}
         };
 
         window.handleLogin = () => {
@@ -1620,7 +1608,7 @@
             const idx = window.STATE.menu.findIndex(x => x.id === p.id);
             if(idx > -1) window.STATE.menu[idx] = p; else window.STATE.menu.push(p);
             
-            window.secureSave(); window.closeModal('editModal'); window.renderAdminCatalog(); window.showToast('Plato guardado');
+            window.secureSave(); window.closeModal('editModal'); window.renderAdminCatalog(); window.renderStorefront(); window.showToast('Plato guardado');
         };
 
         window.renderCaja = () => {
@@ -1653,7 +1641,7 @@
             const cambio = pago - total;
             const cambioEl = document.getElementById('calc-cambio');
             
-            if(total === 0) { cambioEl.innerText = '$0.00'; cambioEl.className = 'text-3xl font-black text-white relative z-10'; return; }
+            if(total === 0) { cambioEl.innerText = '$0.00'; cambioEl.className = 'text-4xl font-black text-white relative z-10'; return; }
             if(cambio < 0 && pago > 0) { cambioEl.innerText = 'Falta Dinero'; cambioEl.className = 'text-3xl font-black text-red-500 relative z-10 animate-pulse'; } 
             else { cambioEl.innerText = `$${Math.max(0, cambio).toFixed(2)}`; cambioEl.className = `text-4xl font-black relative z-10 ${cambio > 0 ? 'text-green-400' : 'text-white'}`; }
         };
@@ -1736,17 +1724,11 @@
                 </tr>
             `).join('');
 
-            // Creación dinámica e inteligente del contenedor de impresión
             let printDiv = document.getElementById('printable-invoice');
             if (!printDiv) {
                 printDiv = document.createElement('div');
                 printDiv.id = 'printable-invoice';
                 document.body.appendChild(printDiv);
-                
-                // Inyectamos el CSS para forzar que solo se imprima esto en fondo blanco
-                const style = document.createElement('style');
-                style.innerHTML = '@media print { body > *:not(#printable-invoice) { display: none !important; } #printable-invoice { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; z-index: 999999; } #printable-invoice * { visibility: visible !important; color: black !important; } }';
-                document.head.appendChild(style);
             }
             
             printDiv.style.display = 'block';
@@ -1792,14 +1774,8 @@
                 </div>
             `;
 
-            // Timeout para asegurar que la factura se "dibuje" antes de abrir la ventana de imprimir
             setTimeout(() => {
-                try {
-                    window.print();
-                } catch(e) {
-                    window.showToast('Tu navegador ha bloqueado la impresión', 'error');
-                }
-                // Ocultar de nuevo para no ensuciar la vista del ERP
+                try { window.print(); } catch(e) { window.showToast('Tu navegador ha bloqueado la impresión', 'error'); }
                 printDiv.style.display = 'none';
             }, 300);
         };
@@ -1831,7 +1807,7 @@
 
         window.uploadGalleryImage = (event) => {
             window.processImageUpload(event, (dataUrl) => {
-                window.STATE.gallery.push(dataUrl); window.secureSave(); window.renderGalleryAdmin(); window.showToast('Foto subida (Nube)');
+                window.STATE.gallery.push(dataUrl); window.secureSave(); window.renderGalleryAdmin(); window.renderStorefront(); window.showToast('Foto subida (Nube)');
             });
         };
 
@@ -1847,7 +1823,7 @@
             window.STATE.settings.customBasePrice = parseFloat(document.getElementById('set-base-price').value) || 6.00;
             window.STATE.settings.customExtraPrice = parseFloat(document.getElementById('set-extra-price').value) || 1.50;
             
-            window.secureSave(); window.renderStorefront(); window.showToast('Ajustes Guardados');
+            window.secureSave(); window.renderStorefront(); window.showToast('Ajustes Guardados Permanentemente');
         };
 
         let charts = {};
