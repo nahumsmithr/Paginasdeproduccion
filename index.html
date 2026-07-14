@@ -340,7 +340,7 @@
                     <div id="visual-builder-stack" class="relative z-10 flex flex-wrap justify-center gap-1 p-4 w-full h-full content-center"></div>
                 </div>
 
-                <p class="text-xs text-zinc-400 font-bold mb-4 uppercase tracking-wider text-center">Base de Papa ($6.00) + Tus ingredientes ($1.50 c/u)</p>
+                <p id="custom-papa-pricing-text" class="text-xs text-zinc-400 font-bold mb-4 uppercase tracking-wider text-center">Base de Papa ($6.00) + Tus ingredientes ($1.50 c/u)</p>
                 <div id="custom-papa-ings" class="space-y-3"></div>
             </div>
             
@@ -517,7 +517,6 @@
                     </div>
                 </div>
 
-                <!-- NUEVO HISTORIAL DE ÓRDENES -->
                 <div id="panel-admin-orders" class="admin-panel-tab hidden flex flex-col h-full space-y-4 no-print">
                     <div class="flex justify-between items-center shrink-0">
                         <h2 class="text-2xl font-black uppercase text-white"><i class="ph-bold ph-receipt text-papa-yellow"></i> Gestor de Órdenes Históricas</h2>
@@ -535,13 +534,17 @@
 
                 <div id="panel-admin-pos" class="admin-panel-tab hidden space-y-6 no-print">
                     <h2 class="text-2xl font-black uppercase text-white">Control de Caja, Mesas y Pagos</h2>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Cierre de Caja -->
                         <div class="bg-black border border-white/10 p-6 rounded-2xl space-y-4">
                             <h3 class="text-sm font-black uppercase text-papa-fire">Estado del Turno</h3>
                             <div id="caja-status" class="text-xl font-bold text-zinc-400">Caja Cerrada</div>
                             <input type="number" id="caja-monto" placeholder="Monto Inicial en Efectivo ($)" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-sm outline-none focus:border-papa-fire transition">
-                            <button id="btn-caja-action" onclick="window.toggleCaja()" class="w-full bg-green-600 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform">Abrir Caja</button>
+                            <button id="btn-caja-action" onclick="window.toggleCaja()" class="w-full bg-green-600 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform hover:scale-[1.02]">Abrir Caja</button>
                         </div>
+                        
+                        <!-- Historial Caja -->
                         <div class="bg-black border border-white/10 p-6 rounded-2xl md:col-span-2 flex flex-col">
                             <h3 class="text-sm font-black uppercase text-white mb-4">Movimientos de Sesión</h3>
                             <div class="flex-1 overflow-y-auto no-scrollbar space-y-2 border-t border-b border-white/10 py-2 min-h-[150px]" id="caja-moves"></div>
@@ -550,222 +553,194 @@
                                 <span id="caja-total-calc" class="text-papa-yellow text-2xl">$0.00</span>
                             </div>
                         </div>
-                        
-                        <div class="bg-black border border-white/10 p-6 rounded-2xl md:col-span-3 mt-2 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div>
-                                <h3 class="text-sm font-black uppercase text-papa-yellow mb-4"><i class="ph-fill ph-math-operations"></i> Calculadora Estándar</h3>
-                                <div class="bg-zinc-950 p-4 rounded-xl border border-white/5 w-full">
-                                    <input type="text" id="std-calc-display" class="w-full bg-black text-right text-2xl font-black text-white p-3 rounded-lg mb-4 border border-white/10 outline-none" disabled placeholder="0">
-                                    <div class="grid grid-cols-4 gap-2">
-                                        <button onclick="window.stdCalc('7')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">7</button>
-                                        <button onclick="window.stdCalc('8')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">8</button>
-                                        <button onclick="window.stdCalc('9')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">9</button>
-                                        <button onclick="window.stdCalc('/')" class="bg-papa-fire hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">/</button>
-                                        <button onclick="window.stdCalc('4')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">4</button>
-                                        <button onclick="window.stdCalc('5')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">5</button>
-                                        <button onclick="window.stdCalc('6')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">6</button>
-                                        <button onclick="window.stdCalc('*')" class="bg-papa-fire hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">x</button>
-                                        <button onclick="window.stdCalc('1')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">1</button>
-                                        <button onclick="window.stdCalc('2')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">2</button>
-                                        <button onclick="window.stdCalc('3')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">3</button>
-                                        <button onclick="window.stdCalc('-')" class="bg-papa-fire hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">-</button>
-                                        <button onclick="window.stdCalc('C')" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg transition">C</button>
-                                        <button onclick="window.stdCalc('0')" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 rounded-lg transition">0</button>
-                                        <button onclick="window.stdCalc('=')" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition">=</button>
-                                        <button onclick="window.stdCalc('+')" class="bg-papa-fire hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition">+</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h3 class="text-sm font-black uppercase text-papa-fire mb-4"><i class="ph-fill ph-cash-register"></i> Asistente de Vueltos</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Costo Total del Pedido ($)</label>
-                                        <input type="number" id="calc-total" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black outline-none focus:border-papa-fire" oninput="window.calcularVuelto()" placeholder="Ej: 1500">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Efectivo Recibido (Billete)</label>
-                                        <input type="number" id="calc-pago" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black text-green-400 outline-none focus:border-green-500" oninput="window.calcularVuelto()" placeholder="Ej: 2000">
-                                    </div>
-                                    <div class="flex justify-between items-center bg-zinc-950 border border-white/5 rounded-xl p-4 shadow-inner">
-                                        <span class="text-xs font-bold text-zinc-500 uppercase">Cambio a dar:</span>
-                                        <span id="calc-cambio" class="text-3xl font-black text-white">$0.00</span>
-                                    </div>
-                                    <button onclick="window.registrarCobroCalculadora()" class="w-full bg-papa-fire hover:bg-orange-600 text-white font-black py-4 rounded-xl uppercase text-xs shadow-[0_0_15px_rgba(255,61,0,0.4)] transition-transform">Sumar Venta a la Caja Fuerte</button>
-                                    <p class="text-[9px] text-zinc-500 text-center font-bold px-4">Solo guarda el <span class="text-white font-black">Costo Total del Pedido</span> en caja, el vuelto no se descuenta.</p>
-                                </div>
-                            </div>
 
-                            <div>
-                                <h3 class="text-sm font-black uppercase text-blue-400 mb-4"><i class="ph-fill ph-users"></i> Dividir Cuenta de Mesa</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Monto Total de la Mesa ($)</label>
-                                        <input type="number" id="split-total" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black outline-none focus:border-blue-500" oninput="window.calcSplitBill()" placeholder="Ej: 3000">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">¿Entre cuántas personas?</label>
-                                        <div class="flex items-center gap-2">
-                                            <input type="number" id="split-people" value="2" min="1" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black text-center outline-none focus:border-blue-500" oninput="window.calcSplitBill()">
-                                            <div class="flex flex-col gap-1">
-                                                <button onclick="document.getElementById('split-people').stepUp(); window.calcSplitBill();" class="bg-zinc-800 px-3 py-1 rounded text-white font-bold hover:bg-zinc-700">+</button>
-                                                <button onclick="document.getElementById('split-people').stepDown(); window.calcSplitBill();" class="bg-zinc-800 px-3 py-1 rounded text-white font-bold hover:bg-zinc-700">-</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex justify-between items-center bg-zinc-950 border border-blue-500/20 rounded-xl p-4 shadow-inner">
-                                        <span class="text-xs font-bold text-blue-400 uppercase">Monto Por Persona:</span>
-                                        <span id="split-result" class="text-3xl font-black text-white">$1500.00</span>
-                                    </div>
-                                </div>
+                        <!-- 1. Calculadora Estándar -->
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col">
+                            <h3 class="text-sm font-black uppercase text-white mb-4"><i class="ph-bold ph-calculator text-blue-400"></i> Calculadora</h3>
+                            <input type="text" id="std-calc-display" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-ticket text-right mb-4 outline-none" readonly>
+                            <div class="grid grid-cols-4 gap-2 flex-1">
+                                <button onclick="window.stdCalc('7')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">7</button><button onclick="window.stdCalc('8')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">8</button><button onclick="window.stdCalc('9')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">9</button><button onclick="window.stdCalc('/')" class="bg-papa-fire text-white font-bold rounded-lg hover:bg-orange-500">/</button>
+                                <button onclick="window.stdCalc('4')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">4</button><button onclick="window.stdCalc('5')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">5</button><button onclick="window.stdCalc('6')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">6</button><button onclick="window.stdCalc('*')" class="bg-papa-fire text-white font-bold rounded-lg hover:bg-orange-500">*</button>
+                                <button onclick="window.stdCalc('1')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">1</button><button onclick="window.stdCalc('2')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">2</button><button onclick="window.stdCalc('3')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">3</button><button onclick="window.stdCalc('-')" class="bg-papa-fire text-white font-bold rounded-lg hover:bg-orange-500">-</button>
+                                <button onclick="window.stdCalc('C')" class="bg-red-600 text-white font-bold rounded-lg hover:bg-red-500">C</button><button onclick="window.stdCalc('0')" class="bg-zinc-800 text-white font-bold rounded-lg hover:bg-zinc-700">0</button><button onclick="window.stdCalc('=')" class="bg-green-600 text-white font-bold rounded-lg hover:bg-green-500">=</button><button onclick="window.stdCalc('+')" class="bg-papa-fire text-white font-bold rounded-lg hover:bg-orange-500">+</button>
                             </div>
                         </div>
+
+                        <!-- 2. Asistente Cobro Rápido (Lógica Real) -->
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col relative overflow-hidden">
+                            <h3 class="text-sm font-black uppercase text-white mb-4"><i class="ph-bold ph-coins text-papa-yellow"></i> Asistente de Cobro Rápido</h3>
+                            <div class="space-y-4 z-10 relative">
+                                <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Monto Total a Cobrar ($)</label><input type="number" id="calc-total" oninput="window.calcularVuelto()" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-lg font-black outline-none focus:border-papa-fire transition"></div>
+                                <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">El Cliente Paga Con ($)</label><input type="number" id="calc-pago" oninput="window.calcularVuelto()" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-lg font-black outline-none focus:border-papa-fire transition"></div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-white/10 flex flex-col items-center justify-center relative flex-1">
+                                <div class="absolute inset-0 bg-papa-fire/10 rounded-xl blur-md"></div>
+                                <span class="text-[10px] font-black uppercase text-zinc-400 mb-1 z-10">Vuelto a entregar al cliente:</span>
+                                <span id="calc-cambio" class="text-4xl font-black text-white relative z-10">$0.00</span>
+                            </div>
+                            <button onclick="window.registrarCobroCalculadora()" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition-transform relative z-10">Sumar Venta a la Caja Fuerte</button>
+                            <p class="text-[9px] text-zinc-500 mt-2 text-center relative z-10">* Al registrar, el sistema separa la ganancia del vuelto automáticamente.</p>
+                        </div>
+
+                        <!-- 3. Calculadora Divisor de Cuentas (Split Bill) -->
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col">
+                            <h3 class="text-sm font-black uppercase text-white mb-4"><i class="ph-bold ph-users text-green-400"></i> Dividir Cuenta en Mesa</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Total de la Cuenta ($)</label><input type="number" id="split-total" oninput="window.calcSplitBill()" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-bold outline-none focus:border-green-400"></div>
+                                <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Entre Cuántas Personas</label><input type="number" id="split-people" value="1" min="1" oninput="window.calcSplitBill()" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-bold outline-none focus:border-green-400"></div>
+                            </div>
+                            <div class="mt-auto pt-4 flex flex-col items-center">
+                                <span class="text-[10px] font-black uppercase text-zinc-400 mb-1">Cada persona debe pagar:</span>
+                                <span id="split-result" class="text-3xl font-black text-green-400">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="panel-admin-inventory" class="admin-panel-tab hidden flex flex-col h-full space-y-4 no-print">
+                    <div class="flex justify-between items-center shrink-0">
+                        <h2 class="text-2xl font-black uppercase text-white"><i class="ph-bold ph-hamburger text-papa-fire"></i> Catálogo de Platos</h2>
+                        <button onclick="window.openEditModal()" class="bg-papa-fire hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase shadow-[0_0_15px_rgba(255,61,0,0.4)] transition"><i class="ph-bold ph-plus"></i> Crear Plato Nuevo</button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto no-scrollbar pr-2">
+                        <div id="admin-catalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                     </div>
                 </div>
 
                 <div id="panel-admin-ingredients" class="admin-panel-tab hidden space-y-6 no-print">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center shrink-0">
                         <div>
-                            <h2 class="text-2xl font-black uppercase text-white">Inventario Financiero Inteligente</h2>
-                            <p class="text-xs text-zinc-500">Materia prima valorada. Se descuenta automáticamente al vender.</p>
+                            <h2 class="text-2xl font-black uppercase text-white"><i class="ph-bold ph-scales text-papa-yellow"></i> Inventario Financiero</h2>
+                            <p class="text-xs text-zinc-500">Gestión de insumos y costos. El stock se descuenta automáticamente con cada venta.</p>
                         </div>
-                        <div class="flex items-center gap-4">
-                            <div class="bg-zinc-900 px-4 py-2 rounded-xl border border-white/10 shadow-inner text-right">
-                                <span class="block text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Valor Total Inventario</span>
-                                <span id="ing-total-valuation" class="text-xl font-black text-green-400">$0.00</span>
-                            </div>
-                            <button onclick="window.openIngModal()" class="bg-papa-fire text-white px-4 py-3 rounded-xl text-xs font-bold uppercase shadow-lg shadow-papa-fire/20 hover:scale-105 transition"><i class="ph-bold ph-plus"></i> Nuevo Ingrediente</button>
+                        <button onclick="window.openIngModal()" class="bg-papa-fire hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase shadow-[0_0_15px_rgba(255,61,0,0.4)] transition"><i class="ph-bold ph-plus"></i> Nuevo Insumo</button>
+                    </div>
+                    <div class="bg-black border border-white/10 rounded-2xl p-6 flex flex-col max-h-[600px]">
+                        <div class="flex justify-between items-center mb-4 pb-4 border-b border-white/5">
+                            <span class="text-xs font-bold uppercase text-zinc-400">Costo Total del Inventario:</span>
+                            <span class="text-2xl font-black text-green-400" id="ing-total-valuation">$0.00</span>
+                        </div>
+                        <div class="overflow-y-auto no-scrollbar flex-1">
+                            <table class="w-full text-left text-xs">
+                                <thead class="text-zinc-500 uppercase border-b border-white/10">
+                                    <tr><th class="pb-3 pl-2">Ingrediente</th><th class="pb-3">Unidad</th><th class="pb-3">Costo ($)</th><th class="pb-3">Stock Actual</th><th class="pb-3">Valor Total</th><th class="pb-3">Alerta Min.</th><th class="pb-3 text-right">Acciones</th></tr>
+                                </thead>
+                                <tbody id="ingredients-table" class="divide-y divide-white/5 font-bold text-white"></tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="bg-black border border-white/10 rounded-2xl p-6">
-                        <table class="w-full text-left text-xs">
-                            <thead class="text-zinc-500 uppercase border-b border-white/10">
-                                <tr><th class="pb-3">Ingrediente</th><th class="pb-3">Unidad</th><th class="pb-3">Costo Un.</th><th class="pb-3">Stock Actual</th><th class="pb-3">Valor Total</th><th class="pb-3">Mínimo Alerta</th><th class="pb-3 text-right">Acción</th></tr>
-                            </thead>
-                            <tbody id="ingredients-table" class="divide-y divide-white/5 font-bold text-white"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div id="panel-admin-inventory" class="admin-panel-tab hidden space-y-6 no-print">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-black uppercase text-white">Catálogo Profesional</h2>
-                        <button onclick="window.openEditModal()" class="bg-papa-fire text-white px-4 py-2 rounded-xl text-xs font-bold uppercase hover:scale-105 transition"><i class="ph-bold ph-plus"></i> Crear Plato</button>
-                    </div>
-                    <div id="admin-catalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
                 </div>
 
                 <div id="panel-admin-reports" class="admin-panel-tab hidden space-y-6">
                     <div class="flex justify-between items-center no-print">
-                        <h2 class="text-2xl font-black uppercase text-white">Reportes Financieros Profesionales</h2>
+                        <h2 class="text-2xl font-black uppercase text-white"><i class="ph-bold ph-file-pdf text-red-500"></i> Reportes y Cierres Contables</h2>
                     </div>
-                    
-                    <div class="hidden print:block text-center border-b pb-4 mb-4">
-                        <h1 class="font-black text-3xl">LA PAPA CALIENTE</h1>
-                        <p class="font-bold text-sm text-gray-600">Reporte de Ventas Consolidado</p>
-                        <p class="text-xs text-gray-500 mt-2" id="print-date-range"></p>
-                    </div>
-
-                    <div class="bg-black border border-white/10 p-6 rounded-2xl space-y-6 print:border-none print:p-0 print:bg-white">
-                        <div class="flex gap-4 items-end no-print">
+                    <div class="bg-black border border-white/10 p-6 rounded-2xl space-y-6">
+                        <div class="flex flex-wrap gap-4 items-end bg-zinc-900/50 p-4 rounded-xl border border-white/5 no-print">
                             <div>
-                                <label class="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Desde</label>
-                                <input type="date" id="rep-date-start" class="bg-zinc-900 border border-white/10 text-white px-3 py-2 rounded-lg text-xs outline-none">
+                                <label class="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Desde Fecha:</label>
+                                <input type="date" id="rep-date-start" class="bg-black border border-white/10 text-white px-3 py-2 rounded-lg text-xs outline-none focus:border-papa-fire">
                             </div>
                             <div>
-                                <label class="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Hasta</label>
-                                <input type="date" id="rep-date-end" class="bg-zinc-900 border border-white/10 text-white px-3 py-2 rounded-lg text-xs outline-none">
+                                <label class="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Hasta Fecha:</label>
+                                <input type="date" id="rep-date-end" class="bg-black border border-white/10 text-white px-3 py-2 rounded-lg text-xs outline-none focus:border-papa-fire">
                             </div>
-                            <button onclick="window.generateReport()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase h-fit transition">Generar</button>
+                            <button onclick="window.generateReport()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg text-xs font-black uppercase transition shadow-lg h-fit">Generar Consulta</button>
                         </div>
-                        <div class="border-t border-white/10 pt-4 flex gap-3 no-print">
-                            <button onclick="window.exportCSV()" class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase flex gap-1 transition"><i class="ph-bold ph-microsoft-excel"></i> CSV / Excel</button>
-                            <button onclick="window.printReport()" class="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase flex gap-1 transition"><i class="ph-bold ph-file-pdf"></i> Imprimir Informe PDF</button>
+                        <div class="grid grid-cols-3 gap-4 border-t border-b border-white/5 py-4 no-print">
+                            <div class="text-center"><p class="text-[10px] text-zinc-500 font-bold uppercase">Órdenes Pagadas</p><p class="text-xl font-black text-white" id="rep-tot-orders">0</p></div>
+                            <div class="text-center border-l border-white/5"><p class="text-[10px] text-zinc-500 font-bold uppercase">Ingreso Bruto</p><p class="text-xl font-black text-green-400" id="rep-tot-money">$0.00</p></div>
+                            <div class="text-center border-l border-white/5"><p class="text-[10px] text-zinc-500 font-bold uppercase">Ticket Promedio</p><p class="text-xl font-black text-papa-yellow" id="rep-tot-avg">$0.00</p></div>
                         </div>
-                        
-                        <div class="grid grid-cols-3 gap-4 border-b border-white/10 pb-4 print:border-black print:pb-2">
-                            <div><p class="text-[10px] font-bold text-zinc-500 uppercase print:text-black">Órdenes Totales</p><p id="rep-tot-orders" class="text-xl font-black text-white print:text-black">0</p></div>
-                            <div><p class="text-[10px] font-bold text-zinc-500 uppercase print:text-black">Ingreso Bruto</p><p id="rep-tot-money" class="text-xl font-black text-green-400 print:text-black">$0.00</p></div>
-                            <div><p class="text-[10px] font-bold text-zinc-500 uppercase print:text-black">Ticket Promedio</p><p id="rep-tot-avg" class="text-xl font-black text-papa-yellow print:text-black">$0.00</p></div>
+                        <div class="flex gap-3 justify-end no-print">
+                            <button onclick="window.exportCSV()" class="bg-[#107c41] hover:bg-green-600 text-white px-4 py-2.5 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 transition"><i class="ph-bold ph-microsoft-excel text-lg"></i> Exportar a Excel (CSV)</button>
+                            <button onclick="window.printReport()" class="bg-[#da0a14] hover:bg-red-600 text-white px-4 py-2.5 rounded-lg text-[10px] font-black uppercase flex items-center gap-2 transition"><i class="ph-bold ph-printer text-lg"></i> Imprimir o Guardar PDF</button>
                         </div>
-
-                        <div class="overflow-x-auto mt-4">
-                            <table class="w-full text-left text-xs print:text-[10px]">
-                                <thead class="text-zinc-500 uppercase border-b border-white/10 print:text-black print:border-black"><tr><th class="py-2">Orden ID</th><th>Fecha</th><th>Cliente / Mesa</th><th>Estado</th><th class="text-right">Total</th></tr></thead>
-                                <tbody id="report-table" class="divide-y divide-white/5 font-bold text-white print:text-black print:divide-gray-300"></tbody>
+                        <div class="mt-4">
+                            <div class="hidden print:block text-center mb-6 border-b border-black pb-4"><h1 class="text-2xl font-black uppercase">REPORTE FINANCIERO - LA PAPA CALIENTE</h1><p class="text-sm text-gray-600 font-bold" id="print-date-range"></p></div>
+                            <table class="w-full text-left text-xs">
+                                <thead class="text-zinc-500 print:text-black uppercase border-b border-white/10 print:border-black"><tr><th class="pb-2">ID Orden</th><th class="pb-2">Fecha</th><th class="pb-2">Cliente / Detalle</th><th class="pb-2">Estado</th><th class="pb-2 text-right">Total</th></tr></thead>
+                                <tbody id="report-table" class="divide-y divide-white/5 print:divide-gray-300 font-bold text-white print:text-black"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
                 <div id="panel-admin-gallery" class="admin-panel-tab hidden space-y-6 no-print">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-black uppercase text-white">Gestor de Galería Web</h2>
-                        <div class="relative overflow-hidden inline-block">
-                            <button class="bg-papa-fire text-white px-4 py-2 rounded-xl text-xs font-bold uppercase shadow-lg"><i class="ph-bold ph-upload-simple"></i> Subir Foto Local</button>
-                            <input type="file" accept="image/*" onchange="window.uploadGalleryImage(event)" class="absolute left-0 top-0 opacity-0 cursor-pointer w-full h-full">
-                        </div>
+                    <div class="flex justify-between items-center shrink-0">
+                        <h2 class="text-2xl font-black uppercase text-white"><i class="ph-bold ph-image text-blue-400"></i> Galería Web Pública</h2>
+                        <label class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase shadow-lg transition cursor-pointer flex items-center gap-2">
+                            <i class="ph-bold ph-upload-simple"></i> Subir Foto Local
+                            <input type="file" accept="image/*" class="hidden" onchange="window.uploadGalleryImage(event)">
+                        </label>
                     </div>
                     <div id="admin-gallery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
                 </div>
 
                 <div id="panel-admin-settings" class="admin-panel-tab hidden space-y-6 no-print">
-                    <h2 class="text-2xl font-black uppercase text-white">Ajustes Generales y Branding</h2>
-                    <div class="bg-black border border-white/10 p-6 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <h2 class="text-2xl font-black uppercase text-white"><i class="ph-bold ph-gear text-zinc-400"></i> Ajustes y Branding</h2>
+                    <div class="bg-black border border-white/10 p-6 rounded-2xl grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="space-y-4">
+                            <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Clave API Gemini IA</label><input type="password" id="set-api-key" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="AI Key..."></div>
+                            <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">WhatsApp Contacto</label><input type="text" id="set-phone" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="+1..."></div>
+                        </div>
+
+                        <div class="lg:col-span-2 space-y-4 border-l border-white/10 pl-8">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-sm font-black text-white uppercase"><i class="ph-bold ph-bank"></i> Cuentas Bancarias</h3>
+                                <button onclick="window.addBankAccount()" class="bg-papa-fire hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition">+ Agregar</button>
+                            </div>
+                            <div id="settings-banks-list" class="space-y-2 max-h-48 overflow-y-auto pr-2 no-scrollbar"></div>
+                        </div>
+
+                        <div class="lg:col-span-3 border-t border-white/10 pt-6 mt-2"><h3 class="text-sm font-black text-white uppercase mb-4"><i class="ph-bold ph-paint-brush"></i> Identidad Visual (Cambio de Imágenes Locales)</h3></div>
                         
-                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-bank"></i> Cuentas Bancarias</h3></div>
-                        <div class="md:col-span-2">
-                            <p class="text-xs text-zinc-400 font-bold mb-4">Estas cuentas se le mostrarán al cliente cuando seleccione pagar por "Transferencia" en su orden.</p>
-                            <div id="settings-banks-list" class="space-y-3 mb-4"></div>
-                            <button onclick="window.addBankAccount()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase px-4 py-2 rounded-lg transition"><i class="ph-bold ph-plus"></i> Agregar Nueva Cuenta Bancaria</button>
-                        </div>
-
-                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2 mt-4"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-paint-brush"></i> Identidad Visual</h3></div>
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Logo del Food Truck (Archivo)</label>
-                            <input type="file" accept="image/*" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.logo = url; window.renderStorefront(); window.showToast('Logo listo'); })" class="w-full bg-zinc-900 border border-white/10 text-zinc-400 px-4 py-2 rounded-xl text-xs outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Fondo Portada Inicio (Archivo)</label>
-                            <input type="file" accept="image/*" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.cover = url; window.renderStorefront(); window.showToast('Fondo listo'); })" class="w-full bg-zinc-900 border border-white/10 text-zinc-400 px-4 py-2 rounded-xl text-xs outline-none">
-                        </div>
-
-                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2 mt-4"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-link"></i> Datos y Conexiones</h3></div>
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">WhatsApp Contacto (Formato Int.)</label>
-                            <input type="text" id="set-phone" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="+1809...">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Clave API IA (Chatbot Gemini)</label>
-                            <input type="password" id="set-api-key" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="Gemini Key...">
+                        <div class="space-y-4">
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase">Logo Principal</label>
+                            <div class="flex items-center gap-4">
+                                <img id="adm-preview-logo" src="https://placehold.co/100x100/FF3D00/FFF?text=PC" class="w-16 h-16 rounded-full object-cover border border-white/20">
+                                <label class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase cursor-pointer transition">Subir Logo <input type="file" accept="image/*" class="hidden" onchange="window.processImageUpload(event, (url) => { document.getElementById('adm-preview-logo').src = url; window.STATE.settings.logo = url; window.secureSave(); window.renderStorefront(); })"></label>
+                            </div>
                         </div>
                         
-                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2 mt-4"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-camera"></i> Fotos "Nosotros" (Carrusel)</h3></div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Foto Carrusel 1</label>
-                            <input type="file" accept="image/*" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.nos1 = url; window.renderStorefront(); window.secureSave(); window.showToast('Foto 1 actualizada'); })" class="w-full bg-zinc-900 border border-white/10 text-zinc-400 px-4 py-2 rounded-xl text-[10px] outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Foto Carrusel 2</label>
-                            <input type="file" accept="image/*" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.nos2 = url; window.renderStorefront(); window.secureSave(); window.showToast('Foto 2 actualizada'); })" class="w-full bg-zinc-900 border border-white/10 text-zinc-400 px-4 py-2 rounded-xl text-[10px] outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Foto Carrusel 3</label>
-                            <input type="file" accept="image/*" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.nos3 = url; window.renderStorefront(); window.secureSave(); window.showToast('Foto 3 actualizada'); })" class="w-full bg-zinc-900 border border-white/10 text-zinc-400 px-4 py-2 rounded-xl text-[10px] outline-none">
+                        <div class="space-y-4">
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase">Fondo de Portada (Hero)</label>
+                            <div class="flex items-center gap-4">
+                                <img id="adm-preview-cover" src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=200&auto=format&fit=crop" class="w-24 h-16 rounded-lg object-cover border border-white/20">
+                                <label class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase cursor-pointer transition">Subir Portada <input type="file" accept="image/*" class="hidden" onchange="window.processImageUpload(event, (url) => { document.getElementById('adm-preview-cover').src = url; window.STATE.settings.cover = url; window.secureSave(); window.renderStorefront(); })"></label>
+                            </div>
                         </div>
 
-                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2 mt-4"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-map-pin"></i> Ubicación y Mapas</h3></div>
+                        <div class="space-y-4">
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase">Carrusel "Nosotros" (3 Fotos)</label>
+                            <div class="flex flex-col gap-2">
+                                <label class="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded-lg text-[10px] font-bold uppercase cursor-pointer transition flex items-center justify-between">Foto 1 <i class="ph-bold ph-upload-simple"></i><input type="file" accept="image/*" class="hidden" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.nos1 = url; window.secureSave(); window.renderStorefront(); window.showToast('Foto 1 Actualizada'); })"></label>
+                                <label class="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded-lg text-[10px] font-bold uppercase cursor-pointer transition flex items-center justify-between">Foto 2 <i class="ph-bold ph-upload-simple"></i><input type="file" accept="image/*" class="hidden" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.nos2 = url; window.secureSave(); window.renderStorefront(); window.showToast('Foto 2 Actualizada'); })"></label>
+                                <label class="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded-lg text-[10px] font-bold uppercase cursor-pointer transition flex items-center justify-between">Foto 3 <i class="ph-bold ph-upload-simple"></i><input type="file" accept="image/*" class="hidden" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.nos3 = url; window.secureSave(); window.renderStorefront(); window.showToast('Foto 3 Actualizada'); })"></label>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-3 border-t border-white/10 pt-6 mt-2 mb-2"><h3 class="text-sm font-black text-white uppercase"><i class="ph-bold ph-map-pin"></i> Ubicación y Mapas</h3></div>
                         <div>
-                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Google Maps Embed URL (Iframe SRC)</label>
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Google Maps Embed URL</label>
                             <input type="text" id="set-map-embed" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="https://www.google.com/maps/embed?...">
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Link del Botón "Abrir Mapa"</label>
                             <input type="text" id="set-map-link" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="https://maps.app.goo.gl/...">
                         </div>
+
+                        <div class="lg:col-span-3 border-t border-white/10 pt-6 mt-2 mb-2"><h3 class="text-sm font-black text-white uppercase"><i class="ph-bold ph-cooking-pot"></i> Precios: Arma tu Papa Personalizada</h3></div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Precio Base de la Papa ($)</label>
+                            <input type="number" step="0.01" id="set-base-price" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="Ej: 6.00">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Precio por Ingrediente Extra ($)</label>
+                            <input type="number" step="0.01" id="set-extra-price" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="Ej: 1.50">
+                        </div>
                         
-                        <div class="md:col-span-2 flex justify-end pt-6 border-t border-white/10">
+                        <div class="lg:col-span-3 flex justify-end pt-6 border-t border-white/10">
                             <button onclick="window.saveSettings()" class="bg-papa-fire hover:bg-orange-600 text-white font-black uppercase text-xs px-8 py-3.5 rounded-xl shadow-[0_0_15px_rgba(255,61,0,0.4)] transition">Guardar Cambios Permanentemente</button>
                         </div>
                     </div>
@@ -859,7 +834,8 @@
             settings: { 
                 apiKey: '', phone: '+18095550000', mapEmbed: '', mapLink: '',
                 logo: 'https://placehold.co/100x100/FF3D00/FFF?text=PC', cover: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920&auto=format&fit=crop',
-                banks: [] 
+                banks: [],
+                customBasePrice: 6.00, customExtraPrice: 1.50
             },
             cart: [], currentUser: null, currentFilter: 'all', tempRecipe: []
         };
@@ -1001,6 +977,13 @@
         
         window.openCustomPapaModal = () => {
             if(!window.STATE.ingredients || window.STATE.ingredients.length === 0) return window.showToast('No hay ingredientes disponibles', 'error');
+            
+            // Cargar precios dinámicos de los ajustes
+            window.customPapaData.basePrice = parseFloat(window.STATE.settings.customBasePrice) || 6.00;
+            window.customPapaData.extraPrice = parseFloat(window.STATE.settings.customExtraPrice) || 1.50;
+            
+            document.getElementById('custom-papa-pricing-text').innerText = `Base de Papa ($${window.customPapaData.basePrice.toFixed(2)}) + Tus ingredientes ($${window.customPapaData.extraPrice.toFixed(2)} c/u)`;
+            
             window.customPapaData.selected = {};
             window.updateCustomPapaUI();
             window.openModal('customPapaModal');
@@ -1356,6 +1339,8 @@
                 document.getElementById('set-phone').value = window.STATE.settings.phone || '';
                 document.getElementById('set-map-embed').value = window.STATE.settings.mapEmbed || '';
                 document.getElementById('set-map-link').value = window.STATE.settings.mapLink || '';
+                document.getElementById('set-base-price').value = window.STATE.settings.customBasePrice || 6.00;
+                document.getElementById('set-extra-price').value = window.STATE.settings.customExtraPrice || 1.50;
             }
         };
 
@@ -1742,6 +1727,9 @@
             window.STATE.settings.phone = document.getElementById('set-phone').value;
             window.STATE.settings.mapEmbed = document.getElementById('set-map-embed').value;
             window.STATE.settings.mapLink = document.getElementById('set-map-link').value;
+            window.STATE.settings.customBasePrice = parseFloat(document.getElementById('set-base-price').value) || 6.00;
+            window.STATE.settings.customExtraPrice = parseFloat(document.getElementById('set-extra-price').value) || 1.50;
+            
             window.secureSave(); window.renderStorefront(); window.showToast('Ajustes Guardados');
         };
 
