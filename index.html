@@ -6,16 +6,9 @@
     <meta name="referrer" content="no-referrer">
     <title>La Papa Caliente | ERP & Premium Food Truck</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-    <!-- Librerías Externas Profesionales -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -38,12 +31,10 @@
 
     <style>
         body { 
-            /* Se removió background-attachment: fixed porque rompe el diseño en iPhones (iOS Safari) */
             background-color: #0a0a0a;
             color: #ffffff; overflow-x: hidden; font-family: 'Montserrat', sans-serif; 
         }
         
-        /* Nuevo fondo fijo compatible con TODOS los celulares */
         .mobile-safe-bg {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
             background: linear-gradient(135deg, rgba(0, 45, 98, 0.15) 0%, #0a0a0a 40%, #0a0a0a 60%, rgba(206, 17, 38, 0.12) 100%);
@@ -88,19 +79,18 @@
         .kds-card.time-danger { border-top: 4px solid #ef4444; animation: pulse-border 2s infinite; }
         @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
-        /* Print Styles for Reports - Factura Profesional */
         @media print {
             body * { visibility: hidden; }
-            #print-area { visibility: visible; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; }
-            #print-area * { visibility: visible; color: black !important; border-color: #ddd !important; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; }
             .no-print { display: none !important; }
+            .admin-panel-tab:not(.active-print) { display: none !important; }
             canvas { display: none !important; }
         }
     </style>
 </head>
 <body class="antialiased selection:bg-papa-fire selection:text-white relative">
 
-    <!-- Fondo elegante compatible con móviles -->
     <div class="mobile-safe-bg"></div>
 
     <audio id="kds-alert" src="data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
@@ -108,13 +98,13 @@
     <div id="toast-container" class="fixed top-24 right-4 sm:right-6 z-[9999] flex flex-col gap-3 pointer-events-none w-[calc(100vw-2rem)] sm:w-auto"></div>
 
     <header id="main-header" class="fixed top-0 w-full z-50 transition-[top] duration-300 ease-in-out">
-        <div class="bg-gradient-to-r from-papa-drblue via-papa-fire to-papa-prred text-white text-center py-2 px-2 sm:px-4 text-[8px] sm:text-xs font-bold uppercase tracking-widest relative z-[70] leading-tight sm:leading-normal">
+        <div class="bg-gradient-to-r from-papa-drblue via-papa-fire to-papa-prred text-white text-center py-2 px-2 sm:px-4 text-[8px] sm:text-[10px] font-bold uppercase tracking-widest relative z-[70] leading-tight sm:leading-normal">
             🔥 EL AUTÉNTICO SABOR CARIBEÑO - ORDENA EN TIEMPO REAL 🔥
         </div>
         <nav id="navbar" class="w-full glass-nav h-16 sm:h-20 flex items-center justify-between px-4 sm:px-6 md:px-12 transition-all duration-300 relative z-50">
             <a href="#inicio" class="flex items-center gap-2 sm:gap-3 text-xl sm:text-2xl font-black text-white tracking-tighter">
                 <img id="store-logo" src="https://placehold.co/100x100/FF3D00/FFF?text=PC" alt="Logo" class="site-logo h-10 w-10 sm:h-12 sm:w-12 object-cover drop-shadow-[0_0_12px_rgba(255,61,0,0.6)] rounded-full">
-                <span class="uppercase">LA PAPA <span class="text-papa-fire hidden sm:inline">CALIENTE</span></span>
+                <span class="uppercase">LA PAPA <span class="text-papa-fire">CALIENTE</span></span>
             </a>
             
             <div class="flex items-center gap-4 md:hidden">
@@ -154,26 +144,39 @@
             <h2 class="font-black text-xl uppercase tracking-wider flex items-center gap-2"><i class="ph-bold ph-shopping-cart text-papa-fire text-2xl"></i> Mi Orden</h2>
             <button onclick="window.toggleCart()" class="text-zinc-500 hover:text-white transition-colors"><i class="ph-bold ph-x text-2xl"></i></button>
         </div>
+        
         <div id="cart-items-view" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar"></div>
+        
         <div id="checkout-form-view" class="flex-1 overflow-y-auto p-6 bg-[#070707] hidden flex-col border-t border-white/10 no-scrollbar">
             <h3 class="font-bold uppercase text-papa-fire mb-4 text-sm border-b border-white/10 pb-2"><i class="ph-bold ph-user-circle"></i> Datos de Entrega</h3>
             <div class="space-y-4 mb-6">
-                <input type="text" id="order-name" placeholder="Nombre Completo" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold">
+                <input type="text" id="order-name" placeholder="Nombre de Cliente" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold">
                 <input type="tel" id="order-phone" placeholder="WhatsApp (Ej: +18091234567)" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold">
+                
                 <select id="order-type" onchange="window.toggleAddressField()" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold">
                     <option value="Para Comer en Mesa">Comer en el Local (Mesa)</option>
                     <option value="Para Llevar (Pick-up)">Retirar en Local (Pick-up)</option>
                     <option value="Delivery">Envío a Domicilio (Delivery)</option>
                 </select>
+                
+                <input type="text" id="order-table" placeholder="Número de Mesa o Nombre Mesero" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold">
                 <textarea id="order-address" rows="2" placeholder="Dirección Exacta..." class="hidden w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold resize-none"></textarea>
             </div>
+
             <h3 class="font-bold uppercase text-papa-fire mb-4 text-sm border-t border-white/10 pt-4"><i class="ph-bold ph-wallet"></i> Forma de Pago</h3>
-            <select id="payment-method" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold mb-4">
+            <select id="payment-method" onchange="window.toggleAddressField()" class="w-full bg-[#111] border border-white/10 text-white px-4 py-3 rounded-xl focus:border-papa-fire outline-none text-sm font-semibold mb-4">
                 <option value="Efectivo al recibir">Efectivo</option>
                 <option value="Transferencia / Tarjeta">Transferencia / Tarjeta</option>
             </select>
+            
+            <div id="bank-accounts-info" class="hidden bg-zinc-900 border border-white/10 rounded-xl p-4 mb-4 space-y-2">
+                <p class="text-xs text-papa-yellow font-bold uppercase mb-2">Cuentas Disponibles:</p>
+                <div id="bank-accounts-list" class="space-y-2"></div>
+            </div>
+
             <button onclick="window.toggleCheckoutView()" class="mt-auto text-papa-dim font-bold text-xs uppercase hover:text-white py-2 text-center w-full">← Volver al carrito</button>
         </div>
+        
         <div class="bg-black border-t border-white/10 p-6 shrink-0">
             <div class="flex justify-between items-center mb-6">
                 <span class="text-zinc-400 font-bold uppercase tracking-wider text-sm">Total:</span>
@@ -188,7 +191,6 @@
     <section id="inicio" class="relative min-h-[100svh] flex items-center justify-center text-center px-4 overflow-hidden bg-cover bg-center bg-no-repeat transition-all duration-700">
         <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-[#0a0a0a] z-0"></div>
         <div class="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center justify-center pt-20">
-            <!-- Textos ajustados para que no se corten en pantallas pequeñas -->
             <h1 class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-extrabold leading-tight mb-4 md:mb-6 drop-shadow-2xl opacity-0 animate-[slideUp_1s_forwards] tracking-tight text-white text-center">
                 El Sabor que<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-papa-fire to-papa-yellow">Quema de Placer</span>
             </h1>
@@ -241,7 +243,6 @@
     </section>
 
     <section id="catalogo" class="py-24 px-6 relative border-t border-white/5 min-h-[800px] overflow-hidden">
-        <!-- Banderas PR y RD de fondo sutil (Opacity ajustada para elegancia) -->
         <div class="absolute inset-0 z-0 flex opacity-[0.06] pointer-events-none mix-blend-screen">
             <div class="flex-1 bg-[url('https://upload.wikimedia.org/wikipedia/commons/9/9f/Flag_of_the_Dominican_Republic.svg')] bg-cover bg-center"></div>
             <div class="flex-1 bg-[url('https://upload.wikimedia.org/wikipedia/commons/2/28/Flag_of_Puerto_Rico.svg')] bg-cover bg-center"></div>
@@ -278,7 +279,6 @@
                 <span class="text-papa-fire font-bold tracking-widest uppercase text-xs">Experiencia Visual</span>
                 <h2 class="text-3xl font-extrabold uppercase mt-2">Nuestra <span class="text-papa-yellow">Galería</span></h2>
             </div>
-            <!-- Cambiamos las columnas para que las imágenes sean más grandes -->
             <div id="public-gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 animate-on-scroll"></div>
         </div>
     </section>
@@ -296,15 +296,16 @@
                 <a id="pub-map-link" href="#" target="_blank" class="relative z-10 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full font-bold uppercase text-xs transition-colors border border-white/10"><i class="ph-bold ph-navigation-arrow"></i> Abrir en Google Maps</a>
             </div>
             <div class="flex-1 h-80 md:h-auto rounded-3xl overflow-hidden border border-white/10 bg-zinc-900 relative">
-                <iframe id="pub-map-embed" src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15137.9515570077!2d-69.9328!3d18.4861!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sdo!4v1710000000000!5m2!1sen!2sdo" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                <iframe id="pub-map-embed" src="" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
         </div>
     </section>
+
     <button onclick="document.getElementById('chat-window').classList.toggle('active')" class="fixed bottom-6 right-4 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-papa-fire text-white rounded-full shadow-[0_0_20px_rgba(255,61,0,0.5)] flex items-center justify-center hover:scale-110 transition-transform z-50 group">
         <i class="ph-fill ph-robot text-xl sm:text-2xl group-hover:hidden"></i>
         <i class="ph-bold ph-x text-xl sm:text-2xl hidden group-hover:block"></i>
     </button>
-    <!-- Chatbot ajustado al ancho del celular -->
+    
     <div id="chat-window" class="chat-window fixed bottom-20 sm:bottom-24 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-[340px] bg-[#111] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[110] h-[400px] sm:h-[450px]">
         <div class="bg-gradient-to-r from-papa-drblue to-papa-fire p-4 flex items-center justify-between shrink-0">
             <div class="flex items-center gap-3">
@@ -334,18 +335,13 @@
             </div>
             
             <div class="p-6 overflow-y-auto no-scrollbar flex-1 bg-[#0a0a0a]">
-                <!-- SIMULADOR VISUAL DE LA PAPA -->
                 <div class="relative w-40 h-40 mx-auto mb-6 bg-black rounded-full shadow-[0_0_40px_rgba(255,61,0,0.15)] border-4 border-papa-dark flex items-center justify-center overflow-hidden">
                     <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1596450514735-11003b57edec?auto=format&fit=crop&w=300&q=80')] bg-cover bg-center opacity-30"></div>
-                    <div id="visual-builder-stack" class="relative z-10 flex flex-wrap justify-center gap-1 p-4 w-full h-full content-center">
-                        <!-- Los ingredientes caerán aquí -->
-                    </div>
+                    <div id="visual-builder-stack" class="relative z-10 flex flex-wrap justify-center gap-1 p-4 w-full h-full content-center"></div>
                 </div>
 
                 <p class="text-xs text-zinc-400 font-bold mb-4 uppercase tracking-wider text-center">Base de Papa ($6.00) + Tus ingredientes ($1.50 c/u)</p>
-                <div id="custom-papa-ings" class="space-y-3">
-                    <!-- Ingredientes inyectados via JS -->
-                </div>
+                <div id="custom-papa-ings" class="space-y-3"></div>
             </div>
             
             <div class="bg-black border-t border-white/10 px-6 py-4 flex flex-col gap-3 shrink-0">
@@ -358,23 +354,29 @@
         </div>
     </div>
 
+    <!-- TICKET PROFESIONAL / FACTURA -->
     <div id="ticketModal" class="modal-overlay fixed inset-0 z-[300] flex items-center justify-center p-4">
         <div class="modal-content w-full max-w-sm flex flex-col items-center">
-            <div class="ticket-bg w-full p-6 text-black font-ticket shadow-2xl rounded-b-sm">
-                <div class="text-center mb-4">
-                    <h2 class="font-black text-xl uppercase tracking-tighter">LA PAPA CALIENTE</h2>
-                    <p class="text-[10px] uppercase text-gray-500 font-bold">Ticket de Orden</p>
+            <div class="ticket-bg w-full p-6 text-black font-ticket shadow-2xl rounded-b-sm text-sm">
+                <div class="text-center mb-4 border-b border-dashed border-gray-400 pb-4">
+                    <h2 class="font-black text-2xl uppercase tracking-tighter">LA PAPA CALIENTE</h2>
+                    <p class="text-[10px] uppercase text-gray-500 font-bold">Food Truck Premium</p>
+                    <p class="text-[10px] text-gray-500" id="ticket-date"></p>
                 </div>
-                <div class="border-t border-b border-dashed border-gray-400 py-3 text-center">
-                    <h3 id="ticket-turn" class="font-black text-4xl text-papa-fire">#0000</h3>
+                <div class="mb-4 text-xs font-bold space-y-1">
+                    <p>ORDEN: <span id="ticket-turn" class="text-papa-fire font-black text-lg">#0000</span></p>
+                    <p>CLIENTE: <span id="ticket-client"></span></p>
+                    <p>TIPO: <span id="ticket-type"></span></p>
+                    <p>PAGO: <span id="ticket-payment"></span></p>
                 </div>
-                <div class="py-3 text-xs font-bold text-gray-800" id="ticket-items"></div>
-                <div class="flex justify-between items-center font-black text-base border-t border-black pt-2">
+                <div class="border-t border-b border-dashed border-gray-400 py-3 text-xs font-bold text-gray-800 space-y-2" id="ticket-items"></div>
+                <div class="flex justify-between items-center font-black text-lg pt-3">
                     <span>TOTAL:</span><span id="ticket-total-price">$0.00</span>
                 </div>
+                <div class="mt-4 text-center text-[10px] font-bold text-gray-500">¡Gracias por tu compra!</div>
             </div>
             <div class="mt-4 w-full flex flex-col gap-2">
-                <button onclick="window.sendOrder()" class="w-full bg-[#25D366] hover:bg-[#20b858] text-white py-3.5 rounded-xl font-black uppercase text-xs shadow-lg transition-transform flex items-center justify-center gap-2"><i class="ph-fill ph-whatsapp-logo text-xl"></i> Confirmar y Enviar Cocina</button>
+                <button onclick="window.sendOrder()" class="w-full bg-[#25D366] hover:bg-[#20b858] text-white py-3.5 rounded-xl font-black uppercase text-xs shadow-lg transition-transform flex items-center justify-center gap-2"><i class="ph-fill ph-check-circle text-xl"></i> Confirmar y Enviar Cocina</button>
                 <button onclick="window.closeModal('ticketModal')" class="w-full mt-2 text-white/50 text-xs font-bold uppercase underline">Cancelar</button>
             </div>
         </div>
@@ -416,13 +418,14 @@
                 <div class="space-y-1 px-3 mt-6">
                     <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Operaciones</p>
                     <button onclick="window.switchAdminPanel('kds')" id="btn-side-kds" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-cooking-pot text-lg"></i> Cocina (KDS)</button>
+                    <button onclick="window.switchAdminPanel('orders')" id="btn-side-orders" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-receipt text-lg"></i> Gestor de Órdenes</button>
                     <button onclick="window.switchAdminPanel('pos')" id="btn-side-pos" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all admin-only"><i class="ph-bold ph-cash-register text-lg"></i> Caja y POS Avanzado</button>
                 </div>
 
                 <div class="space-y-1 px-3 mt-6 admin-only">
                     <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Inventario & Menú</p>
                     <button onclick="window.switchAdminPanel('inventory')" id="btn-side-inventory" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-hamburger text-lg"></i> Menú / Catálogo</button>
-                    <button onclick="window.switchAdminPanel('ingredients')" id="btn-side-ingredients" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-scales text-lg"></i> Control Stock Materia</button>
+                    <button onclick="window.switchAdminPanel('ingredients')" id="btn-side-ingredients" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-scales text-lg"></i> Inventario Financiero</button>
                 </div>
 
                 <div class="space-y-1 px-3 mt-6 admin-only">
@@ -435,7 +438,6 @@
 
             <main class="flex-1 overflow-y-auto p-6 bg-[#050505] no-scrollbar relative" id="print-area">
                 
-                <!-- DASHBOARD -->
                 <div id="panel-admin-dashboard" class="admin-panel-tab space-y-6">
                     <h2 class="text-2xl font-black uppercase text-white no-print">Resumen Operativo</h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -472,7 +474,6 @@
                     </div>
                 </div>
 
-                <!-- STATS -->
                 <div id="panel-admin-stats" class="admin-panel-tab hidden space-y-6 no-print">
                     <h2 class="text-2xl font-black uppercase text-white">Estadísticas Detalladas</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -487,7 +488,6 @@
                     </div>
                 </div>
 
-                <!-- KDS -->
                 <div id="panel-admin-kds" class="admin-panel-tab hidden flex flex-col h-full space-y-4 no-print">
                     <div class="flex justify-between items-center shrink-0">
                         <h2 class="text-2xl font-black uppercase text-white"><i class="ph-bold ph-cooking-pot text-papa-fire"></i> Display de Cocina (KDS)</h2>
@@ -517,37 +517,24 @@
                     </div>
                 </div>
 
-                <!-- INVENTORY / RECIPES -->
-                <div id="panel-admin-ingredients" class="admin-panel-tab hidden space-y-6 no-print">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h2 class="text-2xl font-black uppercase text-white">Inventario Inteligente</h2>
-                            <p class="text-xs text-zinc-500">Materia prima. Se descuenta automáticamente al vender mediante las Fórmulas de Consumo.</p>
-                        </div>
-                        <button onclick="window.openIngModal()" class="bg-papa-fire text-white px-4 py-2 rounded-xl text-xs font-bold uppercase shadow-lg shadow-papa-fire/20 hover:scale-105 transition"><i class="ph-bold ph-plus"></i> Nuevo Ingrediente</button>
+                <!-- NUEVO HISTORIAL DE ÓRDENES -->
+                <div id="panel-admin-orders" class="admin-panel-tab hidden flex flex-col h-full space-y-4 no-print">
+                    <div class="flex justify-between items-center shrink-0">
+                        <h2 class="text-2xl font-black uppercase text-white"><i class="ph-bold ph-receipt text-papa-yellow"></i> Gestor de Órdenes Históricas</h2>
+                        <p class="text-xs text-zinc-500">Aquí aparecen todas las órdenes, incluyendo las entregadas y canceladas.</p>
                     </div>
-                    <div class="bg-black border border-white/10 rounded-2xl p-6">
+                    <div class="bg-black border border-white/10 rounded-2xl p-6 flex-1 overflow-y-auto no-scrollbar">
                         <table class="w-full text-left text-xs">
                             <thead class="text-zinc-500 uppercase border-b border-white/10">
-                                <tr><th class="pb-3">Ingrediente</th><th class="pb-3">Unidad</th><th class="pb-3">Stock Actual</th><th class="pb-3">Mínimo Alerta</th><th class="pb-3 text-right">Acción</th></tr>
+                                <tr><th class="pb-3">ID Orden</th><th class="pb-3">Fecha y Hora</th><th class="pb-3">Cliente / Detalle</th><th class="pb-3">Total</th><th class="pb-3">Estado</th><th class="pb-3 text-right">Modificar Estado</th></tr>
                             </thead>
-                            <tbody id="ingredients-table" class="divide-y divide-white/5 font-bold text-white"></tbody>
+                            <tbody id="orders-history-table" class="divide-y divide-white/5 font-bold text-white"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- MENU / CATALOG -->
-                <div id="panel-admin-inventory" class="admin-panel-tab hidden space-y-6 no-print">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-black uppercase text-white">Catálogo Profesional</h2>
-                        <button onclick="window.openEditModal()" class="bg-papa-fire text-white px-4 py-2 rounded-xl text-xs font-bold uppercase hover:scale-105 transition"><i class="ph-bold ph-plus"></i> Crear Plato</button>
-                    </div>
-                    <div id="admin-catalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-                </div>
-
-                <!-- CAJA & POS AVANZADO -->
                 <div id="panel-admin-pos" class="admin-panel-tab hidden space-y-6 no-print">
-                    <h2 class="text-2xl font-black uppercase text-white">Control de Caja y Pagos</h2>
+                    <h2 class="text-2xl font-black uppercase text-white">Control de Caja, Mesas y Pagos</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-black border border-white/10 p-6 rounded-2xl space-y-4">
                             <h3 class="text-sm font-black uppercase text-papa-fire">Estado del Turno</h3>
@@ -564,8 +551,7 @@
                             </div>
                         </div>
                         
-                        <!-- Calculadoras Inteligentes -->
-                        <div class="bg-black border border-white/10 p-6 rounded-2xl md:col-span-3 mt-2 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl md:col-span-3 mt-2 grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div>
                                 <h3 class="text-sm font-black uppercase text-papa-yellow mb-4"><i class="ph-fill ph-math-operations"></i> Calculadora Estándar</h3>
                                 <div class="bg-zinc-950 p-4 rounded-xl border border-white/5 w-full">
@@ -592,29 +578,84 @@
                             </div>
                             
                             <div>
-                                <h3 class="text-sm font-black uppercase text-papa-fire mb-4"><i class="ph-fill ph-cash-register"></i> Asistente Rápido de Vueltos</h3>
+                                <h3 class="text-sm font-black uppercase text-papa-fire mb-4"><i class="ph-fill ph-cash-register"></i> Asistente de Vueltos</h3>
                                 <div class="space-y-4">
                                     <div>
                                         <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Costo Total del Pedido ($)</label>
                                         <input type="number" id="calc-total" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black outline-none focus:border-papa-fire" oninput="window.calcularVuelto()" placeholder="Ej: 1500">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Efectivo Recibido (Billete del Cliente)</label>
+                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Efectivo Recibido (Billete)</label>
                                         <input type="number" id="calc-pago" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black text-green-400 outline-none focus:border-green-500" oninput="window.calcularVuelto()" placeholder="Ej: 2000">
                                     </div>
                                     <div class="flex justify-between items-center bg-zinc-950 border border-white/5 rounded-xl p-4 shadow-inner">
-                                        <span class="text-xs font-bold text-zinc-500 uppercase">Cambio Exacto (Vuelto a dar)</span>
+                                        <span class="text-xs font-bold text-zinc-500 uppercase">Cambio a dar:</span>
                                         <span id="calc-cambio" class="text-3xl font-black text-white">$0.00</span>
                                     </div>
                                     <button onclick="window.registrarCobroCalculadora()" class="w-full bg-papa-fire hover:bg-orange-600 text-white font-black py-4 rounded-xl uppercase text-xs shadow-[0_0_15px_rgba(255,61,0,0.4)] transition-transform">Sumar Venta a la Caja Fuerte</button>
-                                    <p class="text-[10px] text-zinc-500 text-center font-bold px-4">Lógica de caja: El vuelto entra y sale en el instante. Al apretar este botón, sólo se guardará el <span class="text-white font-black">Costo Total del Pedido</span> como ingreso real en la caja registradora.</p>
+                                    <p class="text-[9px] text-zinc-500 text-center font-bold px-4">Solo guarda el <span class="text-white font-black">Costo Total del Pedido</span> en caja, el vuelto no se descuenta.</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-sm font-black uppercase text-blue-400 mb-4"><i class="ph-fill ph-users"></i> Dividir Cuenta de Mesa</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Monto Total de la Mesa ($)</label>
+                                        <input type="number" id="split-total" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black outline-none focus:border-blue-500" oninput="window.calcSplitBill()" placeholder="Ej: 3000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">¿Entre cuántas personas?</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="number" id="split-people" value="2" min="1" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-black text-center outline-none focus:border-blue-500" oninput="window.calcSplitBill()">
+                                            <div class="flex flex-col gap-1">
+                                                <button onclick="document.getElementById('split-people').stepUp(); window.calcSplitBill();" class="bg-zinc-800 px-3 py-1 rounded text-white font-bold hover:bg-zinc-700">+</button>
+                                                <button onclick="document.getElementById('split-people').stepDown(); window.calcSplitBill();" class="bg-zinc-800 px-3 py-1 rounded text-white font-bold hover:bg-zinc-700">-</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-zinc-950 border border-blue-500/20 rounded-xl p-4 shadow-inner">
+                                        <span class="text-xs font-bold text-blue-400 uppercase">Monto Por Persona:</span>
+                                        <span id="split-result" class="text-3xl font-black text-white">$1500.00</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- REPORTS -->
+                <div id="panel-admin-ingredients" class="admin-panel-tab hidden space-y-6 no-print">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-black uppercase text-white">Inventario Financiero Inteligente</h2>
+                            <p class="text-xs text-zinc-500">Materia prima valorada. Se descuenta automáticamente al vender.</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="bg-zinc-900 px-4 py-2 rounded-xl border border-white/10 shadow-inner text-right">
+                                <span class="block text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Valor Total Inventario</span>
+                                <span id="ing-total-valuation" class="text-xl font-black text-green-400">$0.00</span>
+                            </div>
+                            <button onclick="window.openIngModal()" class="bg-papa-fire text-white px-4 py-3 rounded-xl text-xs font-bold uppercase shadow-lg shadow-papa-fire/20 hover:scale-105 transition"><i class="ph-bold ph-plus"></i> Nuevo Ingrediente</button>
+                        </div>
+                    </div>
+                    <div class="bg-black border border-white/10 rounded-2xl p-6">
+                        <table class="w-full text-left text-xs">
+                            <thead class="text-zinc-500 uppercase border-b border-white/10">
+                                <tr><th class="pb-3">Ingrediente</th><th class="pb-3">Unidad</th><th class="pb-3">Costo Un.</th><th class="pb-3">Stock Actual</th><th class="pb-3">Valor Total</th><th class="pb-3">Mínimo Alerta</th><th class="pb-3 text-right">Acción</th></tr>
+                            </thead>
+                            <tbody id="ingredients-table" class="divide-y divide-white/5 font-bold text-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="panel-admin-inventory" class="admin-panel-tab hidden space-y-6 no-print">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-black uppercase text-white">Catálogo Profesional</h2>
+                        <button onclick="window.openEditModal()" class="bg-papa-fire text-white px-4 py-2 rounded-xl text-xs font-bold uppercase hover:scale-105 transition"><i class="ph-bold ph-plus"></i> Crear Plato</button>
+                    </div>
+                    <div id="admin-catalog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                </div>
+
                 <div id="panel-admin-reports" class="admin-panel-tab hidden space-y-6">
                     <div class="flex justify-between items-center no-print">
                         <h2 class="text-2xl font-black uppercase text-white">Reportes Financieros Profesionales</h2>
@@ -640,7 +681,7 @@
                         </div>
                         <div class="border-t border-white/10 pt-4 flex gap-3 no-print">
                             <button onclick="window.exportCSV()" class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase flex gap-1 transition"><i class="ph-bold ph-microsoft-excel"></i> CSV / Excel</button>
-                            <button onclick="window.print()" class="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase flex gap-1 transition"><i class="ph-bold ph-file-pdf"></i> Imprimir Informe PDF</button>
+                            <button onclick="window.printReport()" class="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase flex gap-1 transition"><i class="ph-bold ph-file-pdf"></i> Imprimir Informe PDF</button>
                         </div>
                         
                         <div class="grid grid-cols-3 gap-4 border-b border-white/10 pb-4 print:border-black print:pb-2">
@@ -651,14 +692,13 @@
 
                         <div class="overflow-x-auto mt-4">
                             <table class="w-full text-left text-xs print:text-[10px]">
-                                <thead class="text-zinc-500 uppercase border-b border-white/10 print:text-black print:border-black"><tr><th class="py-2">Orden ID</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th class="text-right">Total</th></tr></thead>
+                                <thead class="text-zinc-500 uppercase border-b border-white/10 print:text-black print:border-black"><tr><th class="py-2">Orden ID</th><th>Fecha</th><th>Cliente / Mesa</th><th>Estado</th><th class="text-right">Total</th></tr></thead>
                                 <tbody id="report-table" class="divide-y divide-white/5 font-bold text-white print:text-black print:divide-gray-300"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- GALLERY ADMIN -->
                 <div id="panel-admin-gallery" class="admin-panel-tab hidden space-y-6 no-print">
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-black uppercase text-white">Gestor de Galería Web</h2>
@@ -670,11 +710,18 @@
                     <div id="admin-gallery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
                 </div>
 
-                <!-- SETTINGS & BRANDING -->
                 <div id="panel-admin-settings" class="admin-panel-tab hidden space-y-6 no-print">
                     <h2 class="text-2xl font-black uppercase text-white">Ajustes Generales y Branding</h2>
                     <div class="bg-black border border-white/10 p-6 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-paint-brush"></i> Identidad Visual</h3></div>
+                        
+                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-bank"></i> Cuentas Bancarias</h3></div>
+                        <div class="md:col-span-2">
+                            <p class="text-xs text-zinc-400 font-bold mb-4">Estas cuentas se le mostrarán al cliente cuando seleccione pagar por "Transferencia" en su orden.</p>
+                            <div id="settings-banks-list" class="space-y-3 mb-4"></div>
+                            <button onclick="window.addBankAccount()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] uppercase px-4 py-2 rounded-lg transition"><i class="ph-bold ph-plus"></i> Agregar Nueva Cuenta Bancaria</button>
+                        </div>
+
+                        <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2 mt-4"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-paint-brush"></i> Identidad Visual</h3></div>
                         <div>
                             <label class="block text-xs font-bold text-zinc-400 uppercase mb-2">Logo del Food Truck (Archivo)</label>
                             <input type="file" accept="image/*" onchange="window.processImageUpload(event, (url) => { window.STATE.settings.logo = url; window.renderStorefront(); window.showToast('Logo listo'); })" class="w-full bg-zinc-900 border border-white/10 text-zinc-400 px-4 py-2 rounded-xl text-xs outline-none">
@@ -694,7 +741,6 @@
                             <input type="password" id="set-api-key" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="Gemini Key...">
                         </div>
                         
-                        <!-- NUEVOS BOTONES PARA CAMBIAR FOTOS DE "NOSOTROS" -->
                         <div class="md:col-span-2 border-b border-white/10 pb-4 mb-2 mt-4"><h3 class="text-sm font-black text-papa-fire uppercase"><i class="ph-fill ph-camera"></i> Fotos "Nosotros" (Carrusel)</h3></div>
                         <div>
                             <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Foto Carrusel 1</label>
@@ -779,22 +825,19 @@
         </div>
     </div>
 
-    <!-- Visor de Imágenes (Lightbox) para la Galería -->
     <div id="lightbox-modal" class="modal-overlay fixed inset-0 z-[500] flex items-center justify-center bg-black/95 p-4 cursor-zoom-out" onclick="window.closeLightbox()">
         <img id="lightbox-img" src="" class="max-w-full max-h-full object-contain transform scale-95 transition-transform duration-300 shadow-2xl rounded-lg">
     </div>
 
     <script type="module">
-        // Importando módulos exactos de Firebase Realtime Database
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
-        // CONFIGURACIÓN EXACTA PROPORCIONADA POR EL USUARIO
         const firebaseConfig = {
             apiKey: "AIzaSyBmNIL7yk48zqe6Hdk__eG48qwuj3SPdtE",
             authDomain: "lapapacaliente.firebaseapp.com",
-            databaseURL: "https://lapapacaliente-default-rtdb.firebaseio.com", // <-- AÑADIDO: URL Esencial para Realtime DB
+            databaseURL: "https://lapapacaliente-default-rtdb.firebaseio.com",
             projectId: "lapapacaliente",
             storageBucket: "lapapacaliente.firebasestorage.app",
             messagingSenderId: "259622247837",
@@ -802,31 +845,28 @@
             measurementId: "G-D37V8Z3W13"
         };
         
-        // Mock Initial Data (En caso de que la Nube esté 100% vacía al iniciar)
         const initialMenu = [
             { id: 'p1', title: 'La Clásica Trufada', desc: 'Papa gigante con crema agria, cebollín y tocino crujiente.', price: 12.00, cat: 'Papas Premium', tag: 'Más Vendidos', img: 'https://images.unsplash.com/photo-1596450514735-11003b57edec?auto=format&fit=crop&w=600&q=80', recipe: [{id: 'i1', qty: 1}, {id: 'i3', qty: 50}] }
         ];
         const initialIngredients = [
-            { id: 'i1', name: 'Papa Gigante', unit: 'uds', stock: 100, min: 20 },
-            { id: 'i3', name: 'Tocino Premium', unit: 'gr', stock: 2000, min: 500 }
+            { id: 'i1', name: 'Papa Gigante', unit: 'uds', stock: 100, min: 20, cost: 0.50 },
+            { id: 'i3', name: 'Tocino Premium', unit: 'gr', stock: 2000, min: 500, cost: 0.02 }
         ];
 
-        // Estado Global Mixto
         window.STATE = {
             menu: initialMenu, ingredients: initialIngredients, orders: [], gallery: [],
             caja: { isOpen: false, startAmt: 0, total: 0, moves: [] },
             settings: { 
                 apiKey: '', phone: '+18095550000', mapEmbed: '', mapLink: '',
-                logo: 'https://placehold.co/100x100/FF3D00/FFF?text=PC', cover: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920&auto=format&fit=crop'
+                logo: 'https://placehold.co/100x100/FF3D00/FFF?text=PC', cover: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920&auto=format&fit=crop',
+                banks: [] 
             },
             cart: [], currentUser: null, currentFilter: 'all', tempRecipe: []
         };
 
-        // Variables Firebase
         let app, db, analytics;
         let isCloudSyncing = false; 
 
-        // --- FUNCIONES LOCALES DE RESPALDO ---
         function loadLocalData() {
             try {
                 const localData = localStorage.getItem('erp_local_state');
@@ -839,27 +879,25 @@
                     window.STATE.caja = parsed.caja || window.STATE.caja;
                     if (!window.STATE.caja.moves) window.STATE.caja.moves = [];
                     if(parsed.settings) window.STATE.settings = parsed.settings;
+                    if(!window.STATE.settings.banks) window.STATE.settings.banks = [];
                 }
             } catch(e) { console.error(e); }
             window.renderApp();
         }
 
-        // --- SISTEMA FIREBASE CLOUD (REALTIME DATABASE) ---
         async function initCloudSystem() {
             try {
                 app = initializeApp(firebaseConfig);
                 db = getDatabase(app);
-                try { analytics = getAnalytics(app); } catch(e){} // Opcional por si AdBlocker lo bloquea
+                try { analytics = getAnalytics(app); } catch(e){} 
 
                 const dbRef = ref(db, 'lapapacaliente/erp_state');
                 
-                // onValue escucha cambios en tiempo real automáticamente
                 onValue(dbRef, (snapshot) => {
                     if (snapshot.exists()) {
                         isCloudSyncing = true;
                         const cloudData = snapshot.val();
                         
-                        // Fusionar datos de la Nube manteniendo el carrito intacto
                         window.STATE.menu = cloudData.menu || [];
                         window.STATE.ingredients = cloudData.ingredients || [];
                         window.STATE.orders = cloudData.orders || [];
@@ -867,22 +905,22 @@
                         window.STATE.caja = cloudData.caja || { isOpen: false, startAmt: 0, total: 0, moves: [] };
                         if (!window.STATE.caja.moves) window.STATE.caja.moves = [];
                         if(cloudData.settings) window.STATE.settings = cloudData.settings;
+                        if(!window.STATE.settings.banks) window.STATE.settings.banks = [];
                         
                         window.renderApp();
                         setTimeout(() => { isCloudSyncing = false; }, 500);
                     } else {
-                        // Si está vacío, guardar el estado inicial Mock
                         window.secureSave();
                         window.renderApp();
                     }
                 }, (error) => {
-                    console.error("Cloud Error (Permisos/Red):", error);
+                    console.error("Cloud Error:", error);
                     window.showToast("Cargando Modo Híbrido (Offline)", "error");
                     loadLocalData();
                 });
             } catch(e) {
                 console.error("Firebase Init Error:", e);
-                loadLocalData(); // Fallback Local
+                loadLocalData();
             }
         }
 
@@ -893,10 +931,8 @@
                 caja: window.STATE.caja, settings: window.STATE.settings
             };
 
-            // Guardar local siempre como respaldo extra
             localStorage.setItem('erp_local_state', JSON.stringify(payload));
             
-            // Subir a Realtime Database si está conectado
             if(db && !isCloudSyncing) {
                 try {
                     await set(ref(db, 'lapapacaliente/erp_state'), payload);
@@ -930,8 +966,7 @@
             document.getElementById('lightbox-img').classList.replace('scale-100', 'scale-95');
             document.getElementById('lightbox-modal').classList.remove('active');
         };
-        
-        // CREADOR DE ICONOS INTELIGENTES (Añadir esto aquí)
+
         window.getIngredientIcon = (name) => {
             const n = name.toLowerCase();
             if(n.includes('queso') || n.includes('cheddar') || n.includes('mozzarella') || n.includes('suizo')) return '🧀';
@@ -945,7 +980,7 @@
             if(n.includes('huevo')) return '🍳';
             if(n.includes('jalapeño') || n.includes('picante')) return '🌶️';
             if(n.includes('papa')) return '🥔';
-            return '🧂'; // por defecto
+            return '🧂'; 
         };
 
         let currNosIdx = 1;
@@ -966,7 +1001,6 @@
         
         window.openCustomPapaModal = () => {
             if(!window.STATE.ingredients || window.STATE.ingredients.length === 0) return window.showToast('No hay ingredientes disponibles', 'error');
-            
             window.customPapaData.selected = {};
             window.updateCustomPapaUI();
             window.openModal('customPapaModal');
@@ -980,14 +1014,12 @@
             
             container.innerHTML = window.STATE.ingredients.map(ing => {
                 if(ing.stock <= 0) return ''; 
-                
                 const qty = window.customPapaData.selected[ing.id] || 0;
                 total += (qty * window.customPapaData.extraPrice);
                 
-                // Construir las etiquetas para el bowl visual
                 if(qty > 0) {
                     for(let i=0; i<qty; i++) {
-                        const rot = Math.floor(Math.random() * 20) - 10; // Rotación aleatoria para que se vea natural
+                        const rot = Math.floor(Math.random() * 20) - 10;
                         badgesHtml += `<span class="bg-zinc-800 text-white border border-papa-fire text-[8px] font-black uppercase px-2 py-1 rounded-full shadow-lg transform rotate-[${rot}deg] animate-[slideUp_0.2s_ease-out]">${window.getIngredientIcon(ing.name)} ${ing.name.substring(0,6)}</span>`;
                     }
                 }
@@ -1018,47 +1050,31 @@
             let curr = window.customPapaData.selected[ingId] || 0;
             curr += delta;
             if(curr < 0) curr = 0;
-            if(curr > 5) curr = 5; // Límite de 5 porciones del mismo ingrediente por seguridad
-            
+            if(curr > 5) curr = 5; 
             window.customPapaData.selected[ingId] = curr;
             window.updateCustomPapaUI();
         };
 
         window.addCustomPapaToCart = () => {
-            let hasExtras = false;
-            let descParts = [];
-            let recipe = [];
-            
+            let hasExtras = false; let descParts = []; let recipe = [];
             for (const [id, qty] of Object.entries(window.customPapaData.selected)) {
                 if(qty > 0) {
                     hasExtras = true;
                     const ing = window.STATE.ingredients.find(i => i.id === id);
-                    if(ing) {
-                        descParts.push(`${qty}x ${ing.name}`);
-                        recipe.push({ id: ing.id, qty: qty });
-                    }
+                    if(ing) { descParts.push(`${qty}x ${ing.name}`); recipe.push({ id: ing.id, qty: qty }); }
                 }
             }
-            
             const customProduct = {
-                id: 'cust-' + Date.now(),
-                title: 'Papa Personalizada (DIY)',
-                price: window.customPapaData.currentTotal,
+                id: 'cust-' + Date.now(), title: 'Papa Personalizada (DIY)', price: window.customPapaData.currentTotal,
                 img: 'https://images.unsplash.com/photo-1596450514735-11003b57edec?auto=format&fit=crop&w=600&q=80',
-                desc: hasExtras ? 'Con: ' + descParts.join(', ') : 'Base clásica sin extras',
-                recipe: recipe
+                desc: hasExtras ? 'Con: ' + descParts.join(', ') : 'Base clásica sin extras', recipe: recipe, note: ''
             };
-            
-            window.STATE.cart.push(customProduct);
-            window.updateCartUI();
-            window.closeModal('customPapaModal');
-            window.showToast('¡Papa Maestra añadida al carrito!');
+            window.STATE.cart.push(customProduct); window.updateCartUI(); window.closeModal('customPapaModal'); window.showToast('¡Papa Maestra añadida al carrito!');
         };
 
-        // Sanidad de Datos Optimizado: Previene XSS sin arruinar textos normales (como el + del teléfono)
         window.sanitize = (str) => {
             if (!str) return '';
-            return str.toString().replace(/[<>"'&]/g, (c) => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','&':'&amp;'}[c]));
+            return str.toString().replace(/[<>]/g, (c) => ({'<':'&lt;','>':'&gt;'}[c]));
         };
 
         window.processImageUpload = (event, callback) => {
@@ -1072,14 +1088,9 @@
                     const MAX_WIDTH = 600; 
                     let scaleSize = MAX_WIDTH / img.width;
                     if(scaleSize > 1) scaleSize = 1;
-                    
-                    canvas.width = img.width * scaleSize;
-                    canvas.height = img.height * scaleSize;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
-                    callback(dataUrl);
+                    canvas.width = img.width * scaleSize; canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    callback(canvas.toDataURL('image/jpeg', 0.6));
                 }
                 img.src = e.target.result;
             };
@@ -1097,7 +1108,6 @@
             document.getElementById('inicio').style.backgroundImage = `url('${window.STATE.settings.cover || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920&auto=format&fit=crop'}')`;
             document.getElementById('pub-contact').innerText = window.STATE.settings.phone || '';
             
-            // Actualizar fotos del carrusel de Nosotros si existen en los ajustes
             if (window.STATE.settings.nos1) document.getElementById('nos-img-1').src = window.STATE.settings.nos1;
             if (window.STATE.settings.nos2) document.getElementById('nos-img-2').src = window.STATE.settings.nos2;
             if (window.STATE.settings.nos3) document.getElementById('nos-img-3').src = window.STATE.settings.nos3;
@@ -1112,7 +1122,7 @@
             if (window.STATE.currentFilter !== 'all') items = items.filter(i => i.tag === window.STATE.currentFilter);
             
             catGrid.innerHTML = items.map(item => {
-                const isAvail = item.available !== false; // Si no existe, es true por defecto
+                const isAvail = item.available !== false; 
                 return `
                 <div class="glass-panel rounded-3xl overflow-hidden menu-card flex flex-col relative border-white/10 shadow-lg ${!isAvail ? 'opacity-70 grayscale-[30%]' : ''}">
                     ${!isAvail ? `<div class="absolute inset-0 bg-black/60 z-30 flex items-center justify-center backdrop-blur-[2px]"><span class="bg-red-600 text-white font-black text-2xl px-6 py-2 rounded-xl transform -rotate-12 border-2 border-white/20 shadow-2xl tracking-widest">AGOTADO</span></div>` : ''}
@@ -1147,7 +1157,27 @@
 
         window.addToCart = (id) => {
             const item = window.STATE.menu.find(i => i.id === id);
-            if(item) { window.STATE.cart.push(item); window.updateCartUI(); window.showToast('Agregado a tu orden'); }
+            if(item) { 
+                const cartItem = JSON.parse(JSON.stringify(item));
+                cartItem.note = ''; 
+                window.STATE.cart.push(cartItem); 
+                window.updateCartUI(); window.showToast('Agregado a tu orden'); 
+            }
+        };
+
+        window.addNoteToCartItem = async (idx) => {
+            const item = window.STATE.cart[idx];
+            const { value: text } = await Swal.fire({
+                title: 'Nota / Extra',
+                input: 'text',
+                inputLabel: 'Ej: Sin cebolla, Extra salsa (+$50)',
+                inputValue: item.note || '',
+                background: '#111', color: '#fff', confirmButtonColor: '#FF3D00'
+            });
+            if (text !== undefined) {
+                window.STATE.cart[idx].note = window.sanitize(text);
+                window.updateCartUI();
+            }
         };
 
         window.toggleCart = () => {
@@ -1167,7 +1197,26 @@
             } else {
                 view.innerHTML = window.STATE.cart.map((item, idx) => {
                     sum += parseFloat(item.price);
-                    return `<div class="flex items-center gap-3 bg-zinc-900/60 p-2 rounded-xl border border-white/5"><img src="${item.img}" class="w-10 h-10 object-cover rounded-lg shrink-0"><div class="flex-1 min-w-0"><p class="font-bold text-white text-xs truncate uppercase">${item.title}</p><p class="font-black text-papa-yellow text-xs">$${parseFloat(item.price).toFixed(2)}</p></div><button onclick="window.STATE.cart.splice(${idx},1); window.updateCartUI();" class="text-red-500 hover:bg-red-500/20 p-2 rounded"><i class="ph-bold ph-trash"></i></button></div>`;
+                    return `
+                    <div class="flex flex-col gap-2 bg-zinc-900/60 p-3 rounded-xl border border-white/5">
+                        <div class="flex items-center gap-3">
+                            <img src="${item.img}" class="w-12 h-12 object-cover rounded-lg shrink-0">
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold text-white text-xs truncate uppercase">${item.title}</p>
+                                <p class="font-black text-papa-yellow text-xs">$${parseFloat(item.price).toFixed(2)}</p>
+                            </div>
+                            <button onclick="window.STATE.cart.splice(${idx},1); window.updateCartUI();" class="text-red-500 hover:bg-red-500/20 p-2 rounded"><i class="ph-bold ph-trash text-lg"></i></button>
+                        </div>
+                        <div class="mt-1">
+                            ${item.note ?
+                                `<div class="bg-black/50 p-2 rounded-lg border border-white/10 flex justify-between items-center gap-2">
+                                    <span class="text-[10px] text-papa-yellow italic flex-1"><i class="ph-fill ph-warning-circle"></i> Nota: ${item.note}</span>
+                                    <button onclick="window.addNoteToCartItem(${idx})" class="text-blue-400 hover:text-blue-300 text-[10px] font-bold bg-blue-500/10 px-2 py-1 rounded">Editar</button>
+                                </div>` :
+                                `<button onclick="window.addNoteToCartItem(${idx})" class="text-[10px] text-zinc-400 hover:text-white border border-dashed border-zinc-600 hover:border-zinc-400 rounded-lg px-3 py-1.5 flex items-center gap-1 w-full justify-center transition-colors"><i class="ph-bold ph-plus"></i> Agregar Nota o Instrucción Especial</button>`
+                            }
+                        </div>
+                    </div>`;
                 }).join('');
             }
             document.getElementById('cart-total').innerText = `$${sum.toFixed(2)}`;
@@ -1179,28 +1228,60 @@
             const b1 = document.getElementById('btn-goto-checkout'), b2 = document.getElementById('btn-confirm-order');
             v1.classList.toggle('hidden'); v2.classList.toggle('hidden'); v2.classList.toggle('flex');
             b1.classList.toggle('hidden'); b2.classList.toggle('hidden');
+            window.toggleAddressField();
         };
 
         window.toggleAddressField = () => {
-            const isDel = document.getElementById('order-type').value === 'Delivery';
+            const type = document.getElementById('order-type').value;
+            const isDel = type === 'Delivery';
+            const isMesa = type === 'Para Comer en Mesa';
+            
             document.getElementById('order-address').classList.toggle('hidden', !isDel);
+            document.getElementById('order-table').classList.toggle('hidden', !isMesa);
+
+            const isTrans = document.getElementById('payment-method').value === 'Transferencia / Tarjeta';
+            const bankInfo = document.getElementById('bank-accounts-info');
+            const bankList = document.getElementById('bank-accounts-list');
+            
+            if(isTrans && window.STATE.settings.banks && window.STATE.settings.banks.length > 0) {
+                bankInfo.classList.remove('hidden');
+                let wsPhone = window.STATE.settings.phone || "nuestro número";
+                bankList.innerHTML = `<div class="mb-3 bg-red-500/10 border border-red-500/30 p-2 rounded text-[10px] text-red-400 font-bold uppercase leading-relaxed text-center"><i class="ph-bold ph-warning"></i> Por favor enviar comprobante de pago a nuestro WhatsApp:<br><span class="text-white font-black text-xs">${wsPhone}</span></div>` + 
+                window.STATE.settings.banks.map(b => `<div class="bg-black border border-white/5 p-2 rounded"><p class="text-[10px] text-zinc-400 uppercase font-bold">${b.bank} - ${b.type}</p><p class="text-sm font-black text-white">${b.num}</p><p class="text-[9px] text-green-400 font-bold uppercase">${b.owner}</p></div>`).join('');
+            } else {
+                bankInfo.classList.add('hidden');
+            }
         };
 
         let tempOrder = null;
         window.generateTicket = () => {
             const name = window.sanitize(document.getElementById('order-name').value);
             const type = document.getElementById('order-type').value;
-            if(!name) return window.showToast('Nombre requerido para confirmar', 'error');
+            const table = window.sanitize(document.getElementById('order-table').value);
+            const address = window.sanitize(document.getElementById('order-address').value);
+            const payment = document.getElementById('payment-method').value;
+
+            if(!name) return window.showToast('Nombre requerido', 'error');
+            if(type === 'Para Comer en Mesa' && !table) return window.showToast('Número de Mesa Requerido', 'error');
+            if(type === 'Delivery' && !address) return window.showToast('Dirección de entrega requerida', 'error');
             
             let sum = 0;
-            const itemsHtml = window.STATE.cart.map(i => { sum+=parseFloat(i.price); return `<div class="flex justify-between border-b border-gray-100 py-1"><span class="truncate pr-2">- ${i.title}</span><span>$${i.price.toFixed(2)}</span></div>`; }).join('');
+            const itemsHtml = window.STATE.cart.map(i => { 
+                sum+=parseFloat(i.price); 
+                return `<div class="flex justify-between border-b border-gray-100 py-1"><div class="pr-2"><span class="truncate">- ${i.title}</span>${i.note ? `<br><span class="text-[9px] text-gray-500 italic block leading-tight ml-2">* Nota: ${i.note}</span>` : ''}</div><span>$${i.price.toFixed(2)}</span></div>`; 
+            }).join('');
             
             const id = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
+            
             document.getElementById('ticket-turn').innerText = id;
+            document.getElementById('ticket-client').innerText = name;
+            document.getElementById('ticket-type').innerText = type + (type === 'Para Comer en Mesa' ? ` (#${table})` : '');
+            document.getElementById('ticket-payment').innerText = payment;
+            document.getElementById('ticket-date').innerText = new Date().toLocaleString();
             document.getElementById('ticket-items').innerHTML = itemsHtml;
             document.getElementById('ticket-total-price').innerText = `$${sum.toFixed(2)}`;
             
-            tempOrder = { id, name, type, items: [...window.STATE.cart], total: sum, status: 'Pendiente', timestamp: Date.now() };
+            tempOrder = { id, name, type, table, address, payment, items: [...window.STATE.cart], total: sum, status: 'Pendiente', timestamp: Date.now() };
             window.toggleCart(); window.openModal('ticketModal');
         };
 
@@ -1209,7 +1290,6 @@
             
             tempOrder.items.forEach(cartItem => {
                 const recipeToUse = cartItem.recipe || (window.STATE.menu.find(m => m.id === cartItem.id) || {}).recipe;
-                
                 if(recipeToUse) {
                     recipeToUse.forEach(rec => {
                         const ing = window.STATE.ingredients.find(i => i.id === rec.id);
@@ -1221,12 +1301,10 @@
                 }
             });
 
-            window.secureSave();
-            window.closeModal('ticketModal');
+            window.secureSave(); window.closeModal('ticketModal');
             window.STATE.cart = []; window.updateCartUI(); window.toggleCheckoutView();
-            document.getElementById('order-name').value = '';
-            window.showToast('¡Pedido enviado a cocina (Nube)!', 'success');
-            
+            document.getElementById('order-name').value = ''; document.getElementById('order-table').value = ''; document.getElementById('order-address').value = '';
+            window.showToast('¡Pedido enviado a cocina!', 'success');
             try { document.getElementById('kds-alert').play(); } catch(e){}
         };
 
@@ -1234,7 +1312,6 @@
             const u = window.sanitize(document.getElementById('login-user').value);
             const p = document.getElementById('login-pass').value;
             
-            // Nuevas credenciales oficiales dictadas
             if(u === 'Papitacaliente' && p === '8494648650') window.STATE.currentUser = 'admin';
             else if(u === 'Cocinapapitacaliente' && p === '11223344') window.STATE.currentUser = 'cocina';
             else return window.showToast('Credenciales Inválidas', 'error');
@@ -1265,6 +1342,8 @@
             if(document.getElementById(`btn-side-${tab}`)) document.getElementById(`btn-side-${tab}`).classList.add('active');
             
             if(tab === 'dashboard' || tab === 'stats') window.renderCharts();
+            if(tab === 'ingredients') window.renderIngredients();
+            if(tab === 'orders') window.renderOrdersHistory();
         };
 
         window.renderAdminViews = () => {
@@ -1272,7 +1351,7 @@
             window.renderKDS();
             if(window.STATE.currentUser === 'admin') {
                 window.renderDashboardMetrics(); window.renderIngredients(); window.renderAdminCatalog();
-                window.renderCaja(); window.renderGalleryAdmin();
+                window.renderCaja(); window.renderGalleryAdmin(); window.renderBankAccounts(); window.renderOrdersHistory();
                 document.getElementById('set-api-key').value = window.STATE.settings.apiKey || '';
                 document.getElementById('set-phone').value = window.STATE.settings.phone || '';
                 document.getElementById('set-map-embed').value = window.STATE.settings.mapEmbed || '';
@@ -1293,11 +1372,9 @@
 
                 counts[colId]++;
                 const mins = Math.floor((now - o.timestamp) / 60000);
-                let timeClass = 'time-ok';
-                if(mins > 10) timeClass = 'time-warn';
-                if(mins > 20) timeClass = 'time-danger';
+                let timeClass = 'time-ok'; if(mins > 10) timeClass = 'time-warn'; if(mins > 20) timeClass = 'time-danger';
 
-                const itemsStr = o.items.map(i => `<div class="text-[10px] font-bold text-zinc-300">- ${i.title}</div>`).join('');
+                const itemsStr = o.items.map(i => `<div class="text-[10px] font-bold text-zinc-300">- ${i.title} ${i.note ? `<span class="text-white bg-red-600 px-1 py-0.5 rounded ml-1 font-black shadow-lg">¡NOTA: ${i.note}!</span>` : ''}</div>`).join('');
                 
                 let btn = '';
                 if(o.status === 'Pendiente') btn = `<button onclick="window.chgStatus('${o.id}','Preparando')" class="w-full bg-blue-600 hover:bg-blue-500 text-white text-[9px] font-black py-2 rounded uppercase mt-2 transition">Empezar a Cocinar</button>`;
@@ -1305,14 +1382,53 @@
                 else if(o.status === 'Empacando') btn = `<button onclick="window.chgStatus('${o.id}','Lista')" class="w-full bg-green-600 hover:bg-green-500 text-white text-[9px] font-black py-2 rounded uppercase mt-2 transition">Despachar (Terminado)</button>`;
                 else if(o.status === 'Lista') btn = `<button onclick="window.chgStatus('${o.id}','Entregada')" class="w-full bg-zinc-600 hover:bg-zinc-500 text-white text-[9px] font-black py-2 rounded uppercase mt-2 transition">Entregar al Cliente</button>`;
 
-                document.getElementById(`kds-col-${colId}`).innerHTML += `<div class="bg-black p-3 rounded-xl border border-white/5 kds-card shadow-lg ${timeClass}"><div class="flex justify-between items-start mb-2"><span class="font-black text-xs text-white">${o.id}</span><span class="text-[10px] text-zinc-400 font-bold bg-zinc-900 px-1.5 py-0.5 rounded">${mins} min</span></div><div class="text-[10px] text-papa-yellow font-bold uppercase mb-2">${o.type} | <span class="text-white">${o.name}</span></div><div class="bg-zinc-900 p-2 rounded-lg border border-white/5 space-y-1">${itemsStr}</div>${btn}</div>`;
+                const locationTag = o.type === 'Para Comer en Mesa' ? `MESA: ${o.table}` : (o.type === 'Delivery' ? `DELIVERY: ${o.address}` : o.type);
+
+                document.getElementById(`kds-col-${colId}`).innerHTML += `<div class="bg-black p-3 rounded-xl border border-white/5 kds-card shadow-lg ${timeClass}"><div class="flex justify-between items-start mb-2"><span class="font-black text-xs text-white">${o.id}</span><span class="text-[10px] text-zinc-400 font-bold bg-zinc-900 px-1.5 py-0.5 rounded">${mins} min</span></div><div class="text-[10px] text-papa-yellow font-bold uppercase mb-2">${locationTag} | <span class="text-white">${o.name}</span></div><div class="bg-zinc-900 p-2 rounded-lg border border-white/5 space-y-1">${itemsStr}</div>${btn}</div>`;
             });
             Object.keys(counts).forEach(k => document.getElementById(`kds-cnt-${k}`).innerText = counts[k]);
         };
 
+        window.renderOrdersHistory = () => {
+            const table = document.getElementById('orders-history-table');
+            if(!window.STATE.orders || window.STATE.orders.length === 0) {
+                table.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-zinc-500">No hay órdenes registradas.</td></tr>`;
+                return;
+            }
+            
+            const sorted = [...window.STATE.orders].sort((a,b) => b.timestamp - a.timestamp);
+            table.innerHTML = sorted.map(o => `
+                <tr class="hover:bg-white/5 transition border-b border-white/5">
+                    <td class="py-3 pl-2">${o.id}</td>
+                    <td class="py-3 text-zinc-400 font-normal">${new Date(o.timestamp).toLocaleString()}</td>
+                    <td class="py-3">
+                        <span class="text-white">${o.name}</span><br>
+                        <span class="text-[9px] text-zinc-500 font-normal uppercase">${o.type === 'Para Comer en Mesa' ? `MESA: ${o.table}` : o.type} | PAGO: ${o.payment}</span>
+                    </td>
+                    <td class="py-3 text-papa-yellow">$${o.total.toFixed(2)}</td>
+                    <td class="py-3">
+                        <span class="${o.status === 'Entregada' ? 'text-green-500' : (o.status === 'Cancelada' ? 'text-red-500' : 'text-blue-400')} uppercase text-[10px] px-2 py-1 bg-zinc-900 rounded">${o.status}</span>
+                    </td>
+                    <td class="py-3 text-right">
+                        <select onchange="window.chgStatus('${o.id}', this.value)" class="bg-zinc-900 text-white border border-white/10 text-[10px] rounded p-1 outline-none">
+                            <option value="" disabled selected>Cambiar...</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Entregada">Entregada</option>
+                            <option value="Cancelada">Cancelada</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join('');
+        };
+
         window.chgStatus = (id, stat) => {
             const o = window.STATE.orders.find(x => x.id === id);
-            if(o) { o.status = stat; window.secureSave(); }
+            if(o) { 
+                o.status = stat; 
+                window.secureSave(); 
+                window.renderKDS();
+                if(document.getElementById('panel-admin-orders').classList.contains('hidden') === false) window.renderOrdersHistory();
+            }
         };
         setInterval(() => { if(window.STATE.currentUser && document.getElementById('panel-admin-kds').classList.contains('hidden') === false) window.renderKDS(); }, 30000);
 
@@ -1329,22 +1445,63 @@
         };
 
         window.renderIngredients = () => {
-            document.getElementById('ingredients-table').innerHTML = window.STATE.ingredients.map(i => `<tr class="hover:bg-white/5 transition"><td class="py-3 pl-2">${i.name}</td><td class="py-3 text-zinc-500">${i.unit}</td><td class="py-3 ${i.stock <= i.min ? 'text-red-500 animate-pulse' : 'text-green-400'}">${i.stock}</td><td class="py-3 text-zinc-500">${i.min}</td><td class="py-3 text-right"><button onclick="window.addStock('${i.id}')" class="text-white text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded transition">Reabastecer</button></td></tr>`).join('');
+            let totalValue = 0;
+            document.getElementById('ingredients-table').innerHTML = window.STATE.ingredients.map(i => {
+                const costo = i.cost || 0;
+                const valorTotal = i.stock * costo;
+                totalValue += valorTotal;
+                return `
+                <tr class="hover:bg-white/5 transition border-b border-white/5">
+                    <td class="py-3 pl-2">${i.name}</td>
+                    <td class="py-3 text-zinc-500">${i.unit}</td>
+                    <td class="py-3 text-zinc-400">$${costo.toFixed(2)}</td>
+                    <td class="py-3 ${i.stock <= i.min ? 'text-red-500 animate-pulse' : 'text-green-400'}">${i.stock}</td>
+                    <td class="py-3 text-white">$${valorTotal.toFixed(2)}</td>
+                    <td class="py-3 text-zinc-500">${i.min}</td>
+                    <td class="py-3 text-right space-x-1 flex justify-end">
+                        <button onclick="window.addStock('${i.id}')" class="text-white text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded transition">Reponer</button>
+                        <button onclick="window.editIng('${i.id}')" class="text-white bg-zinc-700 hover:bg-zinc-600 px-2 py-1.5 rounded transition"><i class="ph-bold ph-pencil"></i></button>
+                        <button onclick="window.deleteIng('${i.id}')" class="text-white bg-red-600/50 hover:bg-red-500 px-2 py-1.5 rounded transition"><i class="ph-bold ph-trash"></i></button>
+                    </td>
+                </tr>`
+            }).join('');
+            document.getElementById('ing-total-valuation').innerText = `$${totalValue.toFixed(2)}`;
         };
 
         window.addStock = async (id) => {
             const ing = window.STATE.ingredients.find(i => i.id === id);
             const { value: amt } = await Swal.fire({ title: `Agregar Stock: ${ing.name}`, input: 'number', background:'#111', color:'#fff', inputPlaceholder: `Cantidad en ${ing.unit}` });
-            if(amt && amt > 0) { ing.stock += parseInt(amt); window.secureSave(); window.showToast('Stock Actualizado'); }
+            if(amt && amt > 0) { ing.stock += parseInt(amt); window.secureSave(); window.renderIngredients(); window.showToast('Stock Actualizado'); }
         };
 
         window.openIngModal = async () => {
             const { value: form } = await Swal.fire({
-                title: 'Nuevo Ingrediente', html: `<input id="swal-ing-n" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Nombre (Ej: Queso Cheddar)"><input id="swal-ing-u" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Unidad de Medida (Ej: gr, uds)"><input type="number" id="swal-ing-s" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Stock Inicial"><input type="number" id="swal-ing-m" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Alerta Mínimo">`,
+                title: 'Nuevo Ingrediente', html: `<input id="swal-ing-n" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Nombre (Ej: Queso)"><input id="swal-ing-u" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Unidad (Ej: gr, uds)"><input type="number" step="0.01" id="swal-ing-c" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Costo por Unidad ($)"><input type="number" id="swal-ing-s" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Stock Inicial"><input type="number" id="swal-ing-m" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Alerta Mínimo">`,
                 focusConfirm: false, background:'#111', color:'#fff', confirmButtonColor: '#FF3D00',
-                preConfirm: () => ({ name: window.sanitize(document.getElementById('swal-ing-n').value), unit: window.sanitize(document.getElementById('swal-ing-u').value), stock: parseInt(document.getElementById('swal-ing-s').value||0), min: parseInt(document.getElementById('swal-ing-m').value||0) })
+                preConfirm: () => ({ name: window.sanitize(document.getElementById('swal-ing-n').value), unit: window.sanitize(document.getElementById('swal-ing-u').value), cost: parseFloat(document.getElementById('swal-ing-c').value||0), stock: parseInt(document.getElementById('swal-ing-s').value||0), min: parseInt(document.getElementById('swal-ing-m').value||0) })
             });
-            if(form && form.name) { window.STATE.ingredients.push({ id:'i'+Date.now(), ...form }); window.secureSave(); window.showToast('Ingrediente creado'); }
+            if(form && form.name) { window.STATE.ingredients.push({ id:'i'+Date.now(), ...form }); window.secureSave(); window.renderIngredients(); window.showToast('Ingrediente creado'); }
+        };
+
+        window.editIng = async (id) => {
+            const ing = window.STATE.ingredients.find(i => i.id === id);
+            const { value: form } = await Swal.fire({
+                title: 'Editar Ingrediente', html: `<input id="swal-ing-n" value="${ing.name}" class="swal2-input bg-zinc-900 border-white/10 text-white"><input id="swal-ing-u" value="${ing.unit}" class="swal2-input bg-zinc-900 border-white/10 text-white"><input type="number" step="0.01" id="swal-ing-c" value="${ing.cost || 0}" class="swal2-input bg-zinc-900 border-white/10 text-white"><input type="number" id="swal-ing-s" value="${ing.stock}" class="swal2-input bg-zinc-900 border-white/10 text-white"><input type="number" id="swal-ing-m" value="${ing.min}" class="swal2-input bg-zinc-900 border-white/10 text-white">`,
+                focusConfirm: false, background:'#111', color:'#fff', confirmButtonColor: '#FF3D00',
+                preConfirm: () => ({ name: window.sanitize(document.getElementById('swal-ing-n').value), unit: window.sanitize(document.getElementById('swal-ing-u').value), cost: parseFloat(document.getElementById('swal-ing-c').value||0), stock: parseInt(document.getElementById('swal-ing-s').value||0), min: parseInt(document.getElementById('swal-ing-m').value||0) })
+            });
+            if(form && form.name) { 
+                ing.name = form.name; ing.unit = form.unit; ing.cost = form.cost; ing.stock = form.stock; ing.min = form.min; 
+                window.secureSave(); window.renderIngredients(); window.showToast('Ingrediente editado'); 
+            }
+        };
+
+        window.deleteIng = async (id) => {
+            const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Ingrediente?', text: 'Esto puede afectar las recetas de los platos.', icon: 'warning', background:'#111', color:'#fff', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Eliminar' });
+            if(isConfirmed) {
+                window.STATE.ingredients = window.STATE.ingredients.filter(i => i.id !== id);
+                window.secureSave(); window.renderIngredients(); window.showToast('Ingrediente eliminado');
+            }
         };
 
         window.renderAdminCatalog = () => {
@@ -1371,22 +1528,15 @@
             const orig = window.STATE.menu.find(m => m.id === id);
             const dup = JSON.parse(JSON.stringify(orig)); 
             dup.id = 'p' + Date.now(); dup.title += ' (Clon)';
-            window.STATE.menu.push(dup); window.secureSave(); window.showToast('Plato duplicado');
+            window.STATE.menu.push(dup); window.secureSave(); window.renderAdminCatalog(); window.showToast('Plato duplicado');
         };
 
         window.deleteProduct = async (id) => {
             const prod = window.STATE.menu.find(m => m.id === id);
-            const { isConfirmed } = await Swal.fire({
-                title: '¿Eliminar Plato?',
-                text: `Se borrará "${prod.title}" del menú permanentemente. Esta acción no se puede deshacer.`,
-                icon: 'warning',
-                background: '#111', color: '#fff',
-                showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
-            });
+            const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Plato?', text: `Se borrará "${prod.title}" permanentemente.`, icon: 'warning', background: '#111', color: '#fff', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Eliminar' });
             if(isConfirmed) {
                 window.STATE.menu = window.STATE.menu.filter(m => m.id !== id);
-                window.secureSave();
-                window.showToast('Plato eliminado de la base de datos');
+                window.secureSave(); window.renderAdminCatalog(); window.showToast('Plato eliminado');
             }
         };
 
@@ -1404,9 +1554,7 @@
                 document.getElementById('edit-price').value = p.price;
                 document.getElementById('edit-available').value = p.available !== false ? "true" : "false";
                 document.getElementById('edit-desc').value = p.desc;
-                
-                imgPreview.src = p.img; imgPreview.dataset.src = p.img;
-                imgPreview.classList.remove('hidden');
+                imgPreview.src = p.img; imgPreview.dataset.src = p.img; imgPreview.classList.remove('hidden');
                 window.STATE.tempRecipe = JSON.parse(JSON.stringify(p.recipe || []));
             } else {
                 ['edit-id','edit-title','edit-tag','edit-cat','edit-price','edit-desc'].forEach(i => document.getElementById(i).value = '');
@@ -1453,7 +1601,7 @@
             const idx = window.STATE.menu.findIndex(x => x.id === p.id);
             if(idx > -1) window.STATE.menu[idx] = p; else window.STATE.menu.push(p);
             
-            window.secureSave(); window.closeModal('editModal'); window.showToast('Plato guardado');
+            window.secureSave(); window.closeModal('editModal'); window.renderAdminCatalog(); window.showToast('Plato guardado');
         };
 
         window.renderCaja = () => {
@@ -1477,7 +1625,7 @@
                 window.STATE.caja.isOpen = false;
                 window.showToast(`Cierre de Caja Exitoso. Total: $${window.STATE.caja.total}`);
             }
-            window.secureSave();
+            window.secureSave(); window.renderCaja();
         };
 
         window.calcularVuelto = () => {
@@ -1487,12 +1635,8 @@
             const cambioEl = document.getElementById('calc-cambio');
             
             if(total === 0) { cambioEl.innerText = '$0.00'; cambioEl.className = 'text-3xl font-black text-white relative z-10'; return; }
-            
-            if(cambio < 0 && pago > 0) {
-                cambioEl.innerText = 'Falta Dinero'; cambioEl.className = 'text-3xl font-black text-red-500 relative z-10 animate-pulse';
-            } else {
-                cambioEl.innerText = `$${Math.max(0, cambio).toFixed(2)}`; cambioEl.className = `text-4xl font-black relative z-10 ${cambio > 0 ? 'text-green-400' : 'text-white'}`;
-            }
+            if(cambio < 0 && pago > 0) { cambioEl.innerText = 'Falta Dinero'; cambioEl.className = 'text-3xl font-black text-red-500 relative z-10 animate-pulse'; } 
+            else { cambioEl.innerText = `$${Math.max(0, cambio).toFixed(2)}`; cambioEl.className = `text-4xl font-black relative z-10 ${cambio > 0 ? 'text-green-400' : 'text-white'}`; }
         };
 
         window.registrarCobroCalculadora = () => {
@@ -1502,12 +1646,19 @@
             
             window.STATE.caja.total += total; 
             if (!window.STATE.caja.moves) window.STATE.caja.moves = [];
-            window.STATE.caja.moves.push({ type: 'in', desc: 'Cobro Manual Asistido', amt: total, time: new Date().toLocaleTimeString() });
+            window.STATE.caja.moves.push({ type: 'in', desc: 'Cobro Manual POS', amt: total, time: new Date().toLocaleTimeString() });
             window.secureSave();
             
             document.getElementById('calc-total').value = ''; document.getElementById('calc-pago').value = '';
-            window.calcularVuelto(); window.showToast('Ingreso Neto registrado en caja', 'success');
-            window.renderCaja(); // Actualizamos la interfaz de la caja inmediatamente
+            window.calcularVuelto(); window.showToast('Venta registrada exitosamente', 'success'); window.renderCaja();
+        };
+
+        window.calcSplitBill = () => {
+            const total = parseFloat(document.getElementById('split-total').value || 0);
+            const people = parseInt(document.getElementById('split-people').value || 1);
+            if(people < 1) document.getElementById('split-people').value = 1;
+            const res = total / Math.max(1, people);
+            document.getElementById('split-result').innerText = `$${res.toFixed(2)}`;
         };
 
         let calcInput = '';
@@ -1533,35 +1684,65 @@
             document.getElementById('rep-tot-avg').innerText = validOrders.length ? `$${(totalMoney/validOrders.length).toFixed(2)}` : '$0.00';
             
             document.getElementById('print-date-range').innerText = `Periodo Consultado: ${new Date(st).toLocaleDateString()} al ${new Date(en-1).toLocaleDateString()}`;
-            document.getElementById('report-table').innerHTML = res.map(o => `<tr><td class="py-2 border-b border-white/5 print:border-gray-200">${o.id}</td><td class="py-2 border-b border-white/5 print:border-gray-200">${new Date(o.timestamp).toLocaleDateString()}</td><td class="py-2 border-b border-white/5 print:border-gray-200 truncate max-w-[150px]">${o.name}</td><td class="py-2 border-b border-white/5 print:border-gray-200 font-black ${o.status==='Cancelada'?'text-red-500':'text-zinc-400'} print:text-black">${o.status}</td><td class="py-2 border-b border-white/5 print:border-gray-200 text-right text-papa-yellow print:text-black">$${o.total.toFixed(2)}</td></tr>`).join('');
+            document.getElementById('report-table').innerHTML = res.map(o => `<tr><td class="py-2 border-b border-white/5 print:border-gray-200">${o.id}</td><td class="py-2 border-b border-white/5 print:border-gray-200">${new Date(o.timestamp).toLocaleDateString()}</td><td class="py-2 border-b border-white/5 print:border-gray-200 truncate max-w-[150px]">${o.name} <br> <span class="text-[9px] text-zinc-400 print:text-gray-500">${o.table ? `Mesa: ${o.table}` : o.type}</span></td><td class="py-2 border-b border-white/5 print:border-gray-200 font-black ${o.status==='Cancelada'?'text-red-500':'text-zinc-400'} print:text-black">${o.status}</td><td class="py-2 border-b border-white/5 print:border-gray-200 text-right text-papa-yellow print:text-black">$${o.total.toFixed(2)}</td></tr>`).join('');
             window.lastReportData = res;
         };
 
         window.exportCSV = () => {
             if(!window.lastReportData || window.lastReportData.length === 0) return window.showToast('Genera un reporte primero', 'error');
-            const headers = "OrdenID,Fecha,Cliente,Tipo,Estado,Total_USD\n";
-            const rows = window.lastReportData.map(o => `${o.id},${new Date(o.timestamp).toLocaleDateString()},${o.name},${o.type},${o.status},${o.total}`).join('\n');
+            const headers = "OrdenID,Fecha,Cliente,Tipo_Mesa,Estado,Total_USD\n";
+            const rows = window.lastReportData.map(o => `${o.id},${new Date(o.timestamp).toLocaleDateString()},${o.name},${o.table || o.type},${o.status},${o.total}`).join('\n');
             const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "ERP_Reporte.csv"; link.click();
         };
 
+        window.printReport = () => {
+            document.getElementById('panel-admin-reports').classList.add('active-print');
+            window.print();
+            setTimeout(() => document.getElementById('panel-admin-reports').classList.remove('active-print'), 1000);
+        };
+
+        window.addBankAccount = async () => {
+            const { value: form } = await Swal.fire({
+                title: 'Nueva Cuenta Bancaria', html: `<input id="bnk-b" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Banco (Ej: Banreservas)"><input id="bnk-o" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="A Nombre De..."><input id="bnk-t" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Tipo (Ahorro/Corriente)"><input id="bnk-n" class="swal2-input bg-zinc-900 border-white/10 text-white" placeholder="Número de Cuenta">`,
+                focusConfirm: false, background:'#111', color:'#fff', confirmButtonColor: '#FF3D00',
+                preConfirm: () => ({ bank: window.sanitize(document.getElementById('bnk-b').value), owner: window.sanitize(document.getElementById('bnk-o').value), type: window.sanitize(document.getElementById('bnk-t').value), num: window.sanitize(document.getElementById('bnk-n').value) })
+            });
+            if(form && form.bank) { 
+                if(!window.STATE.settings.banks) window.STATE.settings.banks = [];
+                window.STATE.settings.banks.push(form); window.secureSave(); window.renderBankAccounts(); window.showToast('Cuenta agregada'); 
+            }
+        };
+
+        window.deleteBankAccount = (idx) => {
+            window.STATE.settings.banks.splice(idx, 1);
+            window.secureSave(); window.renderBankAccounts();
+        };
+
+        window.renderBankAccounts = () => {
+            const list = document.getElementById('settings-banks-list');
+            if(!window.STATE.settings.banks || window.STATE.settings.banks.length === 0) list.innerHTML = '<p class="text-xs text-zinc-500 italic">No hay cuentas registradas.</p>';
+            else {
+                list.innerHTML = window.STATE.settings.banks.map((b, idx) => `<div class="flex justify-between items-center bg-black border border-white/10 p-3 rounded"><div class="text-xs font-bold text-white"><span class="text-papa-yellow uppercase">${b.bank}</span> - ${b.num} <br><span class="text-[10px] text-zinc-400 font-normal">${b.type} | Titular: ${b.owner}</span></div><button onclick="window.deleteBankAccount(${idx})" class="text-red-500 hover:text-red-400 p-2"><i class="ph-bold ph-trash text-lg"></i></button></div>`).join('');
+            }
+        };
+
         window.uploadGalleryImage = (event) => {
             window.processImageUpload(event, (dataUrl) => {
-                window.STATE.gallery.push(dataUrl);
-                window.secureSave(); window.showToast('Foto subida (Nube)');
+                window.STATE.gallery.push(dataUrl); window.secureSave(); window.renderGalleryAdmin(); window.showToast('Foto subida (Nube)');
             });
         };
 
         window.renderGalleryAdmin = () => {
-            document.getElementById('admin-gallery-grid').innerHTML = window.STATE.gallery.map((url, idx) => `<div class="h-32 bg-black rounded-xl border border-white/10 overflow-hidden relative group shadow-lg"><img src="${url}" class="w-full h-full object-cover"><button onclick="window.STATE.gallery.splice(${idx},1); window.secureSave();" class="absolute inset-0 bg-red-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i class="ph-bold ph-trash text-3xl drop-shadow-md"></i></button></div>`).join('');
+            document.getElementById('admin-gallery-grid').innerHTML = window.STATE.gallery.map((url, idx) => `<div class="h-32 bg-black rounded-xl border border-white/10 overflow-hidden relative group shadow-lg"><img src="${url}" class="w-full h-full object-cover"><button onclick="window.STATE.gallery.splice(${idx},1); window.secureSave(); window.renderGalleryAdmin(); window.renderStorefront();" class="absolute inset-0 bg-red-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i class="ph-bold ph-trash text-3xl drop-shadow-md"></i></button></div>`).join('');
         };
 
         window.saveSettings = () => {
             window.STATE.settings.apiKey = window.sanitize(document.getElementById('set-api-key').value);
-            window.STATE.settings.phone = window.sanitize(document.getElementById('set-phone').value);
+            window.STATE.settings.phone = document.getElementById('set-phone').value;
             window.STATE.settings.mapEmbed = document.getElementById('set-map-embed').value;
             window.STATE.settings.mapLink = document.getElementById('set-map-link').value;
-            window.secureSave(); window.showToast('Ajustes en Nube Guardados');
+            window.secureSave(); window.renderStorefront(); window.showToast('Ajustes Guardados');
         };
 
         let charts = {};
@@ -1569,7 +1750,6 @@
             if(!window.Chart) return;
             Chart.defaults.color = '#888'; Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
             if(charts.w) charts.w.destroy(); if(charts.t) charts.t.destroy(); if(charts.y) charts.y.destroy();
-            
             charts.w = new Chart(document.getElementById('chart-sales-week'), { type: 'line', data: { labels: ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'], datasets: [{ label: 'Ingresos', data: [120, 190, 300, 250, 400, 500, 450], borderColor: '#FFB800', backgroundColor: 'rgba(255,184,0,0.1)', fill: true }] }});
             charts.t = new Chart(document.getElementById('chart-top-products'), { type: 'bar', data: { labels: ['Trufada', 'Brisket', 'Volcán', 'Drink'], datasets: [{ label: 'Cant.', data: [45, 30, 25, 60], backgroundColor: 'rgba(255,61,0,0.7)', borderRadius: 4 }] }});
             charts.y = new Chart(document.getElementById('chart-sales-year'), { type: 'bar', data: { labels: ['Ene','Feb','Mar','Abr','May'], datasets: [{ label: 'Crecimiento', data: [4000, 4500, 3800, 5200, 6000], backgroundColor: 'rgba(255,184,0,0.7)', borderRadius: 4 }] }});
@@ -1593,30 +1773,20 @@
             }
 
             try {
-                const menuContext = window.STATE.menu.map(m => {
-                    const ings = m.recipe ? m.recipe.map(r => { const i = window.STATE.ingredients.find(x=>x.id===r.id); return i ? i.name : ''; }).join(',') : '';
-                    return `- ${m.title} (Gasta: ${ings}). $${m.price}`;
-                }).join('\n');
-
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.STATE.settings.apiKey}`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text }] }], systemInstruction: { parts: [{ text: `Eres camarero de La Papa Caliente. Base de Platos:\n${menuContext}\nRegla: NO inventes platos. Sugiere solo lo de la base.` }] } })
-                });
-
+                const menuContext = window.STATE.menu.map(m => { const ings = m.recipe ? m.recipe.map(r => { const i = window.STATE.ingredients.find(x=>x.id===r.id); return i ? i.name : ''; }).join(',') : ''; return `- ${m.title} (Gasta: ${ings}). $${m.price}`; }).join('\n');
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.STATE.settings.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text }] }], systemInstruction: { parts: [{ text: `Eres camarero de La Papa Caliente. Base de Platos:\n${menuContext}\nRegla: NO inventes platos. Sugiere solo lo de la base.` }] } }) });
                 document.getElementById(typingId).remove();
                 if (!res.ok) throw new Error();
                 const aiOutput = (await res.json()).candidates?.[0]?.content?.parts?.[0]?.text;
                 if (aiOutput) history.innerHTML += `<div class="flex items-start gap-3 w-5/6 mt-1"><div class="w-7 h-7 rounded-full bg-papa-fire flex items-center justify-center shrink-0 shadow-lg"><i class="ph-fill ph-robot text-white text-xs"></i></div><div class="bg-zinc-900 text-white text-xs p-3 rounded-2xl rounded-tl-none border border-white/5 shadow-md leading-relaxed whitespace-pre-line">${aiOutput.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div></div>`;
             } catch (e) {
-                if (document.getElementById(typingId)) document.getElementById(typingId).remove();
-                history.innerHTML += `<div class="text-red-500 text-[10px] pl-10 mt-1 font-bold">Fallo en conexión IA.</div>`;
+                if (document.getElementById(typingId)) document.getElementById(typingId).remove(); history.innerHTML += `<div class="text-red-500 text-[10px] pl-10 mt-1 font-bold">Fallo en conexión IA.</div>`;
             }
             history.scrollTop = history.scrollHeight;
         };
 
         window.addEventListener('scroll', () => { document.querySelectorAll('.animate-on-scroll').forEach(el => { if (el.getBoundingClientRect().top < window.innerHeight - 40) el.classList.add('visible'); }); });
 
-        // Inicializar Sistema en la Nube
         initCloudSystem();
 
     </script>
