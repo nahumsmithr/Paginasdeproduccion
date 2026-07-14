@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth" style="scroll-behavior: smooth; scroll-padding-top: 80px;">
 <head>
@@ -6,9 +7,9 @@
     <meta name="referrer" content="no-referrer">
     <title>La Papa Caliente | ERP & Premium Food Truck</title>
     
-    <script src="    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -400,10 +401,8 @@ https://unpkg.com/@phosphor-icons/web"></script>
         <img id="lightbox-img" src="" class="max-w-full max-h-full object-contain transform scale-95 transition-transform duration-300 shadow-2xl rounded-lg">
     </div>
 
-    <div id="sidebar-overlay" onclick="window.toggleAdminSidebar()" class="fixed inset-0 bg-black/60 z-[350] hidden md:hidden"></div>
-
     <div id="adminDashboard" class="fixed inset-0 z-[300] bg-[#070707] hidden flex-col transition-all duration-300 opacity-0 pointer-events-none">
-        <div class="h-16 border-b border-white/10 flex items-center justify-between px-4 sm:px-6 bg-[#0f0f0f] shrink-0 no-print">
+        <div class="h-16 border-b border-white/10 flex items-center justify-between px-4 sm:px-6 bg-[#0f0f0f] shrink-0 no-print z-[300] relative">
             <div class="flex items-center gap-2 sm:gap-3">
                 <button onclick="window.toggleAdminSidebar()" class="md:hidden text-white text-2xl hover:text-papa-fire transition"><i class="ph ph-list"></i></button>
                 <span class="font-black text-xs sm:text-sm uppercase text-white truncate"><i class="ph-fill ph-laptop"></i> ERP <span class="text-papa-fire hidden sm:inline">LA PAPA CALIENTE</span></span>
@@ -413,35 +412,37 @@ https://unpkg.com/@phosphor-icons/web"></script>
         </div>
         
         <div class="flex-1 flex overflow-hidden relative">
-            <aside class="absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out z-[400] w-64 bg-[#0a0a0a] border-r border-white/10 flex flex-col py-4 overflow-y-auto no-print h-full" id="erp-sidebar">
+            <div id="sidebar-overlay" onclick="window.toggleAdminSidebar()" class="fixed top-16 left-0 right-0 bottom-0 bg-black/80 z-[150] hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+            <aside class="fixed top-16 bottom-0 left-0 md:relative md:top-0 md:bottom-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-[200] md:z-10 w-64 bg-[#0a0a0a] border-r border-white/10 flex flex-col py-4 overflow-y-auto no-print shadow-[20px_0_50px_rgba(0,0,0,0.8)] md:shadow-none" id="erp-sidebar">
                 <div class="space-y-1 px-3 admin-only">
                     <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Inteligencia</p>
-                    <button onclick="window.switchAdminPanel('dashboard')" id="btn-side-dashboard" class="sidebar-btn active w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-squares-four text-lg"></i> Dashboard</button>
-                    <button onclick="window.switchAdminPanel('stats')" id="btn-side-stats" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-chart-line-up text-lg"></i> Estadísticas</button>
+                    <button onclick="window.switchAdminPanel('dashboard')" id="btn-side-dashboard" class="sidebar-btn active w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-squares-four text-lg"></i> Dashboard</button>
+                    <button onclick="window.switchAdminPanel('stats')" id="btn-side-stats" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-chart-line-up text-lg"></i> Estadísticas</button>
                 </div>
                 
                 <div class="space-y-1 px-3 mt-6">
                     <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Operaciones</p>
-                    <button onclick="window.switchAdminPanel('kds')" id="btn-side-kds" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-cooking-pot text-lg"></i> Cocina (KDS)</button>
-                    <button onclick="window.switchAdminPanel('orders')" id="btn-side-orders" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-receipt text-lg"></i> Gestor de Órdenes</button>
-                    <button onclick="window.switchAdminPanel('pos')" id="btn-side-pos" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all admin-only"><i class="ph-bold ph-cash-register text-lg"></i> Caja y POS Avanzado</button>
+                    <button onclick="window.switchAdminPanel('kds')" id="btn-side-kds" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-cooking-pot text-lg"></i> Cocina (KDS)</button>
+                    <button onclick="window.switchAdminPanel('orders')" id="btn-side-orders" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-receipt text-lg"></i> Gestor de Órdenes</button>
+                    <button onclick="window.switchAdminPanel('pos')" id="btn-side-pos" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all admin-only touch-manipulation"><i class="ph-bold ph-cash-register text-lg"></i> Caja y POS Avanzado</button>
                 </div>
 
                 <div class="space-y-1 px-3 mt-6 admin-only">
                     <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Inventario & Menú</p>
-                    <button onclick="window.switchAdminPanel('inventory')" id="btn-side-inventory" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-hamburger text-lg"></i> Menú / Catálogo</button>
-                    <button onclick="window.switchAdminPanel('ingredients')" id="btn-side-ingredients" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-scales text-lg"></i> Inventario Financiero</button>
+                    <button onclick="window.switchAdminPanel('inventory')" id="btn-side-inventory" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-hamburger text-lg"></i> Menú / Catálogo</button>
+                    <button onclick="window.switchAdminPanel('ingredients')" id="btn-side-ingredients" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-scales text-lg"></i> Inventario Financiero</button>
                 </div>
 
                 <div class="space-y-1 px-3 mt-6 admin-only">
                     <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Sistema</p>
-                    <button onclick="window.switchAdminPanel('reports')" id="btn-side-reports" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-file-pdf text-lg"></i> Reportes Contables</button>
-                    <button onclick="window.switchAdminPanel('gallery')" id="btn-side-gallery" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-image text-lg"></i> Galería Web</button>
-                    <button onclick="window.switchAdminPanel('settings')" id="btn-side-settings" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-gear text-lg"></i> Ajustes y Branding</button>
+                    <button onclick="window.switchAdminPanel('reports')" id="btn-side-reports" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-file-pdf text-lg"></i> Reportes Contables</button>
+                    <button onclick="window.switchAdminPanel('gallery')" id="btn-side-gallery" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-image text-lg"></i> Galería Web</button>
+                    <button onclick="window.switchAdminPanel('settings')" id="btn-side-settings" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-gear text-lg"></i> Ajustes y Branding</button>
                 </div>
             </aside>
 
-            <main class="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#050505] no-scrollbar relative" id="print-area">
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#050505] no-scrollbar relative z-0" id="print-area">
                 
                 <div id="panel-admin-dashboard" class="admin-panel-tab space-y-6">
                     <h2 class="text-xl sm:text-2xl font-black uppercase text-white no-print">Resumen Operativo</h2>
