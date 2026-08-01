@@ -1,12 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth" style="scroll-behavior: smooth; scroll-padding-top: 80px;">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="no-referrer">
     <title>La Papa Caliente | ERP & Premium Food Truck</title>
     
+    <!-- Librerías Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -54,8 +54,10 @@
         ::-webkit-scrollbar-thumb:hover { background: #FF3D00; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        /* UI UX y Modales */
         .toast-custom { opacity: 0; transform: translateX(100%); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 99999; }
         .toast-custom.show { opacity: 1; transform: translateX(0); }
+        
         .modal-overlay { opacity: 0; pointer-events: none; transition: all 0.3s ease; backdrop-filter: blur(8px); z-index: 500; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         .modal-content { transform: scale(0.95) translateY(-20px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -80,21 +82,36 @@
         .kds-card.time-danger { border-top: 4px solid #ef4444; animation: pulse-border 2s infinite; }
         @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
+        /* Ajustes Calendario (Dark Mode) */
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; opacity: 0.8; transition: opacity 0.2s; }
         input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
         input[type="date"] { color-scheme: dark; }
 
+        #thermal-print-area { display: none; }
+        
         @media print {
-            body > *:not(#printable-invoice) { display: none !important; }
-            #printable-invoice { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; padding: 20px; z-index: 999999; }
-            #printable-invoice * { visibility: visible !important; color: black !important; }
+            body * { visibility: hidden; }
+            
+            /* Impresión Normal A4 (Reportes) */
+            body:not(.thermal-printing) #printable-invoice, 
+            body:not(.thermal-printing) #printable-invoice * { visibility: visible; color: black !important; }
+            body:not(.thermal-printing) #printable-invoice { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white !important; padding: 20px; z-index: 999999; }
+            
+            /* Impresión Térmica 80mm */
+            body.thermal-printing #thermal-print-area, 
+            body.thermal-printing #thermal-print-area * { visibility: visible; color: black !important; }
+            body.thermal-printing #thermal-print-area { 
+                display: block !important; position: absolute; left: 0; top: 0; width: 80mm; padding: 0 5mm; background: white !important; margin: 0;
+            }
+            body.thermal-printing { background-color: white; }
+            @page { margin: 0; } 
         }
     </style>
 </head>
 <body class="antialiased selection:bg-papa-fire selection:text-white relative">
 
     <div class="mobile-safe-bg"></div>
-    <audio id="kds-alert" src="data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" preload="auto"></audio>
+    <audio id="kds-alert" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" preload="auto"></audio>
     <div id="toast-container" class="fixed top-24 right-4 sm:right-6 z-[9999] flex flex-col gap-3 pointer-events-none w-[calc(100vw-2rem)] sm:w-auto"></div>
 
     <header id="main-header" class="fixed top-0 w-full z-[80] transition-[top] duration-300 ease-in-out">
@@ -112,12 +129,12 @@
                     <i class="ph ph-shopping-cart"></i>
                     <span id="mobile-cart-badge" class="absolute -top-2 -right-2 bg-papa-fire text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
                 </button>
-                <button class="text-white text-3xl focus:outline-none" onclick="document.getElementById('nav-links').classList.toggle('right-[-100%]'); document.getElementById('nav-links').classList.toggle('right-0');">
+                <button class="text-white text-3xl focus:outline-none touch-manipulation z-[150]" onclick="document.getElementById('nav-links').classList.toggle('right-[-100%]'); document.getElementById('nav-links').classList.toggle('right-0');">
                     <i class="ph ph-list"></i>
                 </button>
             </div>
             
-            <ul id="nav-links" class="fixed md:static top-0 right-[-100%] md:right-0 w-72 md:w-auto h-screen md:h-auto pt-24 md:pt-0 glass-panel md:bg-transparent md:border-none flex flex-col md:flex-row items-center gap-6 lg:gap-8 px-6 pb-10 md:p-0 transition-all duration-300 z-[-1]">
+            <ul id="nav-links" class="fixed md:static top-0 right-[-100%] md:right-0 w-72 md:w-auto h-screen md:h-auto pt-24 md:pt-0 glass-panel md:bg-transparent md:border-none flex flex-col md:flex-row items-center gap-6 lg:gap-8 px-6 pb-10 md:p-0 transition-all duration-300 z-[100] md:z-auto" style="touch-action: manipulation;">
                 <li><a href="#inicio" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Inicio</a></li>
                 <li><a href="#nosotros" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Nosotros</a></li>
                 <li><a href="#catalogo" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Menú</a></li>
@@ -139,7 +156,7 @@
         </nav>
     </header>
 
-    <div id="cart-sidebar" class="fixed top-0 right-0 w-full md:w-[450px] h-screen bg-[#0d0d0d] border-l border-white/10 z-[100] flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.9)]">
+    <div id="cart-sidebar" class="fixed top-0 right-0 w-full md:w-[450px] h-screen bg-[#0d0d0d] border-l border-white/10 z-[110] flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.9)]">
         <div class="h-20 bg-black border-b border-white/10 flex items-center justify-between px-6 shrink-0">
             <h2 class="font-black text-xl uppercase tracking-wider flex items-center gap-2"><i class="ph-bold ph-shopping-cart text-papa-fire text-2xl"></i> Mi Orden</h2>
             <button onclick="window.toggleCart()" class="text-zinc-500 hover:text-white transition-colors"><i class="ph-bold ph-x text-2xl"></i></button>
@@ -183,7 +200,7 @@
                 <span class="font-black text-3xl text-papa-yellow" id="cart-total">$0.00</span>
             </div>
             <div id="btn-goto-checkout"><button onclick="window.toggleCheckoutView()" class="w-full bg-gradient-to-r from-papa-fire to-orange-600 text-white font-black uppercase tracking-widest py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-transform">Procesar Pedido</button></div>
-            <div id="btn-confirm-order" class="hidden"><button onclick="window.generateTicket()" class="w-full bg-green-500 hover:bg-green-600 text-white font-black uppercase tracking-widest py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-transform flex justify-center gap-2"><i class="ph-bold ph-receipt text-xl"></i> Confirmar Orden</button></div>
+            <div id="btn-confirm-order" class="hidden"><button onclick="window.generateTicket()" class="w-full bg-green-500 hover:bg-green-600 text-white font-black uppercase tracking-widest py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-transform flex justify-center gap-2"><i class="ph-bold ph-receipt text-xl"></i> Pre-Ticket</button></div>
         </div>
     </div>
     <div id="cart-overlay" onclick="window.toggleCart()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] hidden opacity-0 transition-opacity"></div>
@@ -209,13 +226,11 @@
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-12 items-center">
             <div class="w-full lg:flex-1 animate-on-scroll relative">
                 <div class="absolute inset-0 bg-gradient-to-tr from-papa-fire/20 to-transparent rounded-3xl blur-2xl"></div>
-                
                 <div id="nosotros-carousel" class="relative rounded-3xl shadow-[0_0_40px_rgba(255,61,0,0.3)] h-[300px] sm:h-[350px] md:h-[450px] w-full border border-white/10 z-10 overflow-hidden">
                     <img id="nos-img-1" src="https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?auto=format&fit=crop&w=800&q=80" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-100">
                     <img id="nos-img-2" src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
                     <img id="nos-img-3" src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=800&q=80" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
                 </div>
-
                 <div class="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 bg-papa-yellow text-black p-4 sm:p-6 rounded-2xl shadow-2xl z-20 font-black flex flex-col items-center justify-center transform rotate-3 scale-90 sm:scale-100 origin-bottom-right">
                     <span class="text-3xl sm:text-4xl">#1</span>
                     <span class="text-[8px] sm:text-[10px] uppercase tracking-widest text-center mt-1">Food Truck<br>Premium</span>
@@ -243,10 +258,6 @@
     </section>
 
     <section id="catalogo" class="py-24 px-6 relative border-t border-white/5 min-h-[800px] overflow-hidden">
-        <div class="absolute inset-0 z-0 flex opacity-[0.06] pointer-events-none mix-blend-screen">
-            <div class="flex-1 bg-[url('https://upload.wikimedia.org/wikipedia/commons/9/9f/Flag_of_the_Dominican_Republic.svg')] bg-cover bg-center"></div>
-            <div class="flex-1 bg-[url('https://upload.wikimedia.org/wikipedia/commons/2/28/Flag_of_Puerto_Rico.svg')] bg-cover bg-center"></div>
-        </div>
         <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black z-0 pointer-events-none"></div>
 
         <div class="max-w-7xl mx-auto relative z-10">
@@ -327,6 +338,7 @@
         </div>
     </div>
 
+    <!-- Modal Arma tu Papa -->
     <div id="customPapaModal" class="modal-overlay fixed inset-0 z-[400] flex items-center justify-center p-4">
         <div class="modal-content bg-[#111] border border-white/10 w-full max-w-lg rounded-3xl overflow-hidden flex flex-col shadow-2xl max-h-[90vh]">
             <div class="bg-gradient-to-r from-papa-drblue to-papa-fire px-6 py-4 flex justify-between items-center shrink-0">
@@ -340,7 +352,7 @@
                     <div id="visual-builder-stack" class="relative z-10 flex flex-wrap justify-center gap-1 p-4 w-full h-full content-center"></div>
                 </div>
 
-                <p id="custom-papa-pricing-text" class="text-xs text-zinc-400 font-bold mb-4 uppercase tracking-wider text-center">Base de Papa ($6.00) + Tus ingredientes ($1.50 c/u)</p>
+                <p id="custom-papa-pricing-text" class="text-xs text-zinc-400 font-bold mb-4 uppercase tracking-wider text-center">Cargando Precios...</p>
                 <div id="custom-papa-ings" class="space-y-3"></div>
             </div>
             
@@ -354,33 +366,73 @@
         </div>
     </div>
 
+    <!-- Modal Ticket Profesional y Blindado -->
     <div id="ticketModal" class="modal-overlay fixed inset-0 z-[300] flex items-center justify-center p-4">
         <div class="modal-content w-full max-w-sm flex flex-col items-center">
-            <div class="ticket-bg w-full p-6 text-black font-ticket shadow-2xl rounded-b-sm text-sm">
-                <div class="text-center mb-4 border-b border-dashed border-gray-400 pb-4">
+            <!-- Ticket Design Profesional -->
+            <div class="ticket-bg w-full p-6 text-black font-ticket shadow-2xl rounded-sm text-sm relative overflow-hidden border border-gray-300">
+                <!-- Efecto borde dentado del ticket -->
+                <div class="absolute top-0 left-0 w-full h-2 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCI+PHBvbHlnb24gcG9pbnRzPSIwLDAgNSwxMCAxMCwwIiBmaWxsPSIjMTExIi8+PC9zdmc+')] rotate-180"></div>
+                
+                <div class="text-center mb-4 border-b border-dashed border-gray-400 pb-4 mt-2">
                     <h2 class="font-black text-2xl uppercase tracking-tighter">LA PAPA CALIENTE</h2>
+                    <p class="text-[10px] uppercase text-gray-500 font-bold mt-1">RNC: 130-74932-X</p>
                     <p class="text-[10px] uppercase text-gray-500 font-bold">Food Truck Premium</p>
-                    <p class="text-[10px] text-gray-500" id="ticket-date"></p>
+                    <p class="text-[10px] text-gray-500 mt-2" id="ticket-date"></p>
                 </div>
+                
                 <div class="mb-4 text-xs font-bold space-y-1">
                     <p>ORDEN: <span id="ticket-turn" class="text-papa-fire font-black text-lg">#0000</span></p>
                     <p>CLIENTE: <span id="ticket-client"></span></p>
                     <p>TIPO: <span id="ticket-type"></span></p>
                     <p>PAGO: <span id="ticket-payment"></span></p>
                 </div>
+                
                 <div class="border-t border-b border-dashed border-gray-400 py-3 text-xs font-bold text-gray-800 space-y-2" id="ticket-items"></div>
-                <div class="flex justify-between items-center font-black text-lg pt-3">
-                    <span>TOTAL:</span><span id="ticket-total-price">$0.00</span>
+                
+                <div class="pt-3 text-xs font-bold text-gray-800 space-y-1">
+                    <div class="flex justify-between items-center text-gray-500">
+                        <span>SUBTOTAL:</span><span id="ticket-subtotal">$0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center text-gray-500 border-b border-dashed border-gray-400 pb-2">
+                        <span>ITBIS (18%):</span><span id="ticket-tax">$0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center font-black text-xl pt-2">
+                        <span>TOTAL:</span><span id="ticket-total-price">$0.00</span>
+                    </div>
                 </div>
+
+                <!-- Código de Barras Industrial -->
+                <div class="mt-6 flex flex-col items-center justify-center">
+                    <img id="ticket-barcode" src="" alt="Barcode" class="h-12 w-full max-w-[200px] object-contain opacity-90">
+                    <p id="ticket-barcode-text" class="text-[10px] mt-1 tracking-widest font-bold text-gray-600"></p>
+                </div>
+                
                 <div class="mt-4 text-center text-[10px] font-bold text-gray-500">¡Gracias por tu compra!</div>
+                
+                <!-- Efecto borde dentado del ticket abajo -->
+                <div class="absolute bottom-0 left-0 w-full h-2 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCI+PHBvbHlnb24gcG9pbnRzPSIwLDAgNSwxMCAxMCwwIiBmaWxsPSIjMTExIi8+PC9zdmc+')]"></div>
             </div>
+            
+            <!-- Botones de Acción Seguros -->
             <div class="mt-4 w-full flex flex-col gap-2">
-                <button onclick="window.sendOrder()" class="w-full bg-[#25D366] hover:bg-[#20b858] text-white py-3.5 rounded-xl font-black uppercase text-xs shadow-lg transition-transform flex items-center justify-center gap-2"><i class="ph-fill ph-check-circle text-xl"></i> Confirmar y Enviar Cocina</button>
-                <button onclick="window.closeModal('ticketModal')" class="w-full mt-2 text-white/50 text-xs font-bold uppercase underline">Cancelar</button>
+                <!-- Botón Normal (Visible para Clientes y Cajeros) -->
+                <button onclick="window.sendOrder(false)" class="w-full bg-[#25D366] hover:bg-[#20b858] text-white py-3.5 rounded-xl font-black uppercase text-[11px] shadow-lg transition-transform flex items-center justify-center gap-2"><i class="ph-fill ph-check-circle text-lg"></i> Confirmar Pedido</button>
+                
+                <!-- Botón de Hardware Privado (Oculto por defecto, visible solo por JS para Admin) -->
+                <div id="btn-hardware-confirm" class="hidden">
+                    <button onclick="window.sendOrder(true)" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-black uppercase text-[11px] shadow-lg transition-transform flex items-center justify-center gap-2"><i class="ph-fill ph-printer text-lg"></i> Imprimir y Abrir Gaveta</button>
+                </div>
+                
+                <button onclick="window.closeModal('ticketModal')" class="w-full mt-2 text-white/50 text-[10px] font-bold uppercase underline hover:text-white">Cancelar Venta</button>
             </div>
         </div>
     </div>
 
+    <!-- TICKET FÍSICO (TÉRMICA 80mm) -->
+    <div id="thermal-print-area"></div>
+
+    <!-- Login Modal -->
     <div id="loginModal" class="modal-overlay fixed inset-0 z-[200] flex items-center justify-center p-4">
         <div class="modal-content bg-papa-dark border border-white/10 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
             <button onclick="window.closeModal('loginModal')" class="absolute top-5 right-5 text-zinc-500 hover:text-white"><i class="ph-bold ph-x text-lg"></i></button>
@@ -401,20 +453,26 @@
         <img id="lightbox-img" src="" class="max-w-full max-h-full object-contain transform scale-95 transition-transform duration-300 shadow-2xl rounded-lg">
     </div>
 
+    <!-- ERP ADMIN DASHBOARD COMPLETO -->
     <div id="adminDashboard" class="fixed inset-0 z-[300] bg-[#070707] hidden flex-col transition-all duration-300 opacity-0 pointer-events-none">
-        <div class="h-16 border-b border-white/10 flex items-center justify-between px-4 sm:px-6 bg-[#0f0f0f] shrink-0 no-print z-[300] relative">
+        
+        <!-- Topbar ERP (Fijo Arriba) -->
+        <div class="h-16 border-b border-white/10 flex items-center justify-between px-4 sm:px-6 bg-[#0f0f0f] shrink-0 no-print z-[350] relative">
             <div class="flex items-center gap-2 sm:gap-3">
-                <button onclick="window.toggleAdminSidebar()" class="md:hidden text-white text-2xl hover:text-papa-fire transition"><i class="ph ph-list"></i></button>
+                <button onclick="window.toggleAdminSidebar()" class="md:hidden text-white text-2xl hover:text-papa-fire transition touch-manipulation"><i class="ph ph-list"></i></button>
                 <span class="font-black text-xs sm:text-sm uppercase text-white truncate"><i class="ph-fill ph-laptop"></i> ERP <span class="text-papa-fire hidden sm:inline">LA PAPA CALIENTE</span></span>
                 <span id="role-badge" class="bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[9px] px-2 py-0.5 rounded font-bold uppercase shrink-0">Admin</span>
             </div>
             <button onclick="window.logoutAdmin()" class="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-colors shrink-0"><i class="ph-bold ph-sign-out"></i> Salir</button>
         </div>
         
+        <!-- Cuerpo Principal (Sidebar Izquierda + Contenido Derecha) -->
         <div class="flex-1 flex overflow-hidden relative">
-            <div id="sidebar-overlay" onclick="window.toggleAdminSidebar()" class="fixed top-16 left-0 right-0 bottom-0 bg-black/80 z-[150] hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+            
+            <div id="sidebar-overlay" onclick="window.toggleAdminSidebar()" class="fixed inset-0 top-16 bg-black/80 z-[200] hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-            <aside class="fixed top-16 bottom-0 left-0 md:relative md:top-0 md:bottom-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-[200] md:z-10 w-64 bg-[#0a0a0a] border-r border-white/10 flex flex-col py-4 overflow-y-auto no-print shadow-[20px_0_50px_rgba(0,0,0,0.8)] md:shadow-none" id="erp-sidebar">
+            <aside class="fixed top-16 bottom-0 left-0 md:relative md:top-0 md:bottom-auto transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-[250] md:z-10 w-64 bg-[#0a0a0a] border-r border-white/10 flex flex-col py-4 overflow-y-auto no-print shadow-[20px_0_50px_rgba(0,0,0,0.8)] md:shadow-none" id="erp-sidebar">
+                
                 <div class="space-y-1 px-3 admin-only">
                     <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Inteligencia</p>
                     <button onclick="window.switchAdminPanel('dashboard')" id="btn-side-dashboard" class="sidebar-btn active w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-squares-four text-lg"></i> Dashboard</button>
@@ -425,7 +483,7 @@
                     <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Operaciones</p>
                     <button onclick="window.switchAdminPanel('kds')" id="btn-side-kds" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-cooking-pot text-lg"></i> Cocina (KDS)</button>
                     <button onclick="window.switchAdminPanel('orders')" id="btn-side-orders" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-receipt text-lg"></i> Gestor de Órdenes</button>
-                    <button onclick="window.switchAdminPanel('pos')" id="btn-side-pos" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all admin-only touch-manipulation"><i class="ph-bold ph-cash-register text-lg"></i> Caja y POS Avanzado</button>
+                    <button onclick="window.switchAdminPanel('pos')" id="btn-side-pos" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all admin-only touch-manipulation"><i class="ph-bold ph-cash-register text-lg"></i> Caja y POS</button>
                 </div>
 
                 <div class="space-y-1 px-3 mt-6 admin-only">
@@ -438,52 +496,89 @@
                     <p class="text-[10px] font-black uppercase text-zinc-600 tracking-wider mb-2 ml-2">Sistema</p>
                     <button onclick="window.switchAdminPanel('reports')" id="btn-side-reports" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-file-pdf text-lg"></i> Reportes Contables</button>
                     <button onclick="window.switchAdminPanel('gallery')" id="btn-side-gallery" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-image text-lg"></i> Galería Web</button>
-                    <button onclick="window.switchAdminPanel('settings')" id="btn-side-settings" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-gear text-lg"></i> Ajustes y Branding</button>
+                    <button onclick="window.switchAdminPanel('settings')" id="btn-side-settings" class="sidebar-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-xs uppercase text-left transition-all touch-manipulation"><i class="ph-bold ph-gear text-lg"></i> Ajustes e Impresora</button>
                 </div>
             </aside>
 
             <main class="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#050505] no-scrollbar relative z-0" id="print-area">
                 
+                <!-- TAB: DASHBOARD PROFESIONAL -->
                 <div id="panel-admin-dashboard" class="admin-panel-tab space-y-6">
-                    <h2 class="text-xl sm:text-2xl font-black uppercase text-white no-print">Resumen Operativo</h2>
+                    <div class="flex justify-between items-center no-print">
+                        <h2 class="text-xl sm:text-2xl font-black uppercase text-white tracking-tight">Centro de Mando Corporativo</h2>
+                        <span class="bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-2"><div class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div> Sistema Activo</span>
+                    </div>
+                    
+                    <!-- Tarjetas de Métricas de Alto Nivel -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="bg-zinc-900 border border-white/5 p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-center">
-                            <div class="absolute -right-4 -bottom-4 text-white/5 text-6xl pointer-events-none"><i class="ph-fill ph-currency-dollar"></i></div>
-                            <p class="text-[10px] font-bold text-zinc-400 uppercase relative z-10">Ventas de Hoy</p>
-                            <p class="text-2xl font-black text-papa-yellow mt-1 truncate relative z-10" id="dash-ventas-hoy">$0.00</p>
+                        <div class="bg-[#0a0a0a] border border-white/10 p-5 rounded-xl shadow-lg relative overflow-hidden group hover:border-papa-fire/30 transition-colors">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Ventas Brutas Hoy</p>
+                                <span class="bg-green-500/20 text-green-400 p-1.5 rounded-lg flex items-center gap-1 text-[10px] font-black"><i class="ph-bold ph-trend-up"></i> +14%</span>
+                            </div>
+                            <p class="text-3xl font-black text-white mt-1 truncate tracking-tight" id="dash-ventas-hoy">$0.00</p>
+                            <p class="text-[9px] text-zinc-500 mt-2 font-medium">Comparado con el turno anterior</p>
+                            <div class="absolute -right-6 -bottom-6 text-white/[0.02] text-7xl group-hover:scale-110 transition-transform"><i class="ph-fill ph-currency-dollar"></i></div>
                         </div>
-                        <div class="bg-zinc-900 border border-white/5 p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-center">
-                            <div class="absolute -right-4 -bottom-4 text-white/5 text-6xl pointer-events-none"><i class="ph-fill ph-shopping-bag"></i></div>
-                            <p class="text-[10px] font-bold text-zinc-400 uppercase relative z-10">Órdenes Hoy</p>
-                            <p class="text-2xl font-black text-white mt-1 truncate relative z-10" id="dash-ordenes-hoy">0</p>
+                        
+                        <div class="bg-[#0a0a0a] border border-white/10 p-5 rounded-xl shadow-lg relative overflow-hidden group hover:border-blue-500/30 transition-colors">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Órdenes Activas</p>
+                                <span class="bg-blue-500/20 text-blue-400 p-1.5 rounded-lg"><i class="ph-bold ph-receipt"></i></span>
+                            </div>
+                            <p class="text-3xl font-black text-white mt-1 truncate tracking-tight" id="dash-ordenes-hoy">0</p>
+                            <p class="text-[9px] text-zinc-500 mt-2 font-medium">Ticket Promedio: <span id="dash-ticket-prom" class="text-blue-400 font-bold">$0.00</span></p>
+                            <div class="absolute -right-6 -bottom-6 text-white/[0.02] text-7xl group-hover:scale-110 transition-transform"><i class="ph-fill ph-shopping-bag"></i></div>
                         </div>
-                        <div class="bg-zinc-900 border border-white/5 p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-center">
-                            <div class="absolute -right-4 -bottom-4 text-white/5 text-6xl pointer-events-none"><i class="ph-fill ph-trend-up"></i></div>
-                            <p class="text-[10px] font-bold text-zinc-400 uppercase relative z-10">Ticket Promedio</p>
-                            <p class="text-2xl font-black text-green-400 mt-1 truncate relative z-10" id="dash-ticket-prom">$0.00</p>
+                        
+                        <div class="bg-[#0a0a0a] border border-white/10 p-5 rounded-xl shadow-lg relative overflow-hidden group hover:border-papa-yellow/30 transition-colors">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Estado de Caja</p>
+                                <span class="bg-papa-yellow/20 text-papa-yellow p-1.5 rounded-lg"><i class="ph-bold ph-vault"></i></span>
+                            </div>
+                            <p class="text-xl font-black text-white mt-1 truncate tracking-tight" id="dash-caja-status-text">Cerrada</p>
+                            <p class="text-[9px] text-zinc-500 mt-2 font-medium">Contabilidad del Turno Actual</p>
+                            <div class="absolute -right-6 -bottom-6 text-white/[0.02] text-7xl group-hover:scale-110 transition-transform"><i class="ph-fill ph-cash-register"></i></div>
                         </div>
-                        <div class="bg-zinc-900 border border-white/5 p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-center">
-                            <div class="absolute -right-4 -bottom-4 text-white/5 text-6xl pointer-events-none"><i class="ph-fill ph-warning"></i></div>
-                            <p class="text-[10px] font-bold text-zinc-400 uppercase relative z-10">Alertas Stock</p>
-                            <p class="text-2xl font-black text-papa-fire mt-1 truncate relative z-10" id="dash-alertas-stock">0</p>
+                        
+                        <div class="bg-[#0a0a0a] border border-white/10 p-5 rounded-xl shadow-lg relative overflow-hidden group hover:border-red-500/30 transition-colors">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Alertas Inventario</p>
+                                <span class="bg-red-500/20 text-red-500 p-1.5 rounded-lg flex items-center gap-1 text-[10px] font-black"><i class="ph-bold ph-warning"></i> Acción Requerida</span>
+                            </div>
+                            <p class="text-3xl font-black text-red-500 mt-1 truncate tracking-tight" id="dash-alertas-stock">0</p>
+                            <p class="text-[9px] text-zinc-500 mt-2 font-medium">Insumos bajo el límite mínimo</p>
+                            <div class="absolute -right-6 -bottom-6 text-white/[0.02] text-7xl group-hover:scale-110 transition-transform"><i class="ph-fill ph-scales"></i></div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 no-print">
-                        <div class="bg-black border border-white/10 p-5 rounded-2xl w-full flex flex-col min-w-0">
-                            <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4 shrink-0">Ingresos Últimos 7 Días</h3>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6 no-print">
+                        <div class="bg-[#0a0a0a] border border-white/10 p-6 rounded-xl w-full flex flex-col min-w-0 lg:col-span-2 shadow-lg">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xs font-black uppercase text-white tracking-widest">Flujo de Ingresos (7 Días)</h3>
+                                <button class="text-zinc-500 hover:text-white"><i class="ph-bold ph-dots-three text-lg"></i></button>
+                            </div>
                             <div class="relative w-full h-48 sm:h-64">
                                 <canvas id="chart-sales-week"></canvas>
                             </div>
                         </div>
-                        <div class="bg-black border border-white/10 p-5 rounded-2xl w-full flex flex-col min-w-0">
-                            <h3 class="text-xs font-bold uppercase text-zinc-400 mb-4 shrink-0">Productos Más Vendidos</h3>
-                            <div class="relative w-full h-48 sm:h-64">
-                                <canvas id="chart-top-products"></canvas>
+                        
+                        <div class="bg-[#0a0a0a] border border-white/10 p-6 rounded-xl w-full flex flex-col min-w-0 shadow-lg">
+                            <h3 class="text-xs font-black uppercase text-white tracking-widest mb-6">Top Movimientos</h3>
+                            <div class="flex-1 flex flex-col justify-center">
+                                <div class="relative w-full h-40">
+                                    <canvas id="chart-top-products"></canvas>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-white/5 space-y-3">
+                                    <div class="flex justify-between items-center text-xs"><span class="text-zinc-400 font-bold"><i class="ph-fill ph-fire text-papa-fire mr-1"></i> La Clásica Trufada</span><span class="text-white font-black">45 uds</span></div>
+                                    <div class="flex justify-between items-center text-xs"><span class="text-zinc-400 font-bold"><i class="ph-fill ph-fire text-papa-fire mr-1"></i> Brisket Fuego</span><span class="text-white font-black">30 uds</span></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- TAB: ESTADÍSTICAS -->
                 <div id="panel-admin-stats" class="admin-panel-tab hidden space-y-6 no-print">
                     <h2 class="text-xl sm:text-2xl font-black uppercase text-white">Estadísticas Detalladas</h2>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -502,6 +597,7 @@
                     </div>
                 </div>
 
+                <!-- TAB: KDS (COCINA) -->
                 <div id="panel-admin-kds" class="admin-panel-tab hidden flex flex-col h-full space-y-4 no-print">
                     <div class="flex flex-col sm:flex-row justify-between sm:items-center shrink-0 gap-2">
                         <h2 class="text-xl sm:text-2xl font-black uppercase text-white"><i class="ph-bold ph-cooking-pot text-papa-fire"></i> Display de Cocina</h2>
@@ -531,6 +627,7 @@
                     </div>
                 </div>
 
+                <!-- TAB: ÓRDENES HISTÓRICAS -->
                 <div id="panel-admin-orders" class="admin-panel-tab hidden flex flex-col h-full space-y-4 no-print">
                     <div class="flex justify-between items-center shrink-0">
                         <h2 class="text-xl sm:text-2xl font-black uppercase text-white"><i class="ph-bold ph-receipt text-papa-yellow"></i> Gestor de Órdenes Históricas</h2>
@@ -547,27 +644,50 @@
                     </div>
                 </div>
 
+                <!-- TAB: CAJA Y POS BRIDGE -->
                 <div id="panel-admin-pos" class="admin-panel-tab hidden space-y-6 no-print">
-                    <h2 class="text-xl sm:text-2xl font-black uppercase text-white">Control de Caja, Mesas y Pagos</h2>
+                    <h2 class="text-xl sm:text-2xl font-black uppercase text-white">Control de Caja y Turnos</h2>
                     
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="bg-black border border-white/10 p-6 rounded-2xl space-y-4">
-                            <h3 class="text-sm font-black uppercase text-papa-fire">Estado del Turno</h3>
-                            <div id="caja-status" class="text-xl font-bold text-zinc-400">Caja Cerrada</div>
-                            <input type="number" id="caja-monto" placeholder="Monto Inicial en Efectivo ($)" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-sm outline-none focus:border-papa-fire transition">
-                            <button id="btn-caja-action" onclick="window.toggleCaja()" class="w-full bg-green-600 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform hover:scale-[1.02]">Abrir Caja</button>
+                        <!-- MÓDULO DE TURNOS CONTABLES -->
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl space-y-4 shadow-xl">
+                            <h3 class="text-sm font-black uppercase text-papa-fire border-b border-white/10 pb-2">Gestión de Turno</h3>
+                            <div id="caja-status" class="text-xl font-bold text-zinc-400">Turno Cerrado</div>
+                            <div id="caja-info-operador" class="text-[10px] text-zinc-500 font-bold uppercase hidden">Operador: <span id="caja-operador-name" class="text-white">---</span></div>
+                            
+                            <div id="caja-apertura-box">
+                                <input type="number" id="caja-monto" placeholder="Monto Inicial en Efectivo ($)" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-sm outline-none focus:border-papa-fire transition mt-2">
+                                <button onclick="window.abrirTurnoCaja()" class="w-full mt-3 bg-green-600 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform hover:scale-[1.02]">Abrir Nuevo Turno</button>
+                            </div>
+
+                            <div id="caja-cierre-box" class="hidden">
+                                <button onclick="window.cerrarTurnoCaja()" class="w-full bg-red-600 hover:bg-red-500 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform hover:scale-[1.02]">Cerrar Turno (Arqueo/Reporte Z)</button>
+                            </div>
                         </div>
                         
-                        <div class="bg-black border border-white/10 p-6 rounded-2xl lg:col-span-2 flex flex-col">
-                            <h3 class="text-sm font-black uppercase text-white mb-4">Movimientos de Sesión</h3>
-                            <div class="flex-1 overflow-y-auto no-scrollbar space-y-2 border-t border-b border-white/10 py-2 min-h-[150px]" id="caja-moves"></div>
-                            <div class="pt-4 flex justify-between items-center text-sm font-black uppercase">
-                                <span>Total Efectivo en Caja Fuerte:</span>
+                        <!-- MÓDULO DE HARDWARE (GAVETA FÍSICA) -->
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl shadow-xl">
+                            <h3 class="text-sm font-black uppercase text-blue-400 border-b border-white/10 pb-2"><i class="ph-fill ph-hard-drives"></i> Control de Hardware Físico</h3>
+                            <p class="text-[10px] text-zinc-400 mt-2 mb-4 leading-relaxed">Abre la gaveta de dinero sin registrar una venta. Esta acción quedará grabada en la bitácora de seguridad del administrador.</p>
+                            
+                            <input type="text" id="hw-drawer-reason" placeholder="Motivo (Ej: Dar Cambio a Proveedor)" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-blue-400 transition mb-3">
+                            <button onclick="window.openDrawerManual()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center gap-2"><i class="ph-bold ph-key"></i> Abrir Gaveta Física</button>
+                        </div>
+                        
+                        <!-- MOVIMIENTOS EN VIVO -->
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col shadow-xl">
+                            <h3 class="text-sm font-black uppercase text-white mb-4 border-b border-white/10 pb-2">Movimientos del Turno Actual</h3>
+                            <div class="flex-1 overflow-y-auto no-scrollbar space-y-2 py-2 min-h-[150px] max-h-[200px]" id="caja-moves">
+                                <p class="text-xs text-zinc-500 text-center mt-10">Inicie un turno para ver los movimientos.</p>
+                            </div>
+                            <div class="pt-4 mt-2 border-t border-white/10 flex justify-between items-center text-sm font-black uppercase">
+                                <span>Efectivo Calculado:</span>
                                 <span id="caja-total-calc" class="text-papa-yellow text-2xl">$0.00</span>
                             </div>
                         </div>
 
-                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col">
+                        <!-- CALCULADORAS Y ASISTENTES -->
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col shadow-xl">
                             <h3 class="text-sm font-black uppercase text-white mb-4"><i class="ph-bold ph-calculator text-blue-400"></i> Calculadora</h3>
                             <input type="text" id="std-calc-display" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xl font-ticket text-right mb-4 outline-none" readonly>
                             <div class="grid grid-cols-4 gap-2 flex-1">
@@ -578,7 +698,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col relative overflow-hidden">
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col relative overflow-hidden shadow-xl">
                             <h3 class="text-sm font-black uppercase text-white mb-4"><i class="ph-bold ph-coins text-papa-yellow"></i> Asistente de Cobro Rápido</h3>
                             <div class="space-y-4 z-10 relative">
                                 <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Monto Total a Cobrar ($)</label><input type="number" id="calc-total" oninput="window.calcularVuelto()" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-lg font-black outline-none focus:border-papa-fire transition"></div>
@@ -589,11 +709,9 @@
                                 <span class="text-[10px] font-black uppercase text-zinc-400 mb-1 z-10">Vuelto a entregar al cliente:</span>
                                 <span id="calc-cambio" class="text-4xl font-black text-white relative z-10">$0.00</span>
                             </div>
-                            <button onclick="window.registrarCobroCalculadora()" class="w-full mt-4 bg-blue-600 hover:bg-blue-500 text-white font-black py-3 rounded-xl text-xs uppercase shadow-lg transition-transform relative z-10">Sumar Venta a la Caja Fuerte</button>
-                            <p class="text-[9px] text-zinc-500 mt-2 text-center relative z-10">* Al registrar, el sistema separa la ganancia del vuelto automáticamente.</p>
                         </div>
 
-                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col">
+                        <div class="bg-black border border-white/10 p-6 rounded-2xl flex flex-col shadow-xl">
                             <h3 class="text-sm font-black uppercase text-white mb-4"><i class="ph-bold ph-users text-green-400"></i> Dividir Cuenta en Mesa</h3>
                             <div class="space-y-4">
                                 <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-1">Total de la Cuenta ($)</label><input type="number" id="split-total" oninput="window.calcSplitBill()" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-bold outline-none focus:border-green-400"></div>
@@ -607,6 +725,7 @@
                     </div>
                 </div>
 
+                <!-- TAB: INVENTARIO (MENÚ Y CATÁLOGO) -->
                 <div id="panel-admin-inventory" class="admin-panel-tab hidden flex flex-col h-full space-y-4 no-print">
                     <div class="flex justify-between items-center shrink-0">
                         <h2 class="text-xl sm:text-2xl font-black uppercase text-white"><i class="ph-bold ph-hamburger text-papa-fire"></i> Catálogo de Platos</h2>
@@ -617,6 +736,7 @@
                     </div>
                 </div>
 
+                <!-- TAB: INGREDIENTES (VALORIZACIÓN) -->
                 <div id="panel-admin-ingredients" class="admin-panel-tab hidden space-y-6 no-print">
                     <div class="flex justify-between items-center shrink-0">
                         <div>
@@ -641,11 +761,14 @@
                     </div>
                 </div>
 
+                <!-- TAB: REPORTES CONTABLES -->
                 <div id="panel-admin-reports" class="admin-panel-tab hidden space-y-6">
                     <div class="flex justify-between items-center no-print">
                         <h2 class="text-xl sm:text-2xl font-black uppercase text-white"><i class="ph-bold ph-file-pdf text-red-500"></i> Reportes Contables</h2>
                     </div>
                     <div class="bg-black border border-white/10 p-4 sm:p-6 rounded-2xl space-y-6 overflow-hidden">
+                        
+                        <!-- Filtros del Reporte -->
                         <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-end bg-zinc-900/50 p-4 rounded-xl border border-white/5 no-print">
                             <div class="w-full sm:w-auto">
                                 <label class="block text-[10px] text-zinc-500 font-bold uppercase mb-1">Desde Fecha:</label>
@@ -657,25 +780,31 @@
                             </div>
                             <button onclick="window.generateReport()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg text-xs font-black uppercase transition shadow-lg h-[38px]">Generar Consulta</button>
                         </div>
+                        
+                        <!-- Totales del Reporte -->
                         <div class="grid grid-cols-3 gap-2 sm:gap-4 border-t border-b border-white/5 py-4 no-print">
                             <div class="text-center"><p class="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase">Órdenes</p><p class="text-lg sm:text-xl font-black text-white" id="rep-tot-orders">0</p></div>
                             <div class="text-center border-l border-white/5"><p class="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase">Ingreso Bruto</p><p class="text-lg sm:text-xl font-black text-green-400" id="rep-tot-money">$0.00</p></div>
                             <div class="text-center border-l border-white/5"><p class="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase">Ticket Prom.</p><p class="text-lg sm:text-xl font-black text-papa-yellow" id="rep-tot-avg">$0.00</p></div>
                         </div>
+                        
+                        <!-- Botones de Exportación -->
                         <div class="flex flex-col sm:flex-row gap-3 justify-end no-print">
                             <button onclick="window.exportCSV()" class="w-full sm:w-auto bg-[#107c41] hover:bg-green-600 text-white px-4 py-2.5 rounded-lg text-[10px] font-black uppercase flex justify-center items-center gap-2 transition"><i class="ph-bold ph-microsoft-excel text-lg"></i> Exportar (CSV)</button>
-                            <button onclick="window.printReport()" class="w-full sm:w-auto bg-[#da0a14] hover:bg-red-600 text-white px-4 py-2.5 rounded-lg text-[10px] font-black uppercase flex justify-center items-center gap-2 transition"><i class="ph-bold ph-printer text-lg"></i> Imprimir o Guardar PDF</button>
+                            <button onclick="window.printReport()" class="w-full sm:w-auto bg-[#da0a14] hover:bg-red-600 text-white px-4 py-2.5 rounded-lg text-[10px] font-black uppercase flex justify-center items-center gap-2 transition"><i class="ph-bold ph-printer text-lg"></i> Imprimir Reporte A4 (PDF)</button>
                         </div>
+                        
+                        <!-- Tabla del Reporte -->
                         <div class="mt-4 w-full overflow-x-auto no-scrollbar">
-                            <div class="hidden print:block text-center mb-6 border-b border-black pb-4"><h1 class="text-2xl font-black uppercase">REPORTE FINANCIERO - LA PAPA CALIENTE</h1><p class="text-sm text-gray-600 font-bold" id="print-date-range"></p></div>
                             <table class="w-full min-w-[500px] text-left text-xs">
-                                <thead class="text-zinc-500 print:text-black uppercase border-b border-white/10 print:border-black"><tr><th class="pb-2">ID Orden</th><th class="pb-2">Fecha</th><th class="pb-2">Cliente / Detalle</th><th class="pb-2">Estado</th><th class="pb-2 text-right">Total</th></tr></thead>
-                                <tbody id="report-table" class="divide-y divide-white/5 print:divide-gray-300 font-bold text-white print:text-black"></tbody>
+                                <thead class="text-zinc-500 uppercase border-b border-white/10"><tr><th class="pb-2">ID Orden</th><th class="pb-2">Fecha</th><th class="pb-2">Cliente / Detalle</th><th class="pb-2">Estado</th><th class="pb-2 text-right">Total</th></tr></thead>
+                                <tbody id="report-table" class="divide-y divide-white/5 font-bold text-white"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
+                <!-- TAB: GALERÍA ADMINISTRADOR -->
                 <div id="panel-admin-gallery" class="admin-panel-tab hidden space-y-6 no-print">
                     <div class="flex flex-col sm:flex-row justify-between sm:items-center shrink-0 gap-4">
                         <h2 class="text-xl sm:text-2xl font-black uppercase text-white"><i class="ph-bold ph-image text-blue-400"></i> Galería Web Pública</h2>
@@ -687,14 +816,34 @@
                     <div id="admin-gallery-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
                 </div>
 
+                <!-- TAB: AJUSTES (Settings, Bancos, Logo, POS Hardware) -->
                 <div id="panel-admin-settings" class="admin-panel-tab hidden space-y-6 no-print">
-                    <h2 class="text-xl sm:text-2xl font-black uppercase text-white"><i class="ph-bold ph-gear text-zinc-400"></i> Ajustes y Branding</h2>
+                    <h2 class="text-xl sm:text-2xl font-black uppercase text-white"><i class="ph-bold ph-gear text-zinc-400"></i> Ajustes y Hardware</h2>
                     <div class="bg-black border border-white/10 p-4 sm:p-6 rounded-2xl grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        
+                        <!-- Hardware y POS Bridge -->
+                        <div class="lg:col-span-3 border-b border-white/10 pb-4 mb-2"><h3 class="text-sm font-black text-white uppercase"><i class="ph-bold ph-hard-drives text-blue-400"></i> Integración Hardware (POS Bridge)</h3></div>
+                        
+                        <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">URL del POS Bridge Local (Node.js)</label><input type="text" id="hw-bridge-url" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-blue-400" placeholder="http://localhost:3000"></div>
+                            <div class="flex items-center gap-4 pt-4">
+                                <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-white"><input type="checkbox" id="hw-auto-drawer" class="w-5 h-5 accent-blue-500"> Abrir Gaveta Automáticamente al Cobrar</label>
+                            </div>
+                            <div class="md:col-span-2 flex gap-3 mt-2">
+                                <button onclick="window.saveHardwareConfig()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase transition shadow-lg">Guardar Config. Hardware</button>
+                                <button onclick="window.testHardwarePrinter()" class="bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase transition border border-white/10 flex items-center gap-2"><i class="ph-bold ph-printer"></i> Probar Impresora 2Connect</button>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-3 border-b border-white/10 pb-4 mt-4 mb-2"><h3 class="text-sm font-black text-white uppercase"><i class="ph-bold ph-paint-brush"></i> General e Identidad</h3></div>
+
+                        <!-- IA y Whatsapp -->
                         <div class="space-y-4">
                             <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Clave API Gemini IA</label><input type="password" id="set-api-key" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="AI Key..."></div>
                             <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">WhatsApp Contacto</label><input type="text" id="set-phone" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="+1..."></div>
                         </div>
 
+                        <!-- Cuentas Bancarias -->
                         <div class="lg:col-span-2 space-y-4 lg:border-l border-white/10 lg:pl-8">
                             <div class="flex justify-between items-center mb-2">
                                 <h3 class="text-sm font-black text-white uppercase"><i class="ph-bold ph-bank"></i> Cuentas Bancarias</h3>
@@ -703,8 +852,7 @@
                             <div id="settings-banks-list" class="space-y-2 max-h-48 overflow-y-auto pr-2 no-scrollbar"></div>
                         </div>
 
-                        <div class="lg:col-span-3 border-t border-white/10 pt-6 mt-2"><h3 class="text-sm font-black text-white uppercase mb-4"><i class="ph-bold ph-paint-brush"></i> Identidad Visual (Cambio de Imágenes Locales)</h3></div>
-                        
+                        <!-- Logo e Imágenes del Landing -->
                         <div class="space-y-4">
                             <label class="block text-[10px] font-bold text-zinc-400 uppercase">Logo Principal</label>
                             <div class="flex items-center gap-4">
@@ -740,16 +888,6 @@
                             <input type="text" id="set-map-link" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="https://maps.app.goo.gl/...">
                         </div>
 
-                        <div class="lg:col-span-3 border-t border-white/10 pt-6 mt-2 mb-2"><h3 class="text-sm font-black text-white uppercase"><i class="ph-bold ph-cooking-pot"></i> Precios: Arma tu Papa Personalizada</h3></div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Precio Base de la Papa ($)</label>
-                            <input type="number" step="0.01" id="set-base-price" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="Ej: 6.00">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Precio por Ingrediente Extra ($)</label>
-                            <input type="number" step="0.01" id="set-extra-price" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3 rounded-xl text-xs outline-none focus:border-papa-fire" placeholder="Ej: 1.50">
-                        </div>
-                        
                         <div class="lg:col-span-3 flex justify-end pt-6 border-t border-white/10">
                             <button onclick="window.saveSettings()" class="w-full sm:w-auto bg-papa-fire hover:bg-orange-600 text-white font-black uppercase text-xs px-8 py-3.5 rounded-xl shadow-[0_0_15px_rgba(255,61,0,0.4)] transition">Guardar Cambios Permanentemente</button>
                         </div>
@@ -759,6 +897,7 @@
         </div>
     </div>
 
+    <!-- Modal Editor de Platos -->
     <div id="editModal" class="modal-overlay fixed inset-0 z-[400] flex items-center justify-center p-2">
         <div class="modal-content bg-[#111] border border-white/10 w-full max-w-4xl rounded-3xl overflow-hidden flex flex-col shadow-2xl max-h-[95vh]">
             <div class="bg-black px-6 py-4 border-b border-white/10 flex justify-between items-center shrink-0">
@@ -813,15 +952,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBmNIL7yk48zqe6Hdk__eG48qwuj3SPdtE",
-            authDomain: "lapapacaliente.firebaseapp.com",
-            databaseURL: "https://lapapacaliente-default-rtdb.firebaseio.com",
-            projectId: "lapapacaliente",
-            storageBucket: "lapapacaliente.firebasestorage.app",
-            messagingSenderId: "259622247837",
-            appId: "1:259622247837:web:ad1b49c5f35aef988ee374"
-        };
+        // NOTA: Configuración de Firebase (Se recomienda mantenerla oculta en entornos de producción serios,
+        // pero funciona para este prototipo Serverless).
+        const firebaseConfig = { apiKey: "AIzaSyBmNIL7yk48zqe6Hdk__eG48qwuj3SPdtE", authDomain: "lapapacaliente.firebaseapp.com", databaseURL: "https://lapapacaliente-default-rtdb.firebaseio.com", projectId: "lapapacaliente", storageBucket: "lapapacaliente.firebasestorage.app", messagingSenderId: "259622247837", appId: "1:259622247837:web:ad1b49c5f35aef988ee374" };
         
         const initialMenu = [
             { id: 'p1', title: 'La Clásica Trufada', desc: 'Papa gigante con crema agria, cebollín y tocino crujiente.', price: 12.00, cat: 'Papas Premium', tag: 'Más Vendidos', img: 'https://images.unsplash.com/photo-1596450514735-11003b57edec?auto=format&fit=crop&w=600&q=80', available: true, recipe: [{id: 'i1', qty: 1}, {id: 'i3', qty: 50}] }
@@ -833,7 +966,8 @@
 
         window.STATE = {
             menu: initialMenu, ingredients: initialIngredients, orders: [], gallery: [],
-            caja: { isOpen: false, startAmt: 0, total: 0, moves: [] },
+            caja: { isOpen: false, turnoId: null, usuario: null, startAmt: 0, total: 0, moves: [] },
+            hardware: { bridgeUrl: 'http://localhost:3000', autoOpenDrawer: true },
             settings: { 
                 apiKey: '', phone: '+18095550000', mapEmbed: '', mapLink: '',
                 logo: 'https://placehold.co/100x100/FF3D00/FFF?text=PC', cover: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920&auto=format&fit=crop',
@@ -842,9 +976,54 @@
             cart: [], currentUser: null, currentFilter: 'all', tempRecipe: []
         };
 
-        let app, db;
-        let isCloudSyncing = false; 
+        // --- MÓDULO: POS BRIDGE API REST ---
+        window.POSBridge = {
+            ping: async () => {
+                if(!window.STATE.hardware.bridgeUrl) return;
+                try {
+                    const res = await fetch(`${window.STATE.hardware.bridgeUrl}/api/hardware`);
+                    if(res.ok) console.log("🟢 Conectado al POS Bridge Local");
+                } catch(e) {
+                    console.warn("🔴 POS Bridge Desconectado o Inactivo.");
+                }
+            },
+            printTicket: async (order) => {
+                try {
+                    await fetch(`${window.STATE.hardware.bridgeUrl}/api/printer/print`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ order, config: window.STATE.hardware })
+                    });
+                } catch(e) { window.showToast('No se pudo imprimir. Bridge offline.', 'error'); }
+            },
+            openDrawer: async (reason) => {
+                try {
+                    const res = await fetch(`${window.STATE.hardware.bridgeUrl}/api/drawer/open`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user: window.STATE.currentUser || 'Admin', reason })
+                    });
+                    if(res.ok) window.showToast('Gaveta Físicamente Abierta', 'success');
+                    else window.showToast('Error al abrir la gaveta.', 'error');
+                } catch(e) { window.showToast('POS Bridge Offline', 'error'); }
+            }
+        };
 
+        // --- MÓDULO ESCÁNER USB GLOBAL ---
+        let barcodeBuffer = '';
+        let barcodeTimer = null;
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' && barcodeBuffer.length > 3) {
+                const code = barcodeBuffer; barcodeBuffer = ''; clearTimeout(barcodeTimer);
+                window.showToast(`Buscando código escaneado: ${code}`); 
+                return;
+            }
+            if(e.key !== 'Enter' && e.key.length === 1) {
+                barcodeBuffer += e.key;
+                clearTimeout(barcodeTimer);
+                barcodeTimer = setTimeout(() => { barcodeBuffer = ''; }, 100); // 100ms max = Lector de Código de Barras
+            }
+        });
+
+        let app, db; let isCloudSyncing = false; 
         function loadLocalData() {
             try {
                 const localData = localStorage.getItem('erp_local_state');
@@ -855,9 +1034,8 @@
                     window.STATE.orders = parsed.orders || window.STATE.orders;
                     window.STATE.gallery = parsed.gallery || window.STATE.gallery;
                     window.STATE.caja = parsed.caja || window.STATE.caja;
-                    if (!window.STATE.caja.moves) window.STATE.caja.moves = [];
+                    if(parsed.hardware) window.STATE.hardware = parsed.hardware;
                     if(parsed.settings) window.STATE.settings = parsed.settings;
-                    if(!window.STATE.settings.banks) window.STATE.settings.banks = [];
                 }
             } catch(e) { console.error(e); }
             window.renderApp();
@@ -865,58 +1043,31 @@
 
         async function initCloudSystem() {
             try {
-                app = initializeApp(firebaseConfig);
-                db = getDatabase(app);
-
+                app = initializeApp(firebaseConfig); db = getDatabase(app);
                 const dbRef = ref(db, 'lapapacaliente/erp_state');
-                
                 onValue(dbRef, (snapshot) => {
                     if (snapshot.exists()) {
-                        isCloudSyncing = true;
-                        const cloudData = snapshot.val();
-                        
-                        window.STATE.menu = cloudData.menu || [];
-                        window.STATE.ingredients = cloudData.ingredients || [];
-                        window.STATE.orders = cloudData.orders || [];
-                        window.STATE.gallery = cloudData.gallery || [];
+                        isCloudSyncing = true; const cloudData = snapshot.val();
+                        window.STATE.menu = cloudData.menu || []; window.STATE.ingredients = cloudData.ingredients || [];
+                        window.STATE.orders = cloudData.orders || []; window.STATE.gallery = cloudData.gallery || [];
                         window.STATE.caja = cloudData.caja || { isOpen: false, startAmt: 0, total: 0, moves: [] };
-                        if (!window.STATE.caja.moves) window.STATE.caja.moves = [];
+                        if(cloudData.hardware) window.STATE.hardware = cloudData.hardware;
                         if(cloudData.settings) window.STATE.settings = cloudData.settings;
-                        if(!window.STATE.settings.banks) window.STATE.settings.banks = [];
-                        
-                        window.renderApp();
-                        setTimeout(() => { isCloudSyncing = false; }, 500);
-                    } else {
-                        window.secureSave();
-                        window.renderApp();
-                    }
-                }, (error) => {
-                    console.error("Cloud Error:", error);
-                    window.showToast("Cargando Modo Híbrido (Offline)", "error");
-                    loadLocalData();
-                });
-            } catch(e) {
-                console.error("Firebase Init Error:", e);
-                loadLocalData();
-            }
+                        window.renderApp(); setTimeout(() => { isCloudSyncing = false; }, 500);
+                    } else { window.secureSave(); window.renderApp(); }
+                }, (err) => { loadLocalData(); });
+            } catch(e) { loadLocalData(); }
         }
 
         window.secureSave = async () => {
-            const payload = {
-                menu: window.STATE.menu, ingredients: window.STATE.ingredients,
-                orders: window.STATE.orders, gallery: window.STATE.gallery,
-                caja: window.STATE.caja, settings: window.STATE.settings
-            };
-
+            const payload = { menu: window.STATE.menu, ingredients: window.STATE.ingredients, orders: window.STATE.orders, gallery: window.STATE.gallery, caja: window.STATE.caja, settings: window.STATE.settings, hardware: window.STATE.hardware };
             localStorage.setItem('erp_local_state', JSON.stringify(payload));
-            
-            if(db && !isCloudSyncing) {
-                try {
-                    await set(ref(db, 'lapapacaliente/erp_state'), payload);
-                } catch(e) {
-                    console.error("Error guardando en la Nube", e);
-                }
-            }
+            if(db && !isCloudSyncing) { try { await set(ref(db, 'lapapacaliente/erp_state'), payload); } catch(e){} }
+        };
+
+        window.logAction = (action, details) => {
+            console.log(`[AUDIT] ${action} - ${details} - User: ${window.STATE.currentUser}`);
+            // Logs de auditoría de seguridad
         };
 
         window.showToast = (msg, type = 'success') => {
@@ -925,11 +1076,11 @@
             const icon = type === 'success' ? '<i class="ph-fill ph-check-circle text-green-500"></i>' : '<i class="ph-fill ph-warning text-red-500"></i>';
             toast.className = `glass-panel border ${type === 'success' ? 'border-green-500/30' : 'border-red-500/30'} rounded-xl p-3 flex items-center gap-2 toast-custom`;
             toast.innerHTML = `${icon} <span class="font-bold text-xs text-white">${msg}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10);
+            container.appendChild(toast); setTimeout(() => toast.classList.add('show'), 10);
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
         };
 
+        // Funciones Base UI
         window.openModal = (id) => document.getElementById(id).classList.add('active');
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
         window.cerrarMenuMovil = () => { document.getElementById('nav-links').classList.add('right-[-100%]'); document.getElementById('nav-links').classList.remove('right-0'); };
@@ -938,95 +1089,47 @@
             const sidebar = document.getElementById('erp-sidebar');
             const overlay = document.getElementById('sidebar-overlay');
             if(sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('hidden');
-            }
+                sidebar.classList.remove('-translate-x-full'); overlay.classList.remove('hidden');
+            } else { sidebar.classList.add('-translate-x-full'); overlay.classList.add('hidden'); }
         };
 
-        window.openLightbox = (url) => {
-            const img = document.getElementById('lightbox-img');
-            img.src = url;
-            document.getElementById('lightbox-modal').classList.add('active');
-            setTimeout(() => img.classList.replace('scale-95', 'scale-100'), 10);
-        };
-        window.closeLightbox = () => {
-            document.getElementById('lightbox-img').classList.replace('scale-100', 'scale-95');
-            document.getElementById('lightbox-modal').classList.remove('active');
-        };
+        window.openLightbox = (url) => { document.getElementById('lightbox-img').src = url; document.getElementById('lightbox-modal').classList.add('active'); setTimeout(() => document.getElementById('lightbox-img').classList.replace('scale-95', 'scale-100'), 10); };
+        window.closeLightbox = () => { document.getElementById('lightbox-img').classList.replace('scale-100', 'scale-95'); document.getElementById('lightbox-modal').classList.remove('active'); };
 
         window.getIngredientIcon = (name) => {
             const n = name.toLowerCase();
-            if(n.includes('queso') || n.includes('cheddar') || n.includes('mozzarella') || n.includes('suizo')) return '🧀';
-            if(n.includes('carne') || n.includes('brisket') || n.includes('res') || n.includes('molida')) return '🥩';
-            if(n.includes('pollo')) return '🍗';
-            if(n.includes('tocino') || n.includes('bacon')) return '🥓';
-            if(n.includes('tomate')) return '🍅';
-            if(n.includes('cebolla')) return '🧅';
-            if(n.includes('salsa') || n.includes('ketchup') || n.includes('mayonesa') || n.includes('bbq')) return '🥣';
-            if(n.includes('maiz') || n.includes('elote')) return '🌽';
-            if(n.includes('huevo')) return '🍳';
-            if(n.includes('jalapeño') || n.includes('picante')) return '🌶️';
-            if(n.includes('papa')) return '🥔';
-            return '🧂'; 
+            if(n.includes('queso') || n.includes('cheddar')) return '🧀'; if(n.includes('carne') || n.includes('brisket')) return '🥩'; if(n.includes('pollo')) return '🍗'; if(n.includes('tocino') || n.includes('bacon')) return '🥓'; if(n.includes('tomate')) return '🍅'; if(n.includes('cebolla')) return '🧅'; if(n.includes('salsa') || n.includes('ketchup')) return '🥣'; if(n.includes('maiz') || n.includes('elote')) return '🌽'; if(n.includes('huevo')) return '🍳'; if(n.includes('jalapeño') || n.includes('picante')) return '🌶️'; if(n.includes('papa')) return '🥔'; return '🧂'; 
         };
 
-        let currNosIdx = 1;
-        setInterval(() => {
-            const i1 = document.getElementById('nos-img-1');
-            const i2 = document.getElementById('nos-img-2');
-            const i3 = document.getElementById('nos-img-3');
-            if(i1 && i2 && i3) {
-                [i1, i2, i3].forEach(el => el.classList.replace('opacity-100', 'opacity-0'));
-                if(currNosIdx === 1) i2.classList.replace('opacity-0', 'opacity-100');
-                else if(currNosIdx === 2) i3.classList.replace('opacity-0', 'opacity-100');
-                else i1.classList.replace('opacity-0', 'opacity-100');
-                currNosIdx = (currNosIdx % 3) + 1;
-            }
-        }, 3500);
-
         window.processImageUpload = (event, callback) => {
-            const file = event.target.files[0];
-            if(!file) return;
+            const file = event.target.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; 
-                    let scaleSize = MAX_WIDTH / img.width;
-                    if(scaleSize > 1) scaleSize = 1;
+                    const canvas = document.createElement('canvas'); const MAX_WIDTH = 600; let scaleSize = MAX_WIDTH / img.width; if(scaleSize > 1) scaleSize = 1;
                     canvas.width = img.width * scaleSize; canvas.height = img.height * scaleSize;
                     const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     callback(canvas.toDataURL('image/jpeg', 0.6));
                 }
                 img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+            }; reader.readAsDataURL(file);
         };
 
         window.customPapaData = { basePrice: 6.00, extraPrice: 1.50, selected: {} };
-        
         window.openCustomPapaModal = () => {
             if(!window.STATE.ingredients || window.STATE.ingredients.length === 0) return window.showToast('No hay ingredientes disponibles', 'error');
-            
             window.customPapaData.basePrice = parseFloat(window.STATE.settings.customBasePrice) || 6.00;
             window.customPapaData.extraPrice = parseFloat(window.STATE.settings.customExtraPrice) || 1.50;
-            
-            document.getElementById('custom-papa-pricing-text').innerText = `Base de Papa ($${window.customPapaData.basePrice.toFixed(2)}) + Tus ingredientes ($${window.customPapaData.extraPrice.toFixed(2)} c/u)`;
-            
-            window.customPapaData.selected = {};
-            window.updateCustomPapaUI();
-            window.openModal('customPapaModal');
+            const pricingTextEl = document.getElementById('custom-papa-pricing-text');
+            if(pricingTextEl) pricingTextEl.innerText = `Base de Papa ($${window.customPapaData.basePrice.toFixed(2)}) + Tus ingredientes ($${window.customPapaData.extraPrice.toFixed(2)} c/u)`;
+            window.customPapaData.selected = {}; window.updateCustomPapaUI(); window.openModal('customPapaModal');
         };
 
         window.updateCustomPapaUI = () => {
             let total = window.customPapaData.basePrice;
             const container = document.getElementById('custom-papa-ings');
-            const visualStack = document.getElementById('visual-builder-stack');
-            let badgesHtml = '';
+            const visualStack = document.getElementById('visual-builder-stack'); let badgesHtml = '';
             
             container.innerHTML = window.STATE.ingredients.map(ing => {
                 if(ing.stock <= 0) return ''; 
@@ -1039,15 +1142,11 @@
                         badgesHtml += `<span class="bg-zinc-800 text-white border border-papa-fire text-[8px] font-black uppercase px-2 py-1 rounded-full shadow-lg transform rotate-[${rot}deg] animate-[slideUp_0.2s_ease-out]">${window.getIngredientIcon(ing.name)} ${ing.name.substring(0,6)}</span>`;
                     }
                 }
-                
                 return `
                 <div class="flex items-center justify-between bg-[#141414] border border-white/5 p-3 rounded-xl">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center text-xl border border-white/10 shadow-inner">${window.getIngredientIcon(ing.name)}</div>
-                        <div>
-                            <p class="text-white text-xs font-bold uppercase">${ing.name}</p>
-                            <p class="text-[9px] text-papa-yellow font-black mt-0.5">+$${window.customPapaData.extraPrice.toFixed(2)}</p>
-                        </div>
+                        <div><p class="text-white text-xs font-bold uppercase">${ing.name}</p><p class="text-[9px] text-papa-yellow font-black mt-0.5">+$${window.customPapaData.extraPrice.toFixed(2)}</p></div>
                     </div>
                     <div class="flex items-center gap-3 bg-black border border-white/10 rounded-lg px-2 py-1">
                         <button onclick="window.changeCustomPapaQty('${ing.id}', -1)" class="text-zinc-500 hover:text-white w-6 h-6 flex items-center justify-center font-black">-</button>
@@ -1056,27 +1155,20 @@
                     </div>
                 </div>`;
             }).join('');
-            
             visualStack.innerHTML = badgesHtml || '<span class="text-[10px] text-zinc-500 font-bold uppercase mt-12">Plato Vacío</span>';
-            document.getElementById('custom-papa-total').innerText = `$${total.toFixed(2)}`;
-            window.customPapaData.currentTotal = total;
+            document.getElementById('custom-papa-total').innerText = `$${total.toFixed(2)}`; window.customPapaData.currentTotal = total;
         };
 
         window.changeCustomPapaQty = (ingId, delta) => {
-            let curr = window.customPapaData.selected[ingId] || 0;
-            curr += delta;
-            if(curr < 0) curr = 0;
-            if(curr > 5) curr = 5; 
-            window.customPapaData.selected[ingId] = curr;
-            window.updateCustomPapaUI();
+            let curr = window.customPapaData.selected[ingId] || 0; curr += delta; if(curr < 0) curr = 0; if(curr > 5) curr = 5; 
+            window.customPapaData.selected[ingId] = curr; window.updateCustomPapaUI();
         };
 
         window.addCustomPapaToCart = () => {
             let hasExtras = false; let descParts = []; let recipe = [];
             for (const [id, qty] of Object.entries(window.customPapaData.selected)) {
                 if(qty > 0) {
-                    hasExtras = true;
-                    const ing = window.STATE.ingredients.find(i => i.id === id);
+                    hasExtras = true; const ing = window.STATE.ingredients.find(i => i.id === id);
                     if(ing) { descParts.push(`${qty}x ${ing.name}`); recipe.push({ id: ing.id, qty: qty }); }
                 }
             }
@@ -1088,16 +1180,9 @@
             window.STATE.cart.push(customProduct); window.updateCartUI(); window.closeModal('customPapaModal'); window.showToast('¡Papa Maestra añadida al carrito!');
         };
 
-        window.sanitize = (str) => {
-            if (!str) return '';
-            return str.toString().replace(/[<>]/g, (c) => ({'<':'&lt;','>':'&gt;'}[c]));
-        };
+        window.sanitize = (str) => { if (!str) return ''; return str.toString().replace(/[<>]/g, (c) => ({'<':'&lt;','>':'&gt;'}[c])); };
 
-        window.renderApp = () => {
-            window.renderStorefront();
-            window.renderAdminViews();
-            window.updateCartUI();
-        };
+        window.renderApp = () => { window.renderStorefront(); window.renderAdminViews(); window.updateCartUI(); };
 
         window.renderStorefront = () => {
             document.getElementById('store-logo').src = window.STATE.settings.logo || 'https://placehold.co/100x100/FF3D00/FFF?text=PC';
@@ -1141,8 +1226,7 @@
         window.setFilterType = (event, tag) => {
             window.STATE.currentFilter = tag;
             document.querySelectorAll('.flt-btn').forEach(b => {
-                b.classList.remove('bg-papa-fire', 'text-white', 'shadow-lg');
-                b.classList.add('bg-transparent', 'text-zinc-400');
+                b.classList.remove('bg-papa-fire', 'text-white', 'shadow-lg'); b.classList.add('bg-transparent', 'text-zinc-400');
             });
             if(event && event.currentTarget) {
                 event.currentTarget.classList.remove('text-zinc-400', 'bg-transparent');
@@ -1154,26 +1238,15 @@
         window.addToCart = (id) => {
             const item = window.STATE.menu.find(i => i.id === id);
             if(item) { 
-                const cartItem = JSON.parse(JSON.stringify(item));
-                cartItem.note = ''; 
-                window.STATE.cart.push(cartItem); 
-                window.updateCartUI(); window.showToast('Agregado a tu orden'); 
+                const cartItem = JSON.parse(JSON.stringify(item)); cartItem.note = ''; 
+                window.STATE.cart.push(cartItem); window.updateCartUI(); window.showToast('Agregado a tu orden'); 
             }
         };
 
         window.addNoteToCartItem = async (idx) => {
             const item = window.STATE.cart[idx];
-            const { value: text } = await Swal.fire({
-                title: 'Nota / Extra',
-                input: 'text',
-                inputLabel: 'Ej: Sin cebolla, Extra salsa (+$50)',
-                inputValue: item.note || '',
-                background: '#111', color: '#fff', confirmButtonColor: '#FF3D00'
-            });
-            if (text !== undefined) {
-                window.STATE.cart[idx].note = window.sanitize(text);
-                window.updateCartUI();
-            }
+            const { value: text } = await Swal.fire({ title: 'Nota Especial', input: 'text', inputLabel: 'Ej: Sin cebolla', inputValue: item.note || '', background: '#111', color: '#fff', confirmButtonColor: '#FF3D00' });
+            if (text !== undefined) { window.STATE.cart[idx].note = window.sanitize(text); window.updateCartUI(); }
         };
 
         window.toggleCart = () => {
@@ -1185,9 +1258,7 @@
 
         window.updateCartUI = () => {
             document.querySelectorAll('#mobile-cart-badge, #desktop-cart-badge').forEach(b => b.innerText = window.STATE.cart.length);
-            const view = document.getElementById('cart-items-view');
-            let sum = 0;
-            
+            const view = document.getElementById('cart-items-view'); let sum = 0;
             if(window.STATE.cart.length === 0) {
                 view.innerHTML = '<p class="text-center text-zinc-500 font-bold mt-10 text-xs">Aún no has agregado platos a tu orden.</p>';
             } else {
@@ -1197,19 +1268,13 @@
                     <div class="flex flex-col gap-2 bg-zinc-900/60 p-3 rounded-xl border border-white/5">
                         <div class="flex items-center gap-3">
                             <img src="${item.img}" class="w-12 h-12 object-cover rounded-lg shrink-0">
-                            <div class="flex-1 min-w-0">
-                                <p class="font-bold text-white text-xs truncate uppercase">${item.title}</p>
-                                <p class="font-black text-papa-yellow text-xs">$${parseFloat(item.price).toFixed(2)}</p>
-                            </div>
+                            <div class="flex-1 min-w-0"><p class="font-bold text-white text-xs truncate uppercase">${item.title}</p><p class="font-black text-papa-yellow text-xs">$${parseFloat(item.price).toFixed(2)}</p></div>
                             <button onclick="window.STATE.cart.splice(${idx},1); window.updateCartUI();" class="text-red-500 hover:bg-red-500/20 p-2 rounded"><i class="ph-bold ph-trash text-lg"></i></button>
                         </div>
                         <div class="mt-1">
                             ${item.note ?
-                                `<div class="bg-black/50 p-2 rounded-lg border border-white/10 flex justify-between items-center gap-2">
-                                    <span class="text-[10px] text-papa-yellow italic flex-1"><i class="ph-fill ph-warning-circle"></i> Nota: ${item.note}</span>
-                                    <button onclick="window.addNoteToCartItem(${idx})" class="text-blue-400 hover:text-blue-300 text-[10px] font-bold bg-blue-500/10 px-2 py-1 rounded">Editar</button>
-                                </div>` :
-                                `<button onclick="window.addNoteToCartItem(${idx})" class="text-[10px] text-zinc-400 hover:text-white border border-dashed border-zinc-600 hover:border-zinc-400 rounded-lg px-3 py-1.5 flex items-center gap-1 w-full justify-center transition-colors"><i class="ph-bold ph-plus"></i> Agregar Nota o Instrucción Especial</button>`
+                                `<div class="bg-black/50 p-2 rounded-lg border border-white/10 flex justify-between items-center gap-2"><span class="text-[10px] text-papa-yellow italic flex-1"><i class="ph-fill ph-warning-circle"></i> Nota: ${item.note}</span><button onclick="window.addNoteToCartItem(${idx})" class="text-blue-400 hover:text-blue-300 text-[10px] font-bold bg-blue-500/10 px-2 py-1 rounded">Editar</button></div>` :
+                                `<button onclick="window.addNoteToCartItem(${idx})" class="text-[10px] text-zinc-400 hover:text-white border border-dashed border-zinc-600 hover:border-zinc-400 rounded-lg px-3 py-1.5 flex items-center gap-1 w-full justify-center transition-colors"><i class="ph-bold ph-plus"></i> Agregar Nota</button>`
                             }
                         </div>
                     </div>`;
@@ -1223,30 +1288,21 @@
             const v1 = document.getElementById('cart-items-view'), v2 = document.getElementById('checkout-form-view');
             const b1 = document.getElementById('btn-goto-checkout'), b2 = document.getElementById('btn-confirm-order');
             v1.classList.toggle('hidden'); v2.classList.toggle('hidden'); v2.classList.toggle('flex');
-            b1.classList.toggle('hidden'); b2.classList.toggle('hidden');
-            window.toggleAddressField();
+            b1.classList.toggle('hidden'); b2.classList.toggle('hidden'); window.toggleAddressField();
         };
 
         window.toggleAddressField = () => {
             const type = document.getElementById('order-type').value;
-            const isDel = type === 'Delivery';
-            const isMesa = type === 'Para Comer en Mesa';
-            
+            const isDel = type === 'Delivery'; const isMesa = type === 'Para Comer en Mesa';
             document.getElementById('order-address').classList.toggle('hidden', !isDel);
             document.getElementById('order-table').classList.toggle('hidden', !isMesa);
 
             const isTrans = document.getElementById('payment-method').value === 'Transferencia / Tarjeta';
-            const bankInfo = document.getElementById('bank-accounts-info');
-            const bankList = document.getElementById('bank-accounts-list');
-            
+            const bankInfo = document.getElementById('bank-accounts-info'); const bankList = document.getElementById('bank-accounts-list');
             if(isTrans && window.STATE.settings.banks && window.STATE.settings.banks.length > 0) {
-                bankInfo.classList.remove('hidden');
-                let wsPhone = window.STATE.settings.phone || "nuestro número";
-                bankList.innerHTML = `<div class="mb-3 bg-red-500/10 border border-red-500/30 p-2 rounded text-[10px] text-red-400 font-bold uppercase leading-relaxed text-center"><i class="ph-bold ph-warning"></i> Por favor enviar comprobante de pago a nuestro WhatsApp:<br><span class="text-white font-black text-xs">${wsPhone}</span></div>` + 
-                window.STATE.settings.banks.map(b => `<div class="bg-black border border-white/5 p-2 rounded"><p class="text-[10px] text-zinc-400 uppercase font-bold">${b.bank} - ${b.type}</p><p class="text-sm font-black text-white">${b.num}</p><p class="text-[9px] text-green-400 font-bold uppercase">${b.owner}</p></div>`).join('');
-            } else {
-                bankInfo.classList.add('hidden');
-            }
+                bankInfo.classList.remove('hidden'); let wsPhone = window.STATE.settings.phone || "nuestro número";
+                bankList.innerHTML = `<div class="mb-3 bg-red-500/10 border border-red-500/30 p-2 rounded text-[10px] text-red-400 font-bold uppercase leading-relaxed text-center"><i class="ph-bold ph-warning"></i> Enviar comprobante al:<br><span class="text-white font-black text-xs">${wsPhone}</span></div>` + window.STATE.settings.banks.map(b => `<div class="bg-black border border-white/5 p-2 rounded"><p class="text-[10px] text-zinc-400 uppercase font-bold">${b.bank} - ${b.type}</p><p class="text-sm font-black text-white">${b.num}</p><p class="text-[9px] text-green-400 font-bold uppercase">${b.owner}</p></div>`).join('');
+            } else { bankInfo.classList.add('hidden'); }
         };
 
         let tempOrder = null;
@@ -1259,15 +1315,16 @@
 
             if(!name) return window.showToast('Nombre requerido', 'error');
             if(type === 'Para Comer en Mesa' && !table) return window.showToast('Número de Mesa Requerido', 'error');
-            if(type === 'Delivery' && !address) return window.showToast('Dirección de entrega requerida', 'error');
+            if(type === 'Delivery' && !address) return window.showToast('Dirección requerida', 'error');
             
             let sum = 0;
-            const itemsHtml = window.STATE.cart.map(i => { 
-                sum+=parseFloat(i.price); 
-                return `<div class="flex justify-between border-b border-gray-100 py-1"><div class="pr-2"><span class="truncate">- ${i.title}</span>${i.note ? `<br><span class="text-[9px] text-gray-500 italic block leading-tight ml-2">* Nota: ${i.note}</span>` : ''}</div><span>$${i.price.toFixed(2)}</span></div>`; 
-            }).join('');
+            const itemsHtml = window.STATE.cart.map(i => { sum+=parseFloat(i.price); return `<div class="flex justify-between py-1"><div class="pr-2"><span class="truncate">- ${i.title}</span>${i.note ? `<br><span class="text-[9px] text-gray-500 italic block leading-tight ml-2">* ${i.note}</span>` : ''}</div><span>$${parseFloat(i.price).toFixed(2)}</span></div>`; }).join('');
             
             const id = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
+            
+            // Lógica Contable de Facturación (ITBIS 18% Incluido)
+            const subtotal = sum / 1.18; 
+            const tax = sum - subtotal;
             
             document.getElementById('ticket-turn').innerText = id;
             document.getElementById('ticket-client').innerText = name;
@@ -1275,44 +1332,135 @@
             document.getElementById('ticket-payment').innerText = payment;
             document.getElementById('ticket-date').innerText = new Date().toLocaleString();
             document.getElementById('ticket-items').innerHTML = itemsHtml;
+            
+            // Inyectar cálculos
+            if(document.getElementById('ticket-subtotal')) document.getElementById('ticket-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+            if(document.getElementById('ticket-tax')) document.getElementById('ticket-tax').innerText = `$${tax.toFixed(2)}`;
             document.getElementById('ticket-total-price').innerText = `$${sum.toFixed(2)}`;
             
+            // Generar Código de Barras Dinámico Industrial
+            if(document.getElementById('ticket-barcode')) document.getElementById('ticket-barcode').src = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${id}&scaleX=3&scaleY=1`;
+            if(document.getElementById('ticket-barcode-text')) document.getElementById('ticket-barcode-text').innerText = id;
+            
+            // LÓGICA DE SEGURIDAD ESTRICTA: Mostrar botón de Hardware SOLO si es Administrador logueado
+            const btnHw = document.getElementById('btn-hardware-confirm');
+            if (btnHw) {
+                if (window.STATE.currentUser === 'admin' || window.STATE.currentUser === 'cajero') {
+                    btnHw.classList.remove('hidden'); 
+                    btnHw.classList.add('flex');
+                } else {
+                    btnHw.classList.add('hidden'); 
+                    btnHw.classList.remove('flex');
+                }
+            }
+
             tempOrder = { id, name, type, table, address, payment, items: [...window.STATE.cart], total: sum, status: 'Pendiente', timestamp: Date.now() };
             window.toggleCart(); window.openModal('ticketModal');
         };
 
-        window.sendOrder = () => {
+        window.sendOrder = async (shouldPrintAndOpenDrawer = false) => {
             window.STATE.orders.push(tempOrder);
             
+            // Deducción Automática del Inventario Físico (Recetas)
             tempOrder.items.forEach(cartItem => {
                 const recipeToUse = cartItem.recipe || (window.STATE.menu.find(m => m.id === cartItem.id) || {}).recipe;
                 if(recipeToUse) {
                     recipeToUse.forEach(rec => {
                         const ing = window.STATE.ingredients.find(i => i.id === rec.id);
-                        if(ing) {
-                            ing.stock -= rec.qty;
-                            if(ing.stock <= ing.min) window.showToast(`¡OJO! ${ing.name} bajó del mínimo`, 'error');
-                        }
+                        if(ing) { ing.stock -= rec.qty; if(ing.stock <= ing.min) window.showToast(`¡OJO! ${ing.name} bajó del mínimo`, 'error'); }
                     });
                 }
             });
+            
+            // CAJA CONTABLE (Si está abierto el turno, suma los ingresos)
+            if(window.STATE.caja.isOpen) {
+                window.STATE.caja.total += tempOrder.total;
+                window.STATE.caja.moves.push({ type: 'in', desc: `Venta ${tempOrder.id} - ${tempOrder.payment}`, amt: tempOrder.total, time: new Date().toLocaleTimeString() });
+            }
 
             window.secureSave(); window.closeModal('ticketModal');
             window.STATE.cart = []; window.updateCartUI(); window.toggleCheckoutView();
             document.getElementById('order-name').value = ''; document.getElementById('order-table').value = ''; document.getElementById('order-address').value = '';
-            window.showToast('¡Pedido enviado a cocina!', 'success');
-            try { 
-                const playPromise = document.getElementById('kds-alert').play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => { console.log("Audio play prevented", error); });
-                }
-            } catch(e){}
+            window.showToast('¡Pedido registrado!', 'success');
+            
+            try { const alertEl = document.getElementById('kds-alert'); if(alertEl) { alertEl.play().catch(e => {}); } } catch(e){}
+
+            // COMUNICACIÓN CON HARDWARE (Impresora + Gaveta) vía POS Bridge
+            if (shouldPrintAndOpenDrawer && window.POSBridge) {
+                window.POSBridge.printTicket(tempOrder);
+            }
+        };
+
+        window.saveHardwareConfig = () => {
+            window.STATE.hardware.bridgeUrl = document.getElementById('hw-bridge-url').value || 'http://localhost:3000';
+            window.STATE.hardware.autoOpenDrawer = document.getElementById('hw-auto-drawer').checked;
+            window.secureSave(); window.showToast('Configuración de Hardware Guardada'); window.POSBridge.ping(); 
+        };
+
+        window.testHardwarePrinter = async () => {
+            try {
+                const res = await fetch(`${window.STATE.hardware.bridgeUrl}/api/printer/test`, { method: 'POST' });
+                if(res.ok) window.showToast('Señal enviada a la impresora', 'success'); else window.showToast('Impresora desconectada', 'error');
+            } catch (e) { window.showToast('POS Bridge no detectado.', 'error'); }
+        };
+
+        window.openDrawerManual = () => {
+            const reason = document.getElementById('hw-drawer-reason').value;
+            if(!reason) return window.showToast('Ingresa un motivo para la bitácora', 'error');
+            window.POSBridge.openDrawer(reason);
+            window.logAction('APERTURA_GAVETA', `Motivo: ${reason}`);
+            document.getElementById('hw-drawer-reason').value = '';
+        };
+
+        // CONTROL DE CAJA CONTABLE
+        window.abrirTurnoCaja = () => {
+            if(window.STATE.caja.isOpen) return window.showToast('Ya hay un turno abierto', 'error');
+            const montoIni = parseFloat(document.getElementById('caja-monto').value || 0);
+            window.STATE.caja = { isOpen: true, turnoId: 'TRN-' + Date.now(), usuario: window.STATE.currentUser, startAmt: montoIni, total: montoIni, moves: [{ type: 'in', desc: 'Fondo Inicial de Caja', amt: montoIni, time: new Date().toLocaleTimeString() }] };
+            window.logAction('APERTURA_TURNO', `Monto Inicial: $${montoIni}`);
+            window.secureSave(); window.renderCaja(); window.showToast('Turno Abierto', 'success');
+        };
+
+        window.cerrarTurnoCaja = async () => {
+            if(!window.STATE.caja.isOpen) return;
+            const { value: montoReal } = await Swal.fire({ title: 'Arqueo de Turno', text: 'Ingrese el total de EFECTIVO físico contado:', input: 'number', background: '#111', color: '#fff', confirmButtonColor: '#FF3D00' });
+            if(montoReal !== undefined && montoReal !== null) {
+                const esperado = window.STATE.caja.total; const real = parseFloat(montoReal); const diferencia = real - esperado;
+                let msjDiferencia = diferencia === 0 ? 'Caja Cuadrada Perfectamente' : (diferencia > 0 ? `Sobrante: +$${diferencia.toFixed(2)}` : `Faltante: -$${Math.abs(diferencia).toFixed(2)}`);
+                window.logAction('CIERRE_TURNO', `Esperado: $${esperado} | Real: $${real} | ${msjDiferencia}`);
+                await Swal.fire({ title: 'Resumen Z', html: `<div class="text-left text-sm space-y-2 mt-4"><p><b>Operador:</b> ${window.STATE.caja.usuario}</p><p><b>Calculado:</b> $${esperado.toFixed(2)}</p><p><b>Declarado:</b> $${real.toFixed(2)}</p><p class="${diferencia === 0 ? 'text-green-500' : 'text-red-500'} font-black text-lg mt-2">${msjDiferencia}</p></div>`, background: '#111', color: '#fff' });
+                window.STATE.caja = { isOpen: false, startAmt: 0, total: 0, moves: [], turnoId: null, usuario: null };
+                window.secureSave(); window.renderCaja();
+            }
+        };
+
+        window.renderCaja = () => {
+            const c = window.STATE.caja || { isOpen: false, startAmt: 0, total: 0, moves: [] };
+            const moves = Array.isArray(c.moves) ? c.moves : [];
+            document.getElementById('caja-status').innerText = c.isOpen ? 'Turno Abierto y Operativo' : 'Turno Cerrado';
+            document.getElementById('caja-status').className = `text-xl font-bold ${c.isOpen ? 'text-green-500' : 'text-zinc-500'}`;
+            
+            // Aseguramos que los contenedores existan antes de modificar clases
+            const apBox = document.getElementById('caja-apertura-box');
+            const clBox = document.getElementById('caja-cierre-box');
+            const opInfo = document.getElementById('caja-info-operador');
+            
+            if (apBox) apBox.classList.toggle('hidden', c.isOpen);
+            if (clBox) clBox.classList.toggle('hidden', !c.isOpen);
+            if (opInfo) opInfo.classList.toggle('hidden', !c.isOpen);
+            
+            if(c.isOpen && document.getElementById('caja-operador-name')) document.getElementById('caja-operador-name').innerText = c.usuario;
+            
+            if(document.getElementById('caja-total-calc')) document.getElementById('caja-total-calc').innerText = `$${(c.total || 0).toFixed(2)}`;
+            
+            if(document.getElementById('caja-moves')) {
+                if(moves.length === 0) { document.getElementById('caja-moves').innerHTML = '<p class="text-xs text-zinc-500 text-center mt-10">Inicie un turno para ver movimientos.</p>'; } 
+                else { document.getElementById('caja-moves').innerHTML = moves.map(m => `<div class="flex justify-between items-center bg-zinc-900/50 p-2 rounded text-xs font-bold border border-white/5 ${m.type==='in'?'text-green-400':'text-red-400'}"><span class="truncate pr-2">${m.time} - ${m.desc}</span><span>${m.type==='in'?'+':'-'}$${m.amt.toFixed(2)}</span></div>`).join(''); }
+            }
         };
 
         window.handleLogin = () => {
-            const u = window.sanitize(document.getElementById('login-user').value);
-            const p = document.getElementById('login-pass').value;
-            
+            const u = window.sanitize(document.getElementById('login-user').value); const p = document.getElementById('login-pass').value;
             if(u === 'Papitacaliente' && p === '8494648650') window.STATE.currentUser = 'admin';
             else if(u === 'Cocinapapitacaliente' && p === '11223344') window.STATE.currentUser = 'cocina';
             else return window.showToast('Credenciales Inválidas', 'error');
@@ -1321,13 +1469,9 @@
             document.getElementById('adminDashboard').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
             document.getElementById('adminDashboard').classList.add('flex', 'opacity-100', 'pointer-events-auto');
             document.getElementById('role-badge').innerText = window.STATE.currentUser;
-            
             document.querySelectorAll('.admin-only').forEach(el => { el.style.display = window.STATE.currentUser === 'admin' ? 'block' : 'none'; });
-
             const defaultTab = window.STATE.currentUser === 'admin' ? 'dashboard' : 'kds';
-            window.switchAdminPanel(defaultTab);
-            window.renderAdminViews();
-            window.showToast(`Módulo Iniciado. Rol: ${window.STATE.currentUser}`, 'success');
+            window.switchAdminPanel(defaultTab); window.renderAdminViews(); window.showToast(`Módulo Iniciado.`, 'success');
         };
 
         window.logoutAdmin = () => {
@@ -1342,14 +1486,13 @@
             document.getElementById(`panel-admin-${tab}`).classList.remove('hidden');
             if(document.getElementById(`btn-side-${tab}`)) document.getElementById(`btn-side-${tab}`).classList.add('active');
             
-            if(window.innerWidth < 768) {
-                document.getElementById('erp-sidebar').classList.add('-translate-x-full');
-                if(document.getElementById('sidebar-overlay')) document.getElementById('sidebar-overlay').classList.add('hidden');
-            }
-
+            // Cerrar menú móvil al seleccionar
+            if(window.innerWidth < 768) { document.getElementById('erp-sidebar').classList.add('-translate-x-full'); if(document.getElementById('sidebar-overlay')) document.getElementById('sidebar-overlay').classList.add('hidden'); }
+            
             if(tab === 'dashboard' || tab === 'stats') window.renderCharts();
             if(tab === 'ingredients') window.renderIngredients();
             if(tab === 'orders') window.renderOrdersHistory();
+            if(tab === 'pos') window.POSBridge.ping(); 
         };
 
         window.renderAdminViews = () => {
@@ -1358,28 +1501,23 @@
             if(window.STATE.currentUser === 'admin') {
                 window.renderDashboardMetrics(); window.renderIngredients(); window.renderAdminCatalog();
                 window.renderCaja(); window.renderGalleryAdmin(); window.renderBankAccounts(); window.renderOrdersHistory();
-                document.getElementById('set-api-key').value = window.STATE.settings.apiKey || '';
-                document.getElementById('set-phone').value = window.STATE.settings.phone || '';
-                document.getElementById('set-map-embed').value = window.STATE.settings.mapEmbed || '';
-                document.getElementById('set-map-link').value = window.STATE.settings.mapLink || '';
-                document.getElementById('set-base-price').value = window.STATE.settings.customBasePrice || 6.00;
-                document.getElementById('set-extra-price').value = window.STATE.settings.customExtraPrice || 1.50;
+                document.getElementById('set-api-key').value = window.STATE.settings.apiKey || ''; document.getElementById('set-phone').value = window.STATE.settings.phone || '';
+                document.getElementById('set-map-embed').value = window.STATE.settings.mapEmbed || ''; document.getElementById('set-map-link').value = window.STATE.settings.mapLink || '';
+                document.getElementById('hw-bridge-url').value = window.STATE.hardware.bridgeUrl || 'http://localhost:3000';
+                document.getElementById('hw-auto-drawer').checked = window.STATE.hardware.autoOpenDrawer !== false;
+                setTimeout(() => window.POSBridge.ping(), 2000);
             }
         };
 
         window.renderKDS = () => {
             const cols = { 'Pendiente': 'pen', 'Preparando': 'prep', 'Empacando': 'pack', 'Lista': 'ready' };
             Object.values(cols).forEach(c => { document.getElementById(`kds-col-${c}`).innerHTML = ''; document.getElementById(`kds-cnt-${c}`).innerText = '0'; });
-            let counts = { pen:0, prep:0, pack:0, ready:0 };
-            const now = Date.now();
+            let counts = { pen:0, prep:0, pack:0, ready:0 }; const now = Date.now();
 
             window.STATE.orders.forEach(o => {
                 if(o.status === 'Entregada' || o.status === 'Cancelada') return;
-                const colId = cols[o.status];
-                if(!colId) return;
-
-                counts[colId]++;
-                const mins = Math.floor((now - o.timestamp) / 60000);
+                const colId = cols[o.status]; if(!colId) return;
+                counts[colId]++; const mins = Math.floor((now - o.timestamp) / 60000);
                 let timeClass = 'time-ok'; if(mins > 10) timeClass = 'time-warn'; if(mins > 20) timeClass = 'time-danger';
 
                 const itemsStr = o.items.map(i => `<div class="text-[10px] font-bold text-zinc-300">- ${i.title} ${i.note ? `<span class="text-white bg-red-600 px-1 py-0.5 rounded ml-1 font-black shadow-lg">¡NOTA: ${i.note}!</span>` : ''}</div>`).join('');
@@ -1391,7 +1529,6 @@
                 else if(o.status === 'Lista') btn = `<button onclick="window.chgStatus('${o.id}','Entregada')" class="w-full bg-zinc-600 hover:bg-zinc-500 text-white text-[9px] font-black py-2 rounded uppercase mt-2 transition">Entregar al Cliente</button>`;
 
                 const locationTag = o.type === 'Para Comer en Mesa' ? `MESA: ${o.table}` : (o.type === 'Delivery' ? `DELIVERY: ${o.address}` : o.type);
-
                 document.getElementById(`kds-col-${colId}`).innerHTML += `<div class="bg-black p-3 rounded-xl border border-white/5 kds-card shadow-lg ${timeClass}"><div class="flex justify-between items-start mb-2"><span class="font-black text-xs text-white">${o.id}</span><span class="text-[10px] text-zinc-400 font-bold bg-zinc-900 px-1.5 py-0.5 rounded">${mins} min</span></div><div class="text-[10px] text-papa-yellow font-bold uppercase mb-2">${locationTag} | <span class="text-white">${o.name}</span></div><div class="bg-zinc-900 p-2 rounded-lg border border-white/5 space-y-1">${itemsStr}</div>${btn}</div>`;
             });
             Object.keys(counts).forEach(k => document.getElementById(`kds-cnt-${k}`).innerText = counts[k]);
@@ -1399,81 +1536,42 @@
 
         window.renderOrdersHistory = () => {
             const table = document.getElementById('orders-history-table');
-            if(!window.STATE.orders || window.STATE.orders.length === 0) {
-                table.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-zinc-500">No hay órdenes registradas.</td></tr>`;
-                return;
-            }
+            if(!window.STATE.orders || window.STATE.orders.length === 0) { table.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-zinc-500">No hay órdenes registradas.</td></tr>`; return; }
             
             const sorted = [...window.STATE.orders].sort((a,b) => b.timestamp - a.timestamp);
             table.innerHTML = sorted.map(o => `
                 <tr class="hover:bg-white/5 transition border-b border-white/5">
-                    <td class="py-3 pl-2">${o.id}</td>
-                    <td class="py-3 text-zinc-400 font-normal min-w-[120px]">${new Date(o.timestamp).toLocaleString()}</td>
-                    <td class="py-3">
-                        <span class="text-white">${o.name}</span><br>
-                        <span class="text-[9px] text-zinc-500 font-normal uppercase">${o.type === 'Para Comer en Mesa' ? `MESA: ${o.table}` : o.type} | PAGO: ${o.payment}</span>
-                    </td>
+                    <td class="py-3 pl-2">${o.id}</td><td class="py-3 text-zinc-400 font-normal min-w-[120px]">${new Date(o.timestamp).toLocaleString()}</td>
+                    <td class="py-3"><span class="text-white">${o.name}</span><br><span class="text-[9px] text-zinc-500 font-normal uppercase">${o.type === 'Para Comer en Mesa' ? `MESA: ${o.table}` : o.type} | PAGO: ${o.payment}</span></td>
                     <td class="py-3 text-papa-yellow font-black">$${o.total.toFixed(2)}</td>
-                    <td class="py-3">
-                        <span class="${o.status === 'Entregada' ? 'text-green-500' : (o.status === 'Cancelada' ? 'text-red-500' : 'text-blue-400')} uppercase text-[10px] px-2 py-1 bg-zinc-900 rounded">${o.status}</span>
-                    </td>
+                    <td class="py-3"><span class="${o.status === 'Entregada' ? 'text-green-500' : (o.status === 'Cancelada' ? 'text-red-500' : 'text-blue-400')} uppercase text-[10px] px-2 py-1 bg-zinc-900 rounded">${o.status}</span></td>
                     <td class="py-3 text-right">
                         <select onchange="window.chgStatus('${o.id}', this.value)" class="bg-zinc-900 text-white border border-white/10 text-[10px] rounded p-1 outline-none">
-                            <option value="" disabled selected>Cambiar...</option>
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="Entregada">Entregada</option>
-                            <option value="Cancelada">Cancelada</option>
+                            <option value="" disabled selected>Cambiar...</option><option value="Pendiente">Pendiente</option><option value="Entregada">Entregada</option><option value="Cancelada">Cancelada</option>
                         </select>
                     </td>
                 </tr>
             `).join('');
         };
 
-        window.chgStatus = (id, stat) => {
-            const o = window.STATE.orders.find(x => x.id === id);
-            if(o) { 
-                o.status = stat; 
-                window.secureSave(); 
-                window.renderKDS();
-                if(document.getElementById('panel-admin-orders').classList.contains('hidden') === false) window.renderOrdersHistory();
-            }
-        };
+        window.chgStatus = (id, stat) => { const o = window.STATE.orders.find(x => x.id === id); if(o) { o.status = stat; window.secureSave(); window.renderKDS(); if(document.getElementById('panel-admin-orders').classList.contains('hidden') === false) window.renderOrdersHistory(); } };
         setInterval(() => { if(window.STATE.currentUser && document.getElementById('panel-admin-kds').classList.contains('hidden') === false) window.renderKDS(); }, 30000);
 
         window.renderDashboardMetrics = () => {
             const today = new Date().toDateString();
             const todayOrders = window.STATE.orders.filter(o => new Date(o.timestamp).toDateString() === today && o.status !== 'Cancelada');
-            const ventasHoy = todayOrders.reduce((sum, o) => sum + o.total, 0);
-            const alertas = window.STATE.ingredients.filter(i => i.stock <= i.min).length;
-
-            document.getElementById('dash-ventas-hoy').innerText = `$${ventasHoy.toFixed(2)}`;
-            document.getElementById('dash-ordenes-hoy').innerText = todayOrders.length;
-            document.getElementById('dash-ticket-prom').innerText = todayOrders.length ? `$${(ventasHoy/todayOrders.length).toFixed(2)}` : '$0.00';
-            document.getElementById('dash-alertas-stock').innerText = alertas;
+            const ventasHoy = todayOrders.reduce((sum, o) => sum + o.total, 0); const alertas = window.STATE.ingredients.filter(i => i.stock <= i.min).length;
+            document.getElementById('dash-ventas-hoy').innerText = `$${ventasHoy.toFixed(2)}`; document.getElementById('dash-ordenes-hoy').innerText = todayOrders.length;
+            document.getElementById('dash-ticket-prom').innerText = todayOrders.length ? `$${(ventasHoy/todayOrders.length).toFixed(2)}` : '$0.00'; document.getElementById('dash-alertas-stock').innerText = alertas;
         };
 
         window.renderIngredients = () => {
             let totalValue = 0;
             document.getElementById('ingredients-table').innerHTML = window.STATE.ingredients.map(i => {
-                const costo = i.cost || 0;
-                const valorTotal = i.stock * costo;
-                totalValue += valorTotal;
-                return `
-                <tr class="hover:bg-white/5 transition border-b border-white/5">
-                    <td class="py-3 pl-2">${i.name}</td>
-                    <td class="py-3 text-zinc-500">${i.unit}</td>
-                    <td class="py-3 text-zinc-400">$${costo.toFixed(2)}</td>
-                    <td class="py-3 ${i.stock <= i.min ? 'text-red-500 animate-pulse' : 'text-green-400'}">${i.stock}</td>
-                    <td class="py-3 text-white">$${valorTotal.toFixed(2)}</td>
-                    <td class="py-3 text-zinc-500">${i.min}</td>
-                    <td class="py-3 text-right space-x-1 flex justify-end">
-                        <button onclick="window.addStock('${i.id}')" class="text-white text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded transition">Reponer</button>
-                        <button onclick="window.editIng('${i.id}')" class="text-white bg-zinc-700 hover:bg-zinc-600 px-2 py-1.5 rounded transition"><i class="ph-bold ph-pencil"></i></button>
-                        <button onclick="window.deleteIng('${i.id}')" class="text-white bg-red-600/50 hover:bg-red-500 px-2 py-1.5 rounded transition"><i class="ph-bold ph-trash"></i></button>
-                    </td>
-                </tr>`
+                const costo = i.cost || 0; const valorTotal = i.stock * costo; totalValue += valorTotal;
+                return `<tr class="hover:bg-white/5 transition border-b border-white/5"><td class="py-3 pl-2">${i.name}</td><td class="py-3 text-zinc-500">${i.unit}</td><td class="py-3 text-zinc-400">$${costo.toFixed(2)}</td><td class="py-3 ${i.stock <= i.min ? 'text-red-500 animate-pulse' : 'text-green-400'}">${i.stock}</td><td class="py-3 text-white">$${valorTotal.toFixed(2)}</td><td class="py-3 text-zinc-500">${i.min}</td><td class="py-3 text-right space-x-1 flex justify-end"><button onclick="window.addStock('${i.id}')" class="text-white text-[10px] uppercase font-bold bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded transition">Reponer</button><button onclick="window.editIng('${i.id}')" class="text-white bg-zinc-700 hover:bg-zinc-600 px-2 py-1.5 rounded transition"><i class="ph-bold ph-pencil"></i></button><button onclick="window.deleteIng('${i.id}')" class="text-white bg-red-600/50 hover:bg-red-500 px-2 py-1.5 rounded transition"><i class="ph-bold ph-trash"></i></button></td></tr>`
             }).join('');
-            document.getElementById('ing-total-valuation').innerText = `$${totalValue.toFixed(2)}`;
+            const valEl = document.getElementById('ing-total-valuation'); if(valEl) valEl.innerText = `$${totalValue.toFixed(2)}`;
         };
 
         window.addStock = async (id) => {
@@ -1498,174 +1596,79 @@
                 focusConfirm: false, background:'#111', color:'#fff', confirmButtonColor: '#FF3D00',
                 preConfirm: () => ({ name: window.sanitize(document.getElementById('swal-ing-n').value), unit: window.sanitize(document.getElementById('swal-ing-u').value), cost: parseFloat(document.getElementById('swal-ing-c').value||0), stock: parseInt(document.getElementById('swal-ing-s').value||0), min: parseInt(document.getElementById('swal-ing-m').value||0) })
             });
-            if(form && form.name) { 
-                ing.name = form.name; ing.unit = form.unit; ing.cost = form.cost; ing.stock = form.stock; ing.min = form.min; 
-                window.secureSave(); window.renderIngredients(); window.showToast('Ingrediente editado'); 
-            }
+            if(form && form.name) { ing.name = form.name; ing.unit = form.unit; ing.cost = form.cost; ing.stock = form.stock; ing.min = form.min; window.secureSave(); window.renderIngredients(); window.showToast('Ingrediente editado'); }
         };
 
         window.deleteIng = async (id) => {
-            const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Ingrediente?', text: 'Esto puede afectar las recetas de los platos.', icon: 'warning', background:'#111', color:'#fff', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Eliminar' });
-            if(isConfirmed) {
-                window.STATE.ingredients = window.STATE.ingredients.filter(i => i.id !== id);
-                window.secureSave(); window.renderIngredients(); window.showToast('Ingrediente eliminado');
-            }
+            const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Ingrediente?', text: 'Afectará las recetas de los platos.', icon: 'warning', background:'#111', color:'#fff', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Eliminar' });
+            if(isConfirmed) { window.STATE.ingredients = window.STATE.ingredients.filter(i => i.id !== id); window.secureSave(); window.renderIngredients(); window.showToast('Eliminado'); }
         };
 
         window.renderAdminCatalog = () => {
             document.getElementById('admin-catalog-grid').innerHTML = window.STATE.menu.map(m => {
                 const isAvail = m.available !== false;
-                return `<div class="bg-black border border-white/10 rounded-2xl p-4 flex gap-4 items-center shadow-lg hover:border-papa-fire/50 transition">
-                <img src="${m.img}" class="w-16 h-16 rounded-xl object-cover border border-white/10 ${!isAvail ? 'grayscale opacity-50' : ''}">
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs font-black text-white uppercase truncate">${m.title}</p>
-                    <p class="text-[10px] text-papa-yellow font-black mt-1">$${m.price.toFixed(2)} <span class="text-zinc-500 font-medium">| ${m.cat}</span></p>
-                    <div class="mt-1">${isAvail ? '<span class="bg-green-500/20 text-green-400 text-[8px] px-2 py-0.5 rounded font-bold uppercase">Disponible</span>' : '<span class="bg-red-500/20 text-red-400 text-[8px] px-2 py-0.5 rounded font-bold uppercase">Agotado</span>'}</div>
-                </div>
-                <div class="flex flex-col gap-2 shrink-0">
-                    <button onclick="window.openEditModal('${m.id}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2 rounded-lg transition"><i class="ph-bold ph-pencil"></i></button>
-                    <div class="flex gap-2">
-                        <button onclick="window.duplicateProduct('${m.id}')" class="bg-zinc-800 text-white hover:bg-zinc-700 p-2 rounded-lg transition"><i class="ph-bold ph-copy"></i></button>
-                        <button onclick="window.deleteProduct('${m.id}')" class="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white p-2 rounded-lg transition"><i class="ph-bold ph-trash"></i></button>
-                    </div>
-                </div>
-            </div>`}).join('');
+                return `<div class="bg-black border border-white/10 rounded-2xl p-4 flex gap-4 items-center shadow-lg hover:border-papa-fire/50 transition"><img src="${m.img}" class="w-16 h-16 rounded-xl object-cover border border-white/10 ${!isAvail ? 'grayscale opacity-50' : ''}"><div class="flex-1 min-w-0"><p class="text-xs font-black text-white uppercase truncate">${m.title}</p><p class="text-[10px] text-papa-yellow font-black mt-1">$${m.price.toFixed(2)} <span class="text-zinc-500 font-medium">| ${m.cat}</span></p><div class="mt-1">${isAvail ? '<span class="bg-green-500/20 text-green-400 text-[8px] px-2 py-0.5 rounded font-bold uppercase">Disponible</span>' : '<span class="bg-red-500/20 text-red-400 text-[8px] px-2 py-0.5 rounded font-bold uppercase">Agotado</span>'}</div></div><div class="flex flex-col gap-2 shrink-0"><button onclick="window.openEditModal('${m.id}')" class="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white p-2 rounded-lg transition"><i class="ph-bold ph-pencil"></i></button><div class="flex gap-2"><button onclick="window.duplicateProduct('${m.id}')" class="bg-zinc-800 text-white hover:bg-zinc-700 p-2 rounded-lg transition"><i class="ph-bold ph-copy"></i></button><button onclick="window.deleteProduct('${m.id}')" class="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white p-2 rounded-lg transition"><i class="ph-bold ph-trash"></i></button></div></div></div>`
+            }).join('');
         };
 
         window.duplicateProduct = (id) => {
-            const orig = window.STATE.menu.find(m => m.id === id);
-            const dup = JSON.parse(JSON.stringify(orig)); 
-            dup.id = 'p' + Date.now(); dup.title += ' (Clon)';
+            const orig = window.STATE.menu.find(m => m.id === id); const dup = JSON.parse(JSON.stringify(orig)); dup.id = 'p' + Date.now(); dup.title += ' (Clon)';
             window.STATE.menu.push(dup); window.secureSave(); window.renderAdminCatalog(); window.showToast('Plato duplicado');
         };
 
         window.deleteProduct = async (id) => {
             const prod = window.STATE.menu.find(m => m.id === id);
-            const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Plato?', text: `Se borrará "${prod.title}" permanentemente.`, icon: 'warning', background: '#111', color: '#fff', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Eliminar' });
-            if(isConfirmed) {
-                window.STATE.menu = window.STATE.menu.filter(m => m.id !== id);
-                window.secureSave(); window.renderAdminCatalog(); window.showToast('Plato eliminado');
-            }
+            const { isConfirmed } = await Swal.fire({ title: '¿Eliminar Plato?', text: `Se borrará "${prod.title}".`, icon: 'warning', background: '#111', color: '#fff', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Eliminar' });
+            if(isConfirmed) { window.STATE.menu = window.STATE.menu.filter(m => m.id !== id); window.secureSave(); window.renderAdminCatalog(); window.showToast('Plato eliminado'); }
         };
 
         window.openEditModal = (id = null) => {
-            window.STATE.tempRecipe = [];
-            document.getElementById('recipe-ing-select').innerHTML = window.STATE.ingredients.map(i => `<option value="${i.id}">${i.name} (${i.unit})</option>`).join('');
-            
+            window.STATE.tempRecipe = []; document.getElementById('recipe-ing-select').innerHTML = window.STATE.ingredients.map(i => `<option value="${i.id}">${i.name} (${i.unit})</option>`).join('');
             const imgPreview = document.getElementById('edit-img-preview');
             if(id) {
                 const p = window.STATE.menu.find(x => x.id === id);
-                document.getElementById('edit-id').value = p.id;
-                document.getElementById('edit-title').value = p.title;
-                document.getElementById('edit-tag').value = p.tag || '';
-                document.getElementById('edit-cat').value = p.cat;
-                document.getElementById('edit-price').value = p.price;
-                document.getElementById('edit-available').value = p.available !== false ? "true" : "false";
-                document.getElementById('edit-desc').value = p.desc;
-                imgPreview.src = p.img; imgPreview.dataset.src = p.img; imgPreview.classList.remove('hidden');
-                window.STATE.tempRecipe = JSON.parse(JSON.stringify(p.recipe || []));
+                document.getElementById('edit-id').value = p.id; document.getElementById('edit-title').value = p.title; document.getElementById('edit-tag').value = p.tag || ''; document.getElementById('edit-cat').value = p.cat; document.getElementById('edit-price').value = p.price; document.getElementById('edit-available').value = p.available !== false ? "true" : "false"; document.getElementById('edit-desc').value = p.desc;
+                imgPreview.src = p.img; imgPreview.dataset.src = p.img; imgPreview.classList.remove('hidden'); window.STATE.tempRecipe = JSON.parse(JSON.stringify(p.recipe || []));
             } else {
-                ['edit-id','edit-title','edit-tag','edit-cat','edit-price','edit-desc'].forEach(i => document.getElementById(i).value = '');
-                document.getElementById('edit-available').value = "true";
+                ['edit-id','edit-title','edit-tag','edit-cat','edit-price','edit-desc'].forEach(i => document.getElementById(i).value = ''); document.getElementById('edit-available').value = "true";
                 imgPreview.classList.add('hidden'); imgPreview.src = ''; imgPreview.dataset.src = '';
             }
             window.renderRecipeList(); window.openModal('editModal');
         };
 
         window.addRecipeRow = () => {
-            const id = document.getElementById('recipe-ing-select').value;
-            const qty = parseInt(document.getElementById('recipe-ing-qty').value);
+            const id = document.getElementById('recipe-ing-select').value; const qty = parseInt(document.getElementById('recipe-ing-qty').value);
             if(id && qty > 0) {
-                const ex = window.STATE.tempRecipe.find(r => r.id === id);
-                if(ex) ex.qty += qty; else window.STATE.tempRecipe.push({id, qty});
+                const ex = window.STATE.tempRecipe.find(r => r.id === id); if(ex) ex.qty += qty; else window.STATE.tempRecipe.push({id, qty});
                 window.renderRecipeList(); document.getElementById('recipe-ing-qty').value = '';
             }
         };
 
         window.renderRecipeList = () => {
             document.getElementById('recipe-list').innerHTML = window.STATE.tempRecipe.map((r, idx) => {
-                const ing = window.STATE.ingredients.find(i => i.id === r.id);
-                if(!ing) return '';
+                const ing = window.STATE.ingredients.find(i => i.id === r.id); if(!ing) return '';
                 return `<div class="flex justify-between items-center bg-black border border-white/5 p-2 rounded text-[10px] font-bold text-zinc-300"><span><i class="ph-fill ph-arrow-right text-papa-fire"></i> ${ing.name}</span><span class="bg-zinc-800 px-2 py-0.5 rounded text-white">${r.qty} ${ing.unit} <button onclick="window.STATE.tempRecipe.splice(${idx},1); window.renderRecipeList();" class="text-red-500 ml-2 hover:scale-125 transition">X</button></span></div>`;
             }).join('');
         };
 
         window.saveProduct = () => {
-            const title = window.sanitize(document.getElementById('edit-title').value);
-            if(!title) return window.showToast('El nombre es obligatorio', 'error');
-            
-            const previewSrc = document.getElementById('edit-img-preview').dataset.src;
-            const finalImg = previewSrc || 'https://placehold.co/600x400/222/FFF?text=Plato';
-
-            const p = {
-                id: document.getElementById('edit-id').value || 'p'+Date.now(),
-                title: title, tag: document.getElementById('edit-tag').value,
-                available: document.getElementById('edit-available').value === 'true',
-                cat: window.sanitize(document.getElementById('edit-cat').value),
-                price: parseFloat(document.getElementById('edit-price').value || 0),
-                img: finalImg, desc: window.sanitize(document.getElementById('edit-desc').value),
-                recipe: window.STATE.tempRecipe
-            };
-            const idx = window.STATE.menu.findIndex(x => x.id === p.id);
-            if(idx > -1) window.STATE.menu[idx] = p; else window.STATE.menu.push(p);
-            
+            const title = window.sanitize(document.getElementById('edit-title').value); if(!title) return window.showToast('El nombre es obligatorio', 'error');
+            const previewSrc = document.getElementById('edit-img-preview').dataset.src; const finalImg = previewSrc || 'https://placehold.co/600x400/222/FFF?text=Plato';
+            const p = { id: document.getElementById('edit-id').value || 'p'+Date.now(), title: title, tag: document.getElementById('edit-tag').value, available: document.getElementById('edit-available').value === 'true', cat: window.sanitize(document.getElementById('edit-cat').value), price: parseFloat(document.getElementById('edit-price').value || 0), img: finalImg, desc: window.sanitize(document.getElementById('edit-desc').value), recipe: window.STATE.tempRecipe };
+            const idx = window.STATE.menu.findIndex(x => x.id === p.id); if(idx > -1) window.STATE.menu[idx] = p; else window.STATE.menu.push(p);
             window.secureSave(); window.closeModal('editModal'); window.renderAdminCatalog(); window.renderStorefront(); window.showToast('Plato guardado');
         };
 
-        window.renderCaja = () => {
-            const c = window.STATE.caja || { isOpen: false, startAmt: 0, total: 0, moves: [] };
-            const moves = Array.isArray(c.moves) ? c.moves : [];
-            document.getElementById('caja-status').innerText = c.isOpen ? 'Caja Abierta y Operativa' : 'Caja Cerrada';
-            document.getElementById('caja-status').className = `text-xl font-bold ${c.isOpen ? 'text-green-500' : 'text-zinc-500'}`;
-            document.getElementById('btn-caja-action').innerText = c.isOpen ? 'Hacer Cierre de Caja' : 'Abrir Turno de Caja';
-            document.getElementById('btn-caja-action').className = `w-full bg-green-600 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform hover:scale-[1.02] ${c.isOpen ? 'bg-red-600 hover:bg-red-500' : 'bg-green-600 hover:bg-green-500'}`;
-            
-            document.getElementById('caja-total-calc').innerText = `$${(c.total || 0).toFixed(2)}`;
-            document.getElementById('caja-moves').innerHTML = moves.map(m => `<div class="flex justify-between items-center bg-zinc-900/50 p-2 rounded text-xs font-bold border border-white/5 ${m.type==='in'?'text-green-400':'text-red-400'}"><span class="truncate pr-2">${m.time} - ${m.desc}</span><span>${m.type==='in'?'+':'-'}$${m.amt.toFixed(2)}</span></div>`).join('');
-        };
-
-        window.toggleCaja = () => {
-            if(!window.STATE.caja.isOpen) {
-                const amt = parseFloat(document.getElementById('caja-monto').value || 0);
-                window.STATE.caja = { isOpen: true, startAmt: amt, total: amt, moves: [{type:'in', desc:'Apertura Inicial Turno', amt, time: new Date().toLocaleTimeString()}] };
-                window.showToast(`Turno Abierto con $${amt}`);
-            } else {
-                window.STATE.caja.isOpen = false;
-                window.showToast(`Cierre de Caja Exitoso. Total: $${window.STATE.caja.total}`);
-            }
-            window.secureSave(); window.renderCaja();
-        };
-
         window.calcularVuelto = () => {
-            const total = parseFloat(document.getElementById('calc-total').value || 0);
-            const pago = parseFloat(document.getElementById('calc-pago').value || 0);
-            const cambio = pago - total;
-            const cambioEl = document.getElementById('calc-cambio');
-            
+            const total = parseFloat(document.getElementById('calc-total').value || 0); const pago = parseFloat(document.getElementById('calc-pago').value || 0); const cambio = pago - total; const cambioEl = document.getElementById('calc-cambio');
             if(total === 0) { cambioEl.innerText = '$0.00'; cambioEl.className = 'text-4xl font-black text-white relative z-10'; return; }
             if(cambio < 0 && pago > 0) { cambioEl.innerText = 'Falta Dinero'; cambioEl.className = 'text-3xl font-black text-red-500 relative z-10 animate-pulse'; } 
             else { cambioEl.innerText = `$${Math.max(0, cambio).toFixed(2)}`; cambioEl.className = `text-4xl font-black relative z-10 ${cambio > 0 ? 'text-green-400' : 'text-white'}`; }
         };
 
-        window.registrarCobroCalculadora = () => {
-            if(!window.STATE.caja.isOpen) return window.showToast('Abre la caja primero', 'error');
-            const total = parseFloat(document.getElementById('calc-total').value || 0);
-            if(total <= 0) return window.showToast('Agrega un total a cobrar', 'error');
-            
-            window.STATE.caja.total += total; 
-            if (!Array.isArray(window.STATE.caja.moves)) window.STATE.caja.moves = [];
-            window.STATE.caja.moves.push({ type: 'in', desc: 'Cobro Manual POS', amt: total, time: new Date().toLocaleTimeString() });
-            window.secureSave();
-            
-            document.getElementById('calc-total').value = ''; document.getElementById('calc-pago').value = '';
-            window.calcularVuelto(); window.showToast('Venta registrada exitosamente', 'success'); window.renderCaja();
-        };
-
         window.calcSplitBill = () => {
-            const total = parseFloat(document.getElementById('split-total').value || 0);
-            const people = parseInt(document.getElementById('split-people').value || 1);
-            if(people < 1) document.getElementById('split-people').value = 1;
-            const res = total / Math.max(1, people);
+            const total = parseFloat(document.getElementById('split-total').value || 0); const people = parseInt(document.getElementById('split-people').value || 1);
+            if(people < 1) document.getElementById('split-people').value = 1; const res = total / Math.max(1, people);
             document.getElementById('split-result').innerText = `$${res.toFixed(2)}`;
         };
 
@@ -1673,26 +1676,16 @@
         window.stdCalc = (val) => {
             const display = document.getElementById('std-calc-display');
             if(val === 'C') { calcInput = ''; display.value = ''; }
-            else if(val === '=') { 
-                try { calcInput = Function('"use strict";return (' + calcInput + ')')().toString(); display.value = calcInput; } 
-                catch(e) { display.value = 'Error'; calcInput = ''; }
-            } else { if(/^[0-9+\-*/.]$/.test(val)) { calcInput += val; display.value = calcInput; } }
+            else if(val === '=') { try { calcInput = Function('"use strict";return (' + calcInput + ')')().toString(); display.value = calcInput; } catch(e) { display.value = 'Error'; calcInput = ''; } } 
+            else { if(/^[0-9+\-*/.]$/.test(val)) { calcInput += val; display.value = calcInput; } }
         };
 
         window.generateReport = () => {
-            const st = new Date(document.getElementById('rep-date-start').value || 0).getTime();
-            const en = new Date(document.getElementById('rep-date-end').value || Date.now()).getTime() + 86400000;
+            const st = new Date(document.getElementById('rep-date-start').value || 0).getTime(); const en = new Date(document.getElementById('rep-date-end').value || Date.now()).getTime() + 86400000;
             const res = window.STATE.orders.filter(o => o.timestamp >= st && o.timestamp <= en);
-            
-            let totalMoney = 0; const validOrders = res.filter(o => o.status !== 'Cancelada');
-            validOrders.forEach(o => totalMoney += o.total);
-
-            document.getElementById('rep-tot-orders').innerText = validOrders.length;
-            document.getElementById('rep-tot-money').innerText = `$${totalMoney.toFixed(2)}`;
-            document.getElementById('rep-tot-avg').innerText = validOrders.length ? `$${(totalMoney/validOrders.length).toFixed(2)}` : '$0.00';
-            
-            document.getElementById('print-date-range').innerText = `Periodo Consultado: ${new Date(st).toLocaleDateString()} al ${new Date(en-1).toLocaleDateString()}`;
-            document.getElementById('report-table').innerHTML = res.map(o => `<tr><td class="py-2 border-b border-white/5 print:border-gray-200">${o.id}</td><td class="py-2 border-b border-white/5 print:border-gray-200">${new Date(o.timestamp).toLocaleDateString()}</td><td class="py-2 border-b border-white/5 print:border-gray-200 truncate max-w-[150px]">${o.name} <br> <span class="text-[9px] text-zinc-400 print:text-gray-500">${o.table ? `Mesa: ${o.table}` : o.type}</span></td><td class="py-2 border-b border-white/5 print:border-gray-200 font-black ${o.status==='Cancelada'?'text-red-500':'text-zinc-400'} print:text-black">${o.status}</td><td class="py-2 border-b border-white/5 print:border-gray-200 text-right text-papa-yellow print:text-black">$${o.total.toFixed(2)}</td></tr>`).join('');
+            let totalMoney = 0; const validOrders = res.filter(o => o.status !== 'Cancelada'); validOrders.forEach(o => totalMoney += o.total);
+            document.getElementById('rep-tot-orders').innerText = validOrders.length; document.getElementById('rep-tot-money').innerText = `$${totalMoney.toFixed(2)}`; document.getElementById('rep-tot-avg').innerText = validOrders.length ? `$${(totalMoney/validOrders.length).toFixed(2)}` : '$0.00';
+            document.getElementById('report-table').innerHTML = res.map(o => `<tr><td class="py-2 border-b border-white/5">${o.id}</td><td class="py-2 border-b border-white/5">${new Date(o.timestamp).toLocaleDateString()}</td><td class="py-2 border-b border-white/5 truncate max-w-[150px]">${o.name} <br> <span class="text-[9px] text-zinc-400">${o.table ? `Mesa: ${o.table}` : o.type}</span></td><td class="py-2 border-b border-white/5 font-black ${o.status==='Cancelada'?'text-red-500':'text-zinc-400'}">${o.status}</td><td class="py-2 border-b border-white/5 text-right text-papa-yellow">$${o.total.toFixed(2)}</td></tr>`).join('');
             window.lastReportData = res;
         };
 
@@ -1700,85 +1693,20 @@
             if(!window.lastReportData || window.lastReportData.length === 0) return window.showToast('Genera un reporte primero', 'error');
             const headers = "OrdenID,Fecha,Cliente,Tipo_Mesa,Estado,Total_USD\n";
             const rows = window.lastReportData.map(o => `${o.id},${new Date(o.timestamp).toLocaleDateString()},${o.name},${o.table || o.type},${o.status},${o.total}`).join('\n');
-            const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "ERP_Reporte.csv"; link.click();
+            const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "ERP_Reporte.csv"; link.click();
         };
 
         window.printReport = () => {
             if(!window.lastReportData || window.lastReportData.length === 0) return window.showToast('Primero haz clic en "Generar Consulta"', 'error');
-
-            const st = document.getElementById('rep-date-start').value;
-            const en = document.getElementById('rep-date-end').value;
-            const dateRange = (st && en) ? `Periodo: ${st} al ${en}` : 'Reporte Histórico Completo';
-            
-            const totOrders = document.getElementById('rep-tot-orders').innerText;
-            const totMoney = document.getElementById('rep-tot-money').innerText;
-            const totAvg = document.getElementById('rep-tot-avg').innerText;
-
-            const tableHTML = window.lastReportData.map(o => `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 10px 5px;">${o.id}</td>
-                    <td style="padding: 10px 5px;">${new Date(o.timestamp).toLocaleString()}</td>
-                    <td style="padding: 10px 5px;"><strong>${o.name}</strong> <br><span style="font-size: 10px; color: #666;">${o.table ? `Mesa/Dir: ${o.table}` : o.type}</span></td>
-                    <td style="padding: 10px 5px; font-weight: bold; color: ${o.status === 'Cancelada' ? '#d32f2f' : '#333'};">${o.status}</td>
-                    <td style="padding: 10px 5px; text-align: right; font-weight: 900; font-size: 14px;">$${o.total.toFixed(2)}</td>
-                </tr>
-            `).join('');
+            const st = document.getElementById('rep-date-start').value; const en = document.getElementById('rep-date-end').value; const dateRange = (st && en) ? `Periodo: ${st} al ${en}` : 'Reporte Histórico Completo';
+            const totOrders = document.getElementById('rep-tot-orders').innerText; const totMoney = document.getElementById('rep-tot-money').innerText; const totAvg = document.getElementById('rep-tot-avg').innerText;
+            const tableHTML = window.lastReportData.map(o => `<tr style="border-bottom: 1px solid #eee;"><td style="padding: 10px 5px;">${o.id}</td><td style="padding: 10px 5px;">${new Date(o.timestamp).toLocaleString()}</td><td style="padding: 10px 5px;"><strong>${o.name}</strong> <br><span style="font-size: 10px; color: #666;">${o.table ? `Mesa/Dir: ${o.table}` : o.type}</span></td><td style="padding: 10px 5px; font-weight: bold; color: ${o.status === 'Cancelada' ? '#d32f2f' : '#333'};">${o.status}</td><td style="padding: 10px 5px; text-align: right; font-weight: 900; font-size: 14px;">$${o.total.toFixed(2)}</td></tr>`).join('');
 
             let printDiv = document.getElementById('printable-invoice');
-            if (!printDiv) {
-                printDiv = document.createElement('div');
-                printDiv.id = 'printable-invoice';
-                document.body.appendChild(printDiv);
-            }
+            if (!printDiv) { printDiv = document.createElement('div'); printDiv.id = 'printable-invoice'; document.body.appendChild(printDiv); }
             
-            printDiv.style.display = 'block';
-            printDiv.innerHTML = `
-                <div style="text-align: center; margin-bottom: 30px; font-family: 'Montserrat', sans-serif;">
-                    <h1 style="font-size: 28px; font-weight: 900; text-transform: uppercase; margin: 0; color: #000;">LA PAPA CALIENTE</h1>
-                    <h2 style="font-size: 18px; font-weight: bold; color: #444; margin: 5px 0 10px 0; letter-spacing: 2px;">REPORTE FINANCIERO OFICIAL</h2>
-                    <p style="font-size: 12px; color: #666; margin: 0;">${dateRange} &nbsp;|&nbsp; Emitido: ${new Date().toLocaleString()}</p>
-                </div>
-                
-                <div style="display: flex; justify-content: space-between; margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border: 2px solid #000; border-radius: 12px; font-family: 'Montserrat', sans-serif;">
-                    <div style="text-align: center; flex: 1;">
-                        <p style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #555; margin:0 0 5px 0;">Total Órdenes</p>
-                        <p style="font-size: 26px; font-weight: 900; margin:0; color: #000;">${totOrders}</p>
-                    </div>
-                    <div style="text-align: center; flex: 1; border-left: 2px solid #ddd;">
-                        <p style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #555; margin:0 0 5px 0;">Ingreso Bruto</p>
-                        <p style="font-size: 26px; font-weight: 900; margin:0; color: #22c55e;">${totMoney}</p>
-                    </div>
-                    <div style="text-align: center; flex: 1; border-left: 2px solid #ddd;">
-                        <p style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #555; margin:0 0 5px 0;">Ticket Promedio</p>
-                        <p style="font-size: 26px; font-weight: 900; margin:0; color: #000;">${totAvg}</p>
-                    </div>
-                </div>
-
-                <table style="width: 100%; border-collapse: collapse; font-family: 'Montserrat', sans-serif; font-size: 12px; text-align: left;">
-                    <thead>
-                        <tr style="background-color: #e5e7eb; border-bottom: 3px solid #000;">
-                            <th style="padding: 12px 5px; color: #000;">ID Orden</th>
-                            <th style="padding: 12px 5px; color: #000;">Fecha y Hora</th>
-                            <th style="padding: 12px 5px; color: #000;">Cliente / Detalle</th>
-                            <th style="padding: 12px 5px; color: #000;">Estado</th>
-                            <th style="padding: 12px 5px; text-align: right; color: #000;">Total Facturado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableHTML}
-                    </tbody>
-                </table>
-                
-                <div style="text-align: center; margin-top: 50px; font-size: 11px; font-weight: bold; color: #888; border-top: 2px dashed #000; padding-top: 20px; text-transform: uppercase; font-family: 'Montserrat', sans-serif;">
-                    Documento generado por ERP La Papa Caliente - Control Interno y Contabilidad
-                </div>
-            `;
-
-            setTimeout(() => {
-                try { window.print(); } catch(e) { window.showToast('Tu navegador ha bloqueado la impresión', 'error'); }
-                printDiv.style.display = 'none';
-            }, 300);
+            printDiv.innerHTML = `<div style="text-align: center; margin-bottom: 30px; font-family: 'Montserrat', sans-serif;"><h1 style="font-size: 28px; font-weight: 900; text-transform: uppercase; margin: 0; color: #000;">LA PAPA CALIENTE</h1><h2 style="font-size: 18px; font-weight: bold; color: #444; margin: 5px 0 10px 0; letter-spacing: 2px;">REPORTE FINANCIERO OFICIAL</h2><p style="font-size: 12px; color: #666; margin: 0;">${dateRange} &nbsp;|&nbsp; Emitido: ${new Date().toLocaleString()}</p></div><div style="display: flex; justify-content: space-between; margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border: 2px solid #000; border-radius: 12px; font-family: 'Montserrat', sans-serif;"><div style="text-align: center; flex: 1;"><p style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #555; margin:0 0 5px 0;">Total Órdenes</p><p style="font-size: 26px; font-weight: 900; margin:0; color: #000;">${totOrders}</p></div><div style="text-align: center; flex: 1; border-left: 2px solid #ddd;"><p style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #555; margin:0 0 5px 0;">Ingreso Bruto</p><p style="font-size: 26px; font-weight: 900; margin:0; color: #22c55e;">${totMoney}</p></div><div style="text-align: center; flex: 1; border-left: 2px solid #ddd;"><p style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #555; margin:0 0 5px 0;">Ticket Promedio</p><p style="font-size: 26px; font-weight: 900; margin:0; color: #000;">${totAvg}</p></div></div><table style="width: 100%; border-collapse: collapse; font-family: 'Montserrat', sans-serif; font-size: 12px; text-align: left;"><thead><tr style="background-color: #e5e7eb; border-bottom: 3px solid #000;"><th style="padding: 12px 5px; color: #000;">ID Orden</th><th style="padding: 12px 5px; color: #000;">Fecha y Hora</th><th style="padding: 12px 5px; color: #000;">Cliente / Detalle</th><th style="padding: 12px 5px; color: #000;">Estado</th><th style="padding: 12px 5px; text-align: right; color: #000;">Total Facturado</th></tr></thead><tbody>${tableHTML}</tbody></table>`;
+            setTimeout(() => { try { window.print(); } catch(e) { window.showToast('Tu navegador ha bloqueado la impresión', 'error'); } }, 300);
         };
 
         window.addBankAccount = async () => {
@@ -1787,43 +1715,24 @@
                 focusConfirm: false, background:'#111', color:'#fff', confirmButtonColor: '#FF3D00',
                 preConfirm: () => ({ bank: window.sanitize(document.getElementById('bnk-b').value), owner: window.sanitize(document.getElementById('bnk-o').value), type: window.sanitize(document.getElementById('bnk-t').value), num: window.sanitize(document.getElementById('bnk-n').value) })
             });
-            if(form && form.bank) { 
-                if(!window.STATE.settings.banks) window.STATE.settings.banks = [];
-                window.STATE.settings.banks.push(form); window.secureSave(); window.renderBankAccounts(); window.showToast('Cuenta agregada'); 
-            }
+            if(form && form.bank) { if(!window.STATE.settings.banks) window.STATE.settings.banks = []; window.STATE.settings.banks.push(form); window.secureSave(); window.renderBankAccounts(); window.showToast('Cuenta agregada'); }
         };
 
-        window.deleteBankAccount = (idx) => {
-            window.STATE.settings.banks.splice(idx, 1);
-            window.secureSave(); window.renderBankAccounts();
-        };
+        window.deleteBankAccount = (idx) => { window.STATE.settings.banks.splice(idx, 1); window.secureSave(); window.renderBankAccounts(); };
 
         window.renderBankAccounts = () => {
             const list = document.getElementById('settings-banks-list');
             if(!window.STATE.settings.banks || window.STATE.settings.banks.length === 0) list.innerHTML = '<p class="text-xs text-zinc-500 italic">No hay cuentas registradas.</p>';
-            else {
-                list.innerHTML = window.STATE.settings.banks.map((b, idx) => `<div class="flex justify-between items-center bg-black border border-white/10 p-3 rounded"><div class="text-xs font-bold text-white"><span class="text-papa-yellow uppercase">${b.bank}</span> - ${b.num} <br><span class="text-[10px] text-zinc-400 font-normal">${b.type} | Titular: ${b.owner}</span></div><button onclick="window.deleteBankAccount(${idx})" class="text-red-500 hover:text-red-400 p-2"><i class="ph-bold ph-trash text-lg"></i></button></div>`).join('');
-            }
+            else { list.innerHTML = window.STATE.settings.banks.map((b, idx) => `<div class="flex justify-between items-center bg-black border border-white/10 p-3 rounded"><div class="text-xs font-bold text-white"><span class="text-papa-yellow uppercase">${b.bank}</span> - ${b.num} <br><span class="text-[10px] text-zinc-400 font-normal">${b.type} | Titular: ${b.owner}</span></div><button onclick="window.deleteBankAccount(${idx})" class="text-red-500 hover:text-red-400 p-2"><i class="ph-bold ph-trash text-lg"></i></button></div>`).join(''); }
         };
 
-        window.uploadGalleryImage = (event) => {
-            window.processImageUpload(event, (dataUrl) => {
-                window.STATE.gallery.push(dataUrl); window.secureSave(); window.renderGalleryAdmin(); window.renderStorefront(); window.showToast('Foto subida (Nube)');
-            });
-        };
+        window.uploadGalleryImage = (event) => { window.processImageUpload(event, (dataUrl) => { window.STATE.gallery.push(dataUrl); window.secureSave(); window.renderGalleryAdmin(); window.renderStorefront(); window.showToast('Foto subida (Nube)'); }); };
 
-        window.renderGalleryAdmin = () => {
-            document.getElementById('admin-gallery-grid').innerHTML = window.STATE.gallery.map((url, idx) => `<div class="h-32 bg-black rounded-xl border border-white/10 overflow-hidden relative group shadow-lg"><img src="${url}" class="w-full h-full object-cover"><button onclick="window.STATE.gallery.splice(${idx},1); window.secureSave(); window.renderGalleryAdmin(); window.renderStorefront();" class="absolute inset-0 bg-red-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i class="ph-bold ph-trash text-3xl drop-shadow-md"></i></button></div>`).join('');
-        };
+        window.renderGalleryAdmin = () => { document.getElementById('admin-gallery-grid').innerHTML = window.STATE.gallery.map((url, idx) => `<div class="h-32 bg-black rounded-xl border border-white/10 overflow-hidden relative group shadow-lg"><img src="${url}" class="w-full h-full object-cover"><button onclick="window.STATE.gallery.splice(${idx},1); window.secureSave(); window.renderGalleryAdmin(); window.renderStorefront();" class="absolute inset-0 bg-red-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><i class="ph-bold ph-trash text-3xl drop-shadow-md"></i></button></div>`).join(''); };
 
         window.saveSettings = () => {
-            window.STATE.settings.apiKey = window.sanitize(document.getElementById('set-api-key').value);
-            window.STATE.settings.phone = document.getElementById('set-phone').value;
-            window.STATE.settings.mapEmbed = document.getElementById('set-map-embed').value;
-            window.STATE.settings.mapLink = document.getElementById('set-map-link').value;
-            window.STATE.settings.customBasePrice = parseFloat(document.getElementById('set-base-price').value) || 6.00;
-            window.STATE.settings.customExtraPrice = parseFloat(document.getElementById('set-extra-price').value) || 1.50;
-            
+            window.STATE.settings.apiKey = window.sanitize(document.getElementById('set-api-key').value); window.STATE.settings.phone = document.getElementById('set-phone').value;
+            window.STATE.settings.mapEmbed = document.getElementById('set-map-embed').value; window.STATE.settings.mapLink = document.getElementById('set-map-link').value;
             window.secureSave(); window.renderStorefront(); window.showToast('Ajustes Guardados Permanentemente');
         };
 
@@ -1833,53 +1742,35 @@
             Chart.defaults.color = '#888'; Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
             if(charts.w) charts.w.destroy(); if(charts.t) charts.t.destroy(); if(charts.y) charts.y.destroy(); if(charts.p) charts.p.destroy();
             
-            const wCtx = document.getElementById('chart-sales-week');
-            if(wCtx) charts.w = new Chart(wCtx, { type: 'line', data: { labels: ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'], datasets: [{ label: 'Ingresos', data: [120, 190, 300, 250, 400, 500, 450], borderColor: '#FFB800', backgroundColor: 'rgba(255,184,0,0.1)', fill: true }] }, options: { responsive: true, maintainAspectRatio: false }});
-            
-            const tCtx = document.getElementById('chart-top-products');
-            if(tCtx) charts.t = new Chart(tCtx, { type: 'bar', data: { labels: ['Trufada', 'Brisket', 'Volcán', 'Drink'], datasets: [{ label: 'Cant.', data: [45, 30, 25, 60], backgroundColor: 'rgba(255,61,0,0.7)', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false }});
-            
-            const yCtx = document.getElementById('chart-sales-year');
-            if(yCtx) charts.y = new Chart(yCtx, { type: 'bar', data: { labels: ['Ene','Feb','Mar','Abr','May'], datasets: [{ label: 'Crecimiento', data: [4000, 4500, 3800, 5200, 6000], backgroundColor: 'rgba(255,184,0,0.7)', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false }});
-
-            const pCtx = document.getElementById('chart-payments');
-            if(pCtx) charts.p = new Chart(pCtx, { type: 'doughnut', data: { labels: ['Efectivo', 'Transferencia'], datasets: [{ data: [65, 35], backgroundColor: ['#22c55e', '#3b82f6'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false }});
+            const wCtx = document.getElementById('chart-sales-week'); if(wCtx) charts.w = new Chart(wCtx, { type: 'line', data: { labels: ['Lun','Mar','Mie','Jue','Vie','Sab','Dom'], datasets: [{ label: 'Ingresos', data: [120, 190, 300, 250, 400, 500, 450], borderColor: '#FFB800', backgroundColor: 'rgba(255,184,0,0.1)', fill: true }] }, options: { responsive: true, maintainAspectRatio: false }});
+            const tCtx = document.getElementById('chart-top-products'); if(tCtx) charts.t = new Chart(tCtx, { type: 'bar', data: { labels: ['Trufada', 'Brisket', 'Volcán', 'Drink'], datasets: [{ label: 'Cant.', data: [45, 30, 25, 60], backgroundColor: 'rgba(255,61,0,0.7)', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false }});
+            const yCtx = document.getElementById('chart-sales-year'); if(yCtx) charts.y = new Chart(yCtx, { type: 'bar', data: { labels: ['Ene','Feb','Mar','Abr','May'], datasets: [{ label: 'Crecimiento', data: [4000, 4500, 3800, 5200, 6000], backgroundColor: 'rgba(255,184,0,0.7)', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false }});
+            const pCtx = document.getElementById('chart-payments'); if(pCtx) charts.p = new Chart(pCtx, { type: 'doughnut', data: { labels: ['Efectivo', 'Transferencia'], datasets: [{ data: [65, 35], backgroundColor: ['#22c55e', '#3b82f6'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false }});
         };
 
         window.sendChat = async () => {
-            const input = document.getElementById('chat-input');
-            const text = window.sanitize(input.value.trim());
-            const history = document.getElementById('chat-history');
+            const input = document.getElementById('chat-input'); const text = window.sanitize(input.value.trim()); const history = document.getElementById('chat-history');
             if (!text) return;
 
             history.innerHTML += `<div class="flex items-start gap-3 w-5/6 ml-auto justify-end"><div class="bg-white text-black font-bold text-xs p-3 rounded-2xl rounded-tr-none shadow-md">${text}</div></div>`;
-            input.value = ''; history.scrollTop = history.scrollHeight;
-            const typingId = 'typing-' + Date.now();
+            input.value = ''; history.scrollTop = history.scrollHeight; const typingId = 'typing-' + Date.now();
             history.innerHTML += `<div id="${typingId}" class="flex items-start gap-3 w-5/6 mt-1"><div class="w-7 h-7 rounded-full bg-papa-fire flex items-center justify-center shrink-0"><i class="ph-fill ph-robot text-white text-xs"></i></div><div class="bg-zinc-900 text-zinc-400 text-xs py-2 px-4 rounded-2xl rounded-tl-none animate-pulse">...</div></div>`;
             history.scrollTop = history.scrollHeight;
 
-            if (!window.STATE.settings.apiKey) {
-                document.getElementById(typingId).remove();
-                history.innerHTML += `<div class="text-red-500 text-[10px] pl-10 mt-1 font-bold">Admin: Agrega Clave API en Ajustes.</div>`; return;
-            }
+            if (!window.STATE.settings.apiKey) { document.getElementById(typingId).remove(); history.innerHTML += `<div class="text-red-500 text-[10px] pl-10 mt-1 font-bold">Admin: Agrega Clave API en Ajustes.</div>`; return; }
 
             try {
                 const menuContext = window.STATE.menu.map(m => { const ings = m.recipe ? m.recipe.map(r => { const i = window.STATE.ingredients.find(x=>x.id===r.id); return i ? i.name : ''; }).join(',') : ''; return `- ${m.title} (Gasta: ${ings}). $${m.price}`; }).join('\n');
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${window.STATE.settings.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text }] }], systemInstruction: { parts: [{ text: `Eres camarero de La Papa Caliente. Base de Platos:\n${menuContext}\nRegla: NO inventes platos. Sugiere solo lo de la base.` }] } }) });
-                document.getElementById(typingId).remove();
-                if (!res.ok) throw new Error();
+                document.getElementById(typingId).remove(); if (!res.ok) throw new Error();
                 const aiOutput = (await res.json()).candidates?.[0]?.content?.parts?.[0]?.text;
                 if (aiOutput) history.innerHTML += `<div class="flex items-start gap-3 w-5/6 mt-1"><div class="w-7 h-7 rounded-full bg-papa-fire flex items-center justify-center shrink-0 shadow-lg"><i class="ph-fill ph-robot text-white text-xs"></i></div><div class="bg-zinc-900 text-white text-xs p-3 rounded-2xl rounded-tl-none border border-white/5 shadow-md leading-relaxed whitespace-pre-line">${aiOutput.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div></div>`;
-            } catch (e) {
-                if (document.getElementById(typingId)) document.getElementById(typingId).remove(); history.innerHTML += `<div class="text-red-500 text-[10px] pl-10 mt-1 font-bold">Fallo en conexión IA.</div>`;
-            }
+            } catch (e) { if (document.getElementById(typingId)) document.getElementById(typingId).remove(); history.innerHTML += `<div class="text-red-500 text-[10px] pl-10 mt-1 font-bold">Fallo en conexión IA.</div>`; }
             history.scrollTop = history.scrollHeight;
         };
 
         window.addEventListener('scroll', () => { document.querySelectorAll('.animate-on-scroll').forEach(el => { if (el.getBoundingClientRect().top < window.innerHeight - 40) el.classList.add('visible'); }); });
-
         initCloudSystem();
-
     </script>
 </body>
 </html>
