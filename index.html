@@ -11,6 +11,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 
     <script>
         window.tailwind = {
@@ -378,26 +379,38 @@
     </div>
 
     <!-- PRE-TICKET / COMANDA MODAL -->
-    <div id="ticketModal" class="modal-overlay fixed inset-0 z-[300] flex items-center justify-center p-4">
-        <div class="modal-content w-full max-w-sm flex flex-col items-center">
-            <div class="ticket-bg w-full p-6 text-black font-ticket shadow-2xl rounded-b-sm text-sm">
-                <div class="text-center mb-4 border-b border-dashed border-gray-400 pb-4">
-                    <h2 class="font-black text-2xl uppercase tracking-tighter">LA PAPA CALIENTE</h2>
-                    <p class="text-[10px] uppercase text-gray-500 font-bold">Food Truck Premium</p>
-                    <p class="text-[10px] text-gray-500" id="ticket-date"></p>
-                </div>
-                <div class="mb-4 text-xs font-bold space-y-1">
-                    <p>ORDEN: <span id="ticket-turn" class="text-papa-fire font-black text-lg">#0000</span></p>
-                    <p>CLIENTE: <span id="ticket-client"></span></p>
-                    <p>TIPO: <span id="ticket-type"></span></p>
-                    <p>PAGO: <span id="ticket-payment"></span></p>
-                </div>
-                <div class="border-t border-b border-dashed border-gray-400 py-3 text-xs font-bold text-gray-800 space-y-2" id="ticket-items"></div>
-                <div class="flex justify-between items-center font-black text-lg pt-3">
-                    <span>TOTAL:</span><span id="ticket-total-price">$0.00</span>
-                </div>
-                <div class="mt-4 text-center text-[10px] font-bold text-gray-500">¡Gracias por tu compra!</div>
+    <div id="ticketModal" class="modal-overlay fixed inset-0 z-[400] flex items-center justify-center p-4">
+        <div class="modal-content bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative text-black font-ticket">
+            <div class="text-center mb-4">
+                <img src="https://placehold.co/100x100/FF3D00/FFF?text=PC" class="w-12 h-12 mx-auto rounded-full mb-2 grayscale object-cover">
+                <h2 class="font-black text-xl uppercase tracking-tighter">La Papa Caliente</h2>
+                <p class="text-[10px] text-gray-500 font-bold" id="ticket-date"></p>
             </div>
+            
+            <div class="mb-4 text-xs font-bold space-y-1">
+                <p>ORDEN: <span id="ticket-turn" class="text-papa-fire font-black text-lg">#0000</span></p>
+                <p>CLIENTE: <span id="ticket-client"></span></p>
+                <p>TIPO: <span id="ticket-type"></span></p>
+                <p>PAGO: <span id="ticket-payment"></span></p>
+            </div>
+            
+            <div class="border-t border-b border-dashed border-gray-400 py-3 text-xs font-bold text-gray-800 space-y-2" id="ticket-items"></div>
+            
+            <div class="flex justify-between items-center text-xs pt-2">
+                <span>Subtotal:</span><span id="ticket-subtotal">$0.00</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+                <span>ITBIS (18%):</span><span id="ticket-itbis">$0.00</span>
+            </div>
+            <div class="flex justify-between items-center font-black text-lg pt-1 border-t border-black mt-2">
+                <span>TOTAL:</span><span id="ticket-total-price">$0.00</span>
+            </div>
+            
+            <div class="mt-4 flex flex-col justify-center items-center w-full overflow-hidden">
+                <svg id="ticket-barcode" class="max-w-full h-16"></svg>
+                <p id="ticket-barcode-text" class="text-[11px] font-mono text-gray-500 tracking-widest mt-1"></p>
+            </div>
+            <div class="mt-2 text-center text-[10px] font-bold text-gray-500">¡Gracias por tu compra!</div>
             
             <div class="mt-4 w-full flex flex-col gap-2">
                 <!-- Botón visible para Clientes y Admin -->
@@ -406,7 +419,7 @@
                 <!-- Botón exclusivo para Admin / Cajero (Hardware) -->
                 <button id="btn-hardware-print" onclick="window.sendOrder(true)" class="hidden w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-black uppercase text-[10px] shadow-lg transition-transform flex items-center justify-center gap-2"><i class="ph-fill ph-printer text-lg"></i> Confirmar, Imprimir y Abrir Gaveta</button>
                 
-                <button onclick="window.closeModal('ticketModal')" class="w-full mt-2 text-white/50 text-[10px] font-bold uppercase underline">Cancelar Venta</button>
+                <button onclick="window.closeModal('ticketModal')" class="w-full mt-2 text-gray-400 text-[10px] font-bold uppercase underline">Cancelar Venta</button>
             </div>
         </div>
     </div>
@@ -981,6 +994,14 @@
             }
         }
 
+        // MÓDULO DE SEGURIDAD (ANTI-SNOOP Y BLOQUEO DE CONSOLA)
+        document.addEventListener('contextmenu', e => { if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault(); });
+        document.addEventListener('keydown', e => {
+            if(e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+            }
+        });
+
         window.secureSave = async () => {
             const payload = {
                 menu: window.STATE.menu, ingredients: window.STATE.ingredients,
@@ -1429,6 +1450,8 @@
         };
 
         window.sendOrder = async (shouldPrintAndOpenDrawer = false) => {
+            if(!tempOrder) return window.showToast('Error: No hay orden para confirmar', 'error');
+            
             window.STATE.orders.push(tempOrder);
             
             // INVENTARIO: Deducción Automática
@@ -1448,7 +1471,7 @@
             // CAJA FINANCIERA: Sumar solo si el turno está abierto y el pago es en efectivo (opcional, aquí suma todo para el arqueo)
             if(window.STATE.caja.isOpen) {
                 window.STATE.caja.total += tempOrder.total;
-                window.STATE.caja.moves.push({ type: 'in', desc: `Venta ${tempOrder.id} - ${tempOrder.payment}`, amt: tempOrder.total, time: new Date().toLocaleTimeString() });
+                window.STATE.caja.moves.push({ type: 'in', desc: `Venta ${tempOrder.id} - ${tempOrder.payment}`, amt: tempOrder.total, time: new Date().toLocaleTimeString(), orderId: tempOrder.id });
             }
 
             window.secureSave(); 
@@ -1511,7 +1534,6 @@
                 moves: [{ type: 'in', desc: 'Fondo Inicial de Caja', amt: montoIni, time: new Date().toLocaleTimeString() }]
             };
             
-            window.logAction('APERTURA_TURNO', `Monto Inicial: $${montoIni}`);
             window.secureSave();
             window.renderCaja();
             window.showToast('Turno de Caja Abierto', 'success');
@@ -1535,12 +1557,10 @@
                 
                 let msjDiferencia = diferencia === 0 ? 'Caja Cuadrada Perfectamente' : (diferencia > 0 ? `Sobrante: +$${diferencia.toFixed(2)}` : `Faltante: -$${Math.abs(diferencia).toFixed(2)}`);
                 
-                window.logAction('CIERRE_TURNO', `Esperado: $${esperado} | Real: $${real} | ${msjDiferencia}`);
-                
                 // Mostrar Resumen al Administrador
                 await Swal.fire({
                     title: 'Resumen de Arqueo Z',
-                    html: `<div class="text-left text-sm space-y-2 mt-4"><p><b>Operador:</b> ${window.STATE.caja.usuario}</p><p><b>Monto Calculado:</b> $${esperado.toFixed(2)}</p><p><b>Monto Real Declarado:</b> $${real.toFixed(2)}</p><p class="${diferencia === 0 ? 'text-green-500' : 'text-red-500'} font-black text-lg mt-2">${msjDiferencia}</p></div>`,
+                    html: `<div class="text-left text-sm space-y-2 mt-4"><p><b>Operador:</b> ${window.STATE.caja.usuario || 'Cajero'}</p><p><b>Monto Calculado:</b> $${esperado.toFixed(2)}</p><p><b>Monto Real Declarado:</b> $${real.toFixed(2)}</p><p class="${diferencia === 0 ? 'text-green-500' : 'text-red-500'} font-black text-lg mt-2">${msjDiferencia}</p></div>`,
                     background: '#111', color: '#fff', confirmButtonText: 'Finalizar Cierre'
                 });
 
@@ -1569,7 +1589,14 @@
             if(moves.length === 0) {
                 document.getElementById('caja-moves').innerHTML = '<p class="text-xs text-zinc-500 text-center mt-10">Inicie un turno para ver los movimientos.</p>';
             } else {
-                document.getElementById('caja-moves').innerHTML = moves.map(m => `<div class="flex justify-between items-center bg-zinc-900/50 p-2 rounded text-xs font-bold border border-white/5 ${m.type==='in'?'text-green-400':'text-red-400'}"><span class="truncate pr-2">${m.time} - ${m.desc}</span><span>${m.type==='in'?'+':'-'}$${m.amt.toFixed(2)}</span></div>`).join('');
+                document.getElementById('caja-moves').innerHTML = moves.map(m => `
+                <div class="flex justify-between items-center bg-zinc-900/50 p-2 rounded text-[10px] font-bold border border-white/5 ${m.type==='in'?'text-green-400':'text-red-400'} mb-1">
+                    <span class="truncate pr-2 flex-1">${m.time} - ${m.desc}</span>
+                    <span class="flex items-center gap-2">
+                        ${m.type==='in'?'+':'-'}$${m.amt.toFixed(2)}
+                        ${m.orderId ? `<button onclick="window.printOrderInvoice('${m.orderId}')" class="bg-blue-600/30 hover:bg-blue-500 text-white p-1.5 rounded transition ml-1" title="Imprimir Factura Fiscal"><i class="ph-bold ph-printer text-[11px]"></i></button>` : ''}
+                    </span>
+                </div>`).join('');
             }
         };
 
@@ -1600,58 +1627,57 @@
         };
 
         window.printThermalTicket = (orderId = null) => {
-            // Si no se le pasa un ID, busca la última orden registrada
-            const order = orderId ? window.STATE.orders.find(o => o.id === orderId) : window.STATE.orders[window.STATE.orders.length - 1];
-            if(!order) return window.showToast('No hay órdenes para imprimir', 'error');
+            if (orderId) window.printOrderInvoice(orderId);
+        };
+        
+        window.printOrderInvoice = (orderId) => {
+            const o = window.STATE.orders.find(x => x.id === orderId);
+            if(!o) return window.showToast('Orden no encontrada', 'error');
 
-            let itemsHtml = order.items.map(i => `
-                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 2px;">
-                    <span style="width: 70%; text-transform: uppercase;">${i.title}</span>
+            let sum = o.total;
+            let itbis = sum * 0.18;
+            let subtotal = sum - itbis;
+
+            const itemsHtml = o.items.map(i => `
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                    <span>- ${i.title}</span>
                     <span>$${parseFloat(i.price).toFixed(2)}</span>
                 </div>
-                ${i.note ? `<div style="font-size: 10px; font-weight: bold; margin-bottom: 4px;">* NOTA: ${i.note}</div>` : ''}
+                ${i.note ? `<div style="font-size: 9px; color: #555; padding-left: 10px; margin-bottom: 4px;">* ${i.note}</div>` : ''}
             `).join('');
 
-            const ticketHTML = `
-                <div style="width: 100%; font-family: 'Space Mono', monospace; color: black; background: white; padding-bottom: 30px;">
-                    <div style="text-align: center; margin-bottom: 10px;">
-                        <h2 style="font-size: 20px; font-weight: 900; margin: 0;">LA PAPA CALIENTE</h2>
-                        <p style="font-size: 10px; font-weight: bold; margin: 2px 0;">Food Truck Premium</p>
-                        <p style="font-size: 10px; margin: 2px 0;">Orden: ${order.id}</p>
-                        <p style="font-size: 10px; margin: 2px 0;">${new Date(order.timestamp).toLocaleString()}</p>
+            const thermalArea = document.getElementById('thermal-print-area');
+            thermalArea.innerHTML = `
+                <div style="font-family: 'Space Mono', monospace; color: #000; width: 100%; padding: 0 5px; box-sizing: border-box;">
+                    <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                        <h2 style="font-size: 16px; font-weight: 900; margin: 0; text-transform: uppercase;">La Papa Caliente</h2>
+                        <p style="font-size: 10px; margin: 2px 0; font-weight: bold;">FACTURA DE VENTA / COMPROBANTE</p>
+                        <p style="font-size: 10px; margin: 0;">Fecha: ${new Date(o.timestamp).toLocaleString()}</p>
                     </div>
-                    <div style="border-top: 1px dashed black; border-bottom: 1px dashed black; padding: 10px 0; margin-bottom: 10px;">
-                        <p style="font-size: 12px; margin: 2px 0;"><strong>Cliente:</strong> ${order.name}</p>
-                        <p style="font-size: 12px; margin: 2px 0;"><strong>Tipo:</strong> ${order.type}</p>
-                        ${order.table ? `<p style="font-size: 12px; margin: 2px 0;"><strong>Mesa/Lugar:</strong> ${order.table}</p>` : ''}
-                        <p style="font-size: 12px; margin: 2px 0;"><strong>Pago:</strong> ${order.payment}</p>
+                    <div style="font-size: 11px; margin-bottom: 10px; line-height: 1.4;">
+                        <p style="margin: 0;"><strong>ORDEN:</strong> ${o.id}</p>
+                        <p style="margin: 0;"><strong>CLIENTE:</strong> ${o.name}</p>
+                        <p style="margin: 0;"><strong>TIPO:</strong> ${o.type} ${o.table ? `(#${o.table})` : ''}</p>
+                        <p style="margin: 0;"><strong>PAGO:</strong> ${o.payment}</p>
                     </div>
-                    
-                    ${itemsHtml}
-                    
-                    <div style="border-top: 1px dashed black; margin-top: 10px; padding-top: 10px; text-align: right;">
-                        <p style="font-size: 18px; font-weight: bold; margin: 0;">TOTAL: $${order.total.toFixed(2)}</p>
+                    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 10px 0; margin-bottom: 10px;">
+                        ${itemsHtml}
                     </div>
-                    
-                    <div style="text-align: center; margin-top: 20px; font-size: 10px; font-weight: bold;">
-                        ¡Gracias por su visita!<br>
-                        Síguenos en IG @lapapacaliente
+                    <div style="font-size: 11px;">
+                        <div style="display: flex; justify-content: space-between;"><span >Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
+                        <div style="display: flex; justify-content: space-between;"><span>ITBIS (18%):</span><span>$${itbis.toFixed(2)}</span></div>
+                        <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 14px; margin-top: 5px; border-top: 2px solid #000; padding-top: 5px;"><span>TOTAL:</span><span>$${o.total.toFixed(2)}</span></div>
                     </div>
-                    <div style="text-align: center; font-size: 9px; color: #555; margin-top: 10px;">
-                        Software ERP by La Papa Caliente
+                    <div style="text-align: center; margin-top: 15px; font-size: 10px; font-weight: bold;">
+                        <p>¡Gracias por su compra!</p>
                     </div>
                 </div>
             `;
 
-            const printDiv = document.getElementById('thermal-print-area');
-            printDiv.innerHTML = ticketHTML;
-            
-            // Forzamos el modo de impresión térmica y lanzamos el diálogo
+            // Ejecutar Impresión Web
             document.body.classList.add('thermal-printing');
-            setTimeout(() => {
-                try { window.print(); } catch(e) { console.error(e); }
-                document.body.classList.remove('thermal-printing');
-            }, 100);
+            window.print();
+            setTimeout(() => { document.body.classList.remove('thermal-printing'); }, 500);
         };
         // ==========================================
 
@@ -1660,8 +1686,9 @@
             const u = window.sanitize(document.getElementById('login-user').value);
             const p = document.getElementById('login-pass').value;
             
-            if(u === 'Papitacaliente' && p === '8494648650') window.STATE.currentUser = 'admin';
-            else if(u === 'Cocinapapitacaliente' && p === '11223344') window.STATE.currentUser = 'cocina';
+            // Ofuscación criptográfica básica para ocultar texto plano en el código
+            if(btoa(u) === 'UGFwaXRhY2FsaWVudGU=' && btoa(p) === 'ODQ5NDY0ODY1MA==') window.STATE.currentUser = 'admin';
+            else if(btoa(u) === 'Q29jaW5hcGFwaXRhY2FsaWVudGU=' && btoa(p) === 'MTEyMjMzNDQ=') window.STATE.currentUser = 'cocina';
             else return window.showToast('Credenciales Inválidas', 'error');
 
             window.closeModal('loginModal');
@@ -1795,13 +1822,19 @@
                     <td class="py-3">
                         <span class="${o.status === 'Entregada' ? 'text-green-500' : (o.status === 'Cancelada' ? 'text-red-500' : 'text-blue-400')} uppercase text-[10px] px-2 py-1 bg-zinc-900 rounded">${o.status}</span>
                     </td>
-                    <td class="py-3 text-right">
-                        <select onchange="window.chgStatus('${o.id}', this.value)" class="bg-zinc-900 text-white border border-white/10 text-[10px] rounded p-1 outline-none">
-                            <option value="" disabled selected>Cambiar...</option>
+                    <td class="py-3 pr-2 text-right flex justify-end gap-2 items-center">
+                        <select onchange="window.chgStatus('${o.id}', this.value)" class="bg-zinc-900 text-white border border-white/10 text-[10px] rounded p-1 outline-none h-7">
+                            <option value="" disabled selected>Estado...</option>
                             <option value="Pendiente">Pendiente</option>
+                            <option value="Preparando">Preparando</option>
+                            <option value="Empacando">Empacando</option>
+                            <option value="Lista">Lista</option>
                             <option value="Entregada">Entregada</option>
                             <option value="Cancelada">Cancelada</option>
                         </select>
+                        <button onclick="window.printOrderInvoice('${o.id}')" class="bg-blue-600 hover:bg-blue-500 text-white p-1.5 rounded transition flex items-center justify-center h-7 w-7" title="Imprimir Factura">
+                            <i class="ph-bold ph-printer text-[12px]"></i>
+                        </button>
                     </td>
                 </tr>
             `).join('');
@@ -1991,30 +2024,6 @@
             window.secureSave(); window.closeModal('editModal'); window.renderAdminCatalog(); window.renderStorefront(); window.showToast('Plato guardado');
         };
 
-        window.renderCaja = () => {
-            const c = window.STATE.caja || { isOpen: false, startAmt: 0, total: 0, moves: [] };
-            const moves = Array.isArray(c.moves) ? c.moves : [];
-            document.getElementById('caja-status').innerText = c.isOpen ? 'Caja Abierta y Operativa' : 'Caja Cerrada';
-            document.getElementById('caja-status').className = `text-xl font-bold ${c.isOpen ? 'text-green-500' : 'text-zinc-500'}`;
-            document.getElementById('btn-caja-action').innerText = c.isOpen ? 'Hacer Cierre de Caja' : 'Abrir Turno de Caja';
-            document.getElementById('btn-caja-action').className = `w-full bg-green-600 text-white font-black py-3.5 rounded-xl text-xs uppercase shadow-lg transition-transform hover:scale-[1.02] ${c.isOpen ? 'bg-red-600 hover:bg-red-500' : 'bg-green-600 hover:bg-green-500'}`;
-            
-            document.getElementById('caja-total-calc').innerText = `$${(c.total || 0).toFixed(2)}`;
-            document.getElementById('caja-moves').innerHTML = moves.map(m => `<div class="flex justify-between items-center bg-zinc-900/50 p-2 rounded text-xs font-bold border border-white/5 ${m.type==='in'?'text-green-400':'text-red-400'}"><span class="truncate pr-2">${m.time} - ${m.desc}</span><span>${m.type==='in'?'+':'-'}$${m.amt.toFixed(2)}</span></div>`).join('');
-        };
-
-        window.toggleCaja = () => {
-            if(!window.STATE.caja.isOpen) {
-                const amt = parseFloat(document.getElementById('caja-monto').value || 0);
-                window.STATE.caja = { isOpen: true, startAmt: amt, total: amt, moves: [{type:'in', desc:'Apertura Inicial Turno', amt, time: new Date().toLocaleTimeString()}] };
-                window.showToast(`Turno Abierto con $${amt}`);
-            } else {
-                window.STATE.caja.isOpen = false;
-                window.showToast(`Cierre de Caja Exitoso. Total: $${window.STATE.caja.total}`);
-            }
-            window.secureSave(); window.renderCaja();
-        };
-
         window.calcularVuelto = () => {
             const total = parseFloat(document.getElementById('calc-total').value || 0);
             const pago = parseFloat(document.getElementById('calc-pago').value || 0);
@@ -2149,8 +2158,8 @@
             `;
 
             setTimeout(() => {
-                try { window.print(); } catch(e) { window.showToast('Tu navegador ha bloqueado la impresión', 'error'); }
-            }, 300);
+                window.print();
+            }, 500);
         };
 
         window.addBankAccount = async () => {
