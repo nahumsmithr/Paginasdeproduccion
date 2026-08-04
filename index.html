@@ -2,7 +2,7 @@
 <html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
     <meta name="referrer" content="no-referrer">
     <title>La Papa Caliente | ERP & Premium Food Truck</title>
     
@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <!-- LIBRERÍA AGREGADA PARA EXPORTAR REPORTES A PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <script>
         window.tailwind = {
@@ -92,6 +94,14 @@
         }
         @keyframes slideUpFade { from { opacity: 0; transform: translateY(40px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
 
+        /* FIX iOS ZOOM EN INPUTS & SAFE AREAS PARA NOTCH (IPHONE) */
+        @supports (-webkit-touch-callout: none) {
+            input, select, textarea { font-size: 16px !important; }
+        }
+        .safe-padding-top { padding-top: max(env(safe-area-inset-top), 1rem); }
+        .safe-padding-bottom { padding-bottom: max(env(safe-area-inset-bottom), 1rem); }
+        .safe-margin-bottom { margin-bottom: env(safe-area-inset-bottom); }
+
         .login-logo-container { position: relative; width: 110px; height: 110px; margin: 0 auto; }
         .login-logo-glow { position: absolute; inset: -15px; background: #FF3D00; filter: blur(25px); opacity: 0.5; border-radius: 50%; animation: pulseGlow 4s infinite alternate ease-in-out; }
         @keyframes pulseGlow { 0% { opacity: 0.3; transform: scale(0.95); } 100% { opacity: 0.6; transform: scale(1.05); } }
@@ -151,7 +161,7 @@
                 </button>
             </div>
             
-            <ul id="nav-links" class="fixed md:static top-0 right-[-100%] md:right-0 w-72 md:w-auto h-screen md:h-auto pt-24 md:pt-0 glass-panel md:bg-transparent md:border-none flex flex-col md:flex-row items-center gap-6 lg:gap-8 px-6 pb-10 md:p-0 transition-all duration-300 z-[100] md:z-auto shadow-2xl md:shadow-none" style="touch-action: manipulation;">
+            <ul id="nav-links" class="fixed md:static top-0 right-[-100%] md:right-0 w-72 md:w-auto h-[100dvh] md:h-auto pt-24 md:pt-0 glass-panel md:bg-transparent md:border-none flex flex-col md:flex-row items-center gap-6 lg:gap-8 px-6 pb-10 md:p-0 transition-all duration-300 z-[100] md:z-auto shadow-2xl md:shadow-none safe-padding-bottom" style="touch-action: manipulation;">
                 <li><a href="#inicio" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Inicio</a></li>
                 <li><a href="#nosotros" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Nosotros</a></li>
                 <li><a href="#catalogo" onclick="window.cerrarMenuMovil()" class="nav-link font-semibold text-sm uppercase relative hover:text-papa-fire transition">Menú</a></li>
@@ -173,8 +183,8 @@
         </nav>
     </header>
 
-    <div id="cart-sidebar" class="fixed top-0 right-0 w-full md:w-[450px] h-screen bg-[#0d0d0d] border-l border-white/10 z-[110] flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.9)]">
-        <div class="h-20 bg-black border-b border-white/10 flex items-center justify-between px-6 shrink-0 shadow-md">
+    <div id="cart-sidebar" class="fixed top-0 right-0 w-full md:w-[450px] h-[100dvh] bg-[#0d0d0d] border-l border-white/10 z-[110] flex flex-col shadow-[-20px_0_50px_rgba(0,0,0,0.9)]">
+        <div class="h-20 bg-black border-b border-white/10 flex items-center justify-between px-6 shrink-0 shadow-md safe-padding-top">
             <h2 class="font-black text-xl uppercase tracking-wider flex items-center gap-2"><i class="ph-bold ph-shopping-bag text-papa-fire text-2xl"></i> Mi Orden</h2>
             <button onclick="window.toggleCart()" class="text-zinc-500 hover:text-white transition-colors bg-zinc-900 hover:bg-red-600 p-2 rounded-full"><i class="ph-bold ph-x text-xl"></i></button>
         </div>
@@ -206,7 +216,7 @@
             <button onclick="window.toggleCheckoutView()" class="mt-auto text-zinc-400 font-bold text-xs uppercase hover:text-white py-3 bg-white/5 hover:bg-white/10 rounded-xl text-center w-full transition-colors flex justify-center items-center gap-2"><i class="ph-bold ph-arrow-left"></i> Volver a revisar el carrito</button>
         </div>
         
-        <div class="bg-black border-t border-white/10 p-6 shrink-0 shadow-[0_-10px_20px_rgba(0,0,0,0.5)]">
+        <div class="bg-black border-t border-white/10 p-6 shrink-0 shadow-[0_-10px_20px_rgba(0,0,0,0.5)] safe-padding-bottom">
             <div class="flex justify-between items-center mb-6">
                 <span class="text-zinc-400 font-bold uppercase tracking-wider text-sm">Total a Pagar:</span>
                 <span class="font-black text-4xl text-papa-yellow drop-shadow-md" id="cart-total">$0.00</span>
@@ -445,9 +455,9 @@
         </div>
     </div>
 
-    <div id="adminDashboard" class="fixed inset-0 z-[300] bg-[#070707] hidden flex-col transition-all duration-300 opacity-0 pointer-events-none">
-        <div class="h-16 border-b border-white/10 flex items-center justify-between px-4 sm:px-6 bg-[#0f0f0f] shrink-0 no-print z-[350] relative shadow-md">
-            <div class="flex items-center gap-3">
+    <div id="adminDashboard" class="fixed inset-0 z-[300] bg-[#070707] hidden flex-col transition-all duration-300 opacity-0 pointer-events-none h-[100dvh] w-screen overflow-hidden">
+        <div class="h-16 md:h-20 border-b border-white/10 flex items-center justify-between px-4 sm:px-6 bg-[#0f0f0f] shrink-0 no-print z-[350] relative shadow-md safe-padding-top">
+            <div class="flex items-center gap-3 mt-auto mb-2 md:mb-0">
                 <button onclick="window.toggleAdminSidebar()" class="md:hidden text-white text-2xl hover:text-papa-fire transition"><i class="ph ph-list"></i></button>
                 <div class="w-8 h-8 rounded bg-gradient-to-br from-papa-fire to-orange-600 flex items-center justify-center shadow-lg"><i class="ph-fill ph-storefront text-white"></i></div>
                 <span class="font-black text-sm uppercase text-white truncate hidden sm:block tracking-widest">App Central</span>
@@ -459,11 +469,12 @@
         
         <div class="flex-1 flex overflow-hidden relative">
             <div id="sidebar-overlay" onclick="window.toggleAdminSidebar()" class="fixed inset-0 bg-black/80 z-[200] hidden md:hidden backdrop-blur-sm transition-opacity"></div>
-            <aside class="fixed inset-y-0 left-0 md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-[250] md:z-10 w-64 bg-[#0a0a0a] border-r border-white/10 flex flex-col py-6 overflow-y-auto no-print shadow-2xl md:shadow-none" id="erp-sidebar">
+            <aside class="fixed inset-y-0 left-0 md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-[250] md:z-10 w-72 md:w-64 bg-[#0a0a0a] border-r border-white/10 flex flex-col py-6 overflow-y-auto no-print shadow-2xl md:shadow-none safe-padding-bottom" id="erp-sidebar">
                 <div class="space-y-1 px-4 admin-only">
                     <p class="text-[9px] font-black uppercase text-zinc-600 tracking-widest mb-3 ml-2">General</p>
                     <button onclick="window.switchAdminPanel('dashboard')" id="btn-side-dashboard" class="sidebar-btn active w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-squares-four text-lg"></i> Resumen</button>
                     <button onclick="window.switchAdminPanel('terminal')" id="btn-side-terminal" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-black text-xs uppercase text-left transition-all text-papa-yellow bg-papa-yellow/5 border border-papa-yellow/20 hover:bg-papa-yellow/10"><i class="ph-bold ph-desktop text-lg"></i> POS Ventas</button>
+                    <button onclick="window.switchAdminPanel('reports')" id="btn-side-reports" class="sidebar-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs uppercase text-left transition-all"><i class="ph-bold ph-chart-pie text-lg text-green-400"></i> Reportes (PDF/CSV)</button>
                 </div>
                 <div class="space-y-1 px-4 mt-8">
                     <p class="text-[9px] font-black uppercase text-zinc-600 tracking-widest mb-3 ml-2">Operaciones</p>
@@ -480,11 +491,11 @@
                 </div>
             </aside>
 
-            <main class="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#050505] relative" id="print-area">
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#050505] relative safe-padding-bottom" id="print-area">
                 
                 <!-- TERMINAL POS -->
-                <div id="panel-admin-terminal" class="admin-panel-tab hidden h-full flex flex-col md:flex-row gap-6">
-                    <div class="flex-1 flex flex-col min-h-0 bg-black border border-white/10 rounded-2xl p-4 shadow-xl">
+                <div id="panel-admin-terminal" class="admin-panel-tab hidden h-full flex-col md:flex-row gap-6">
+                    <div class="flex-1 flex flex-col min-h-[40vh] md:min-h-0 bg-black border border-white/10 rounded-2xl p-4 shadow-xl">
                         <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
                             <h2 class="text-xl font-black uppercase text-white tracking-tight flex items-center gap-2"><i class="ph-bold ph-desktop text-papa-fire"></i> Sistema POS Rápido</h2>
                             <span class="text-[10px] text-zinc-500 font-bold uppercase bg-zinc-900 px-3 py-1.5 rounded-lg border border-white/5"><i class="ph-bold ph-hand-tap"></i> Toca un producto</span>
@@ -492,7 +503,7 @@
                         <div class="flex-1 overflow-y-auto no-scrollbar grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 content-start pr-2" id="pos-menu-grid"></div>
                     </div>
                     
-                    <div class="w-full md:w-[420px] bg-black border border-white/10 rounded-2xl flex flex-col overflow-hidden shrink-0 h-full max-h-[85vh] shadow-2xl relative">
+                    <div class="w-full md:w-[420px] bg-black border border-white/10 rounded-2xl flex flex-col overflow-hidden shrink-0 h-[50dvh] md:h-full max-h-[85dvh] shadow-2xl relative">
                         <div class="bg-gradient-to-r from-zinc-900 to-black p-4 border-b border-white/10 flex justify-between items-center shrink-0">
                             <h3 class="font-black uppercase text-sm flex items-center gap-2"><i class="ph-bold ph-receipt text-papa-fire text-lg"></i> Ticket de Venta</h3>
                             <span class="bg-papa-fire text-white px-3 py-1 rounded-full text-[10px] font-bold shadow-[0_0_10px_rgba(255,61,0,0.5)]" id="pos-cart-badge">0 Items</span>
@@ -617,16 +628,35 @@
                     </div>
                 </div>
 
-                <div id="panel-admin-kds" class="admin-panel-tab hidden flex flex-col h-full space-y-4">
+                <div id="panel-admin-kds" class="admin-panel-tab hidden absolute inset-0 p-4 sm:p-6 overflow-hidden flex flex-col bg-[#050505] z-10 space-y-4">
                     <div class="flex justify-between items-center shrink-0">
                         <h2 class="text-2xl font-black uppercase text-white tracking-tight flex items-center gap-3"><i class="ph-fill ph-cooking-pot text-papa-fire text-3xl"></i> Pantalla de Cocina (KDS)</h2>
-                        <div class="flex gap-3 text-[10px] font-bold text-zinc-500 uppercase"><span class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full inline-block"></span> Óptimo</span><span class="flex items-center gap-1"><span class="w-3 h-3 bg-yellow-500 rounded-full inline-block"></span> Retraso</span><span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full inline-block animate-pulse"></span> Urgente</span></div>
+                        <div class="hidden sm:flex gap-3 text-[10px] font-bold text-zinc-500 uppercase"><span class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full inline-block"></span> Óptimo</span><span class="flex items-center gap-1"><span class="w-3 h-3 bg-yellow-500 rounded-full inline-block"></span> Retraso</span><span class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full inline-block animate-pulse"></span> Urgente</span></div>
                     </div>
-                    <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-5 overflow-y-auto md:overflow-hidden pb-6 md:pb-0">
-                        <div class="bg-zinc-950/80 border border-white/10 rounded-2xl flex flex-col overflow-hidden min-h-[300px] md:min-h-0 shadow-lg"><div class="bg-black p-3.5 border-b border-white/10 font-black text-xs uppercase text-zinc-300 flex justify-between tracking-widest">Pendientes <span id="kds-cnt-pen" class="bg-zinc-800 text-white px-2 py-0.5 rounded shadow-inner">0</span></div><div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="kds-col-pen"></div></div>
-                        <div class="bg-zinc-950/80 border border-blue-500/20 rounded-2xl flex flex-col overflow-hidden min-h-[300px] md:min-h-0 shadow-[0_0_15px_rgba(59,130,246,0.1)]"><div class="bg-blue-950/40 p-3.5 border-b border-blue-500/20 font-black text-xs uppercase text-blue-400 flex justify-between tracking-widest">Preparando <span id="kds-cnt-prep" class="bg-blue-500 text-white px-2 py-0.5 rounded shadow-inner">0</span></div><div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="kds-col-prep"></div></div>
-                        <div class="bg-zinc-950/80 border border-yellow-500/20 rounded-2xl flex flex-col overflow-hidden min-h-[300px] md:min-h-0 shadow-[0_0_15px_rgba(234,179,8,0.1)]"><div class="bg-yellow-950/40 p-3.5 border-b border-yellow-500/20 font-black text-xs uppercase text-yellow-400 flex justify-between tracking-widest">Empacando <span id="kds-cnt-pack" class="bg-yellow-500 text-black px-2 py-0.5 rounded shadow-inner">0</span></div><div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="kds-col-pack"></div></div>
-                        <div class="bg-zinc-950/80 border border-green-500/20 rounded-2xl flex flex-col overflow-hidden min-h-[300px] md:min-h-0 shadow-[0_0_15px_rgba(34,197,94,0.1)]"><div class="bg-green-950/40 p-3.5 border-b border-green-500/20 font-black text-xs uppercase text-green-400 flex justify-between tracking-widest">Para Entregar <span id="kds-cnt-ready" class="bg-green-500 text-white px-2 py-0.5 rounded shadow-inner">0</span></div><div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="kds-col-ready"></div></div>
+                    
+                    <!-- Kanban Board Layout Avanzado -->
+                    <div class="flex-1 flex flex-col xl:flex-row gap-5 overflow-y-auto xl:overflow-x-auto xl:overflow-y-hidden pb-4 min-h-0">
+                        
+                        <div class="xl:min-w-[300px] xl:w-1/4 shrink-0 bg-zinc-950/80 border border-white/10 rounded-2xl flex flex-col overflow-hidden shadow-lg h-[350px] xl:h-full">
+                            <div class="bg-black p-3.5 border-b border-white/10 font-black text-xs uppercase text-zinc-300 flex justify-between tracking-widest shrink-0">Pendientes <span id="kds-cnt-pen" class="bg-zinc-800 text-white px-2 py-0.5 rounded shadow-inner">0</span></div>
+                            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar relative" id="kds-col-pen"></div>
+                        </div>
+
+                        <div class="xl:min-w-[300px] xl:w-1/4 shrink-0 bg-zinc-950/80 border border-blue-500/20 rounded-2xl flex flex-col overflow-hidden shadow-[0_0_15px_rgba(59,130,246,0.1)] h-[350px] xl:h-full">
+                            <div class="bg-blue-950/40 p-3.5 border-b border-blue-500/20 font-black text-xs uppercase text-blue-400 flex justify-between tracking-widest shrink-0">Preparando <span id="kds-cnt-prep" class="bg-blue-500 text-white px-2 py-0.5 rounded shadow-inner">0</span></div>
+                            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar relative" id="kds-col-prep"></div>
+                        </div>
+
+                        <div class="xl:min-w-[300px] xl:w-1/4 shrink-0 bg-zinc-950/80 border border-yellow-500/20 rounded-2xl flex flex-col overflow-hidden shadow-[0_0_15px_rgba(234,179,8,0.1)] h-[350px] xl:h-full">
+                            <div class="bg-yellow-950/40 p-3.5 border-b border-yellow-500/20 font-black text-xs uppercase text-yellow-400 flex justify-between tracking-widest shrink-0">Empacando <span id="kds-cnt-pack" class="bg-yellow-500 text-black px-2 py-0.5 rounded shadow-inner">0</span></div>
+                            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar relative" id="kds-col-pack"></div>
+                        </div>
+
+                        <div class="xl:min-w-[300px] xl:w-1/4 shrink-0 bg-zinc-950/80 border border-green-500/20 rounded-2xl flex flex-col overflow-hidden shadow-[0_0_15px_rgba(34,197,94,0.1)] h-[350px] xl:h-full">
+                            <div class="bg-green-950/40 p-3.5 border-b border-green-500/20 font-black text-xs uppercase text-green-400 flex justify-between tracking-widest shrink-0">Para Entregar <span id="kds-cnt-ready" class="bg-green-500 text-white px-2 py-0.5 rounded shadow-inner">0</span></div>
+                            <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar relative" id="kds-col-ready"></div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -639,6 +669,28 @@
                                 <thead class="text-zinc-500 uppercase border-b border-white/10"><tr><th class="pb-4 pl-3 tracking-wider font-black">ID Orden</th><th class="pb-4 tracking-wider font-black">Fecha/Hora</th><th class="pb-4 tracking-wider font-black">Cliente / Mesa</th><th class="pb-4 tracking-wider font-black">Total</th><th class="pb-4 tracking-wider font-black">Estado</th><th class="pb-4 pr-3 text-right tracking-wider font-black">Acción</th></tr></thead>
                                 <tbody id="orders-history-table" class="divide-y divide-white/5 font-medium text-white"></tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REPORTES Z Y FINANZAS -->
+                <div id="panel-admin-reports" class="admin-panel-tab hidden flex flex-col h-full space-y-6">
+                    <h2 class="text-2xl font-black uppercase text-white tracking-tight flex items-center gap-2"><i class="ph-bold ph-chart-bar text-green-400"></i> Exportación de Reportes Financieros</h2>
+                    <div class="bg-black border border-white/10 rounded-2xl p-6 shadow-xl shrink-0">
+                        <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Seleccione el rango de fechas a consultar:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                            <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Desde (Inicio)</label><input type="date" id="rep-start" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3.5 rounded-xl text-xs outline-none focus:border-green-500 transition-colors cursor-pointer" onclick="try{this.showPicker()}catch(e){}"></div>
+                            <div><label class="block text-[10px] font-bold text-zinc-400 uppercase mb-2">Hasta (Fin)</label><input type="date" id="rep-end" class="w-full bg-zinc-900 border border-white/10 text-white px-4 py-3.5 rounded-xl text-xs outline-none focus:border-green-500 transition-colors cursor-pointer" onclick="try{this.showPicker()}catch(e){}"></div>
+                            <div class="md:col-span-2 flex flex-col sm:flex-row gap-3">
+                                <button onclick="window.generateReport()" class="flex-1 bg-gradient-to-r from-papa-drblue to-blue-600 hover:from-blue-600 hover:to-papa-drblue text-white font-black uppercase text-[10px] tracking-widest py-3.5 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex justify-center items-center gap-2"><i class="ph-bold ph-magnifying-glass text-lg"></i> Consultar Datos</button>
+                                <button onclick="window.exportReportCSV()" class="flex-1 bg-[#107c41] hover:bg-green-600 text-white font-black uppercase text-[10px] tracking-widest py-3.5 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center gap-2"><i class="ph-bold ph-file-csv text-lg"></i> Descargar Excel/CSV</button>
+                                <button onclick="window.exportReportPDF()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-black uppercase text-[10px] tracking-widest py-3.5 rounded-xl shadow-lg transition-transform hover:scale-[1.02] flex items-center justify-center gap-2"><i class="ph-bold ph-file-pdf text-lg"></i> Descargar PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 bg-black border border-white/10 rounded-2xl p-6 shadow-2xl overflow-hidden flex flex-col hidden" id="report-results-container">
+                        <div id="report-print-area" class="flex-1 overflow-y-auto no-scrollbar bg-white text-black p-8 rounded-xl relative shadow-inner">
+                           <!-- JS INYECTARÁ EL REPORTE EN PANTALLA AQUÍ -->
                         </div>
                     </div>
                 </div>
@@ -763,7 +815,7 @@
 
     <!-- MODAL EDITOR PLATO (Para Menú Web) -->
     <div id="editModal" class="modal-overlay fixed inset-0 z-[400] flex items-center justify-center p-4">
-        <div class="modal-content bg-[#111] border border-white/10 w-full max-w-2xl rounded-3xl overflow-hidden flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.9)] max-h-[90vh]">
+        <div class="modal-content bg-[#111] border border-white/10 w-full max-w-2xl rounded-3xl overflow-hidden flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.9)] max-h-[85dvh]">
             <div class="bg-black px-6 py-5 border-b border-white/10 flex justify-between items-center shrink-0">
                 <h2 class="font-black text-lg text-papa-fire uppercase flex items-center gap-2"><i class="ph-bold ph-hamburger"></i> Editor de Plato</h2>
                 <button onclick="window.closeModal('editModal')" class="text-zinc-500 hover:text-white bg-zinc-900 p-1.5 rounded-full"><i class="ph-bold ph-x text-xl"></i></button>
@@ -809,7 +861,7 @@
 
     <!-- MODAL EDITOR INSUMOS FINANCIEROS -->
     <div id="editIngModal" class="modal-overlay fixed inset-0 z-[400] flex items-center justify-center p-4">
-        <div class="modal-content bg-[#111] border border-white/10 w-full max-w-2xl rounded-3xl overflow-hidden flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.9)] max-h-[90vh]">
+        <div class="modal-content bg-[#111] border border-white/10 w-full max-w-2xl rounded-3xl overflow-hidden flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.9)] max-h-[85dvh]">
             <div class="px-6 py-5 border-b border-white/10 flex justify-between items-center shrink-0 bg-black">
                 <h2 id="edit-ing-title-display" class="font-black text-xl uppercase tracking-tight flex items-center gap-3 text-blue-400"><i class="ph-fill ph-package"></i> <span id="ing-modal-main-title">Ficha de Insumo</span></h2>
                 <button onclick="window.closeModal('editIngModal')" class="text-zinc-500 hover:text-white bg-zinc-900 p-1.5 rounded-full transition-colors"><i class="ph-bold ph-x text-xl"></i></button>
@@ -855,7 +907,7 @@
 
     <!-- MODAL DE EDICIÓN DE ORDEN (KDS) Y GESTIÓN DE NOTAS -->
     <div id="editOrderModal" class="modal-overlay fixed inset-0 z-[400] flex items-center justify-center p-4">
-        <div class="modal-content bg-[#111] border border-white/10 w-full max-w-lg rounded-3xl overflow-hidden flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.9)] max-h-[85vh]">
+        <div class="modal-content bg-[#111] border border-white/10 w-full max-w-lg rounded-3xl overflow-hidden flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.9)] max-h-[85dvh]">
             <div class="bg-gradient-to-r from-blue-900 to-blue-700 px-6 py-5 border-b border-white/10 flex justify-between items-center shrink-0 shadow-md">
                 <div class="flex flex-col">
                     <h2 id="edit-order-title" class="font-black text-lg uppercase text-white tracking-widest flex items-center gap-2"><i class="ph-bold ph-pencil-simple"></i> Editar Orden</h2>
@@ -881,7 +933,7 @@
 
     <!-- VISTA PREVIA TICKETS & ACCIONES (ERP) -->
     <div id="ticketPreviewModal" class="modal-overlay fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
-        <div class="modal-content bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col max-h-[95vh] border-2 border-white/20">
+        <div class="modal-content bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col max-h-[85dvh] border-2 border-white/20">
             <div class="p-5 overflow-y-auto no-scrollbar flex-1 bg-white relative">
                 <div id="ticketPreviewContent" class="text-black text-sm"></div>
             </div>
@@ -1308,21 +1360,55 @@
         // ==========================================
         window.POS = {
             isApp: navigator.userAgent.includes("WebIntoApp") || window.location.href.includes("android_asset"),
-            init: () => { if (window.POS.isApp) { const badge = document.getElementById('hw-status-badge'); if(badge) { badge.classList.remove('hidden'); badge.classList.add('flex'); } } },
+            
+            init: () => {
+                if (window.POS.isApp) {
+                    const badge = document.getElementById('hw-status-badge');
+                    if(badge) { badge.classList.remove('hidden'); badge.classList.add('flex'); }
+                }
+            },
+            
             imprimir: async (datosHtml, orderId) => {
-                if (window.AndroidPOS && typeof window.AndroidPOS.print === 'function') { window.AndroidPOS.print(JSON.stringify({id: orderId, html: datosHtml})); window.showToast("Impresión App Ejecutada"); return; }
+                if (window.AndroidPOS && typeof window.AndroidPOS.print === 'function') {
+                    window.AndroidPOS.print(JSON.stringify({id: orderId, html: datosHtml}));
+                    window.showToast("Ticket enviado a la impresora de la App");
+                    return;
+                }
+                
                 try {
                     const hwBridgeUrl = window.STATE.hardware.bridgeUrl || 'http://localhost:3000';
-                    const res = await fetch(`${hwBridgeUrl}/api/printer/print`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ html: datosHtml, id: orderId }) });
-                    if(res.ok) { window.showToast("Impresora de Red Activada", "success"); return; }
-                } catch(e) { console.log("Bypass Local Print"); }
+                    const res = await fetch(`${hwBridgeUrl}/api/printer/print`, {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ html: datosHtml, id: orderId })
+                    });
+                    if(res.ok) { window.showToast("Impresión Local Enviada"); return; }
+                } catch(e) { console.log("Sin bridge local. Intentando método alternativo."); }
+
+                // SOLUCIÓN AL "SERVER LOST" EN WEB INTO APP / ANDROID
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.POS.isApp;
                 
-                window.showToast("Forzando Impresión Web Estandar");
-                document.getElementById('thermal-print-area').innerHTML = datosHtml; 
-                document.body.classList.add('thermal-printing');
-                window.print(); 
-                setTimeout(() => document.body.classList.remove('thermal-printing'), 800);
+                if (isMobile) {
+                    window.showToast("Enviando ticket a impresora móvil...");
+                    // Usamos el protocolo intent de RawBT para Android
+                    // Debes descargar la app "RawBT" en la Play Store de tu dispositivo POS
+                    const rawbtUrl = "intent://rawbt:" + encodeURIComponent(datosHtml) + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+                    
+                    // Abrimos la app de impresión sin salir de nuestra app
+                    try {
+                        window.location.href = rawbtUrl;
+                    } catch (err) {
+                        window.showToast("Instala 'RawBT' desde la PlayStore para imprimir.", "error");
+                    }
+                } else {
+                    // Impresión normal solo en PC (Windows/Mac)
+                    window.showToast("Usando impresión web estándar");
+                    document.getElementById('thermal-print-area').innerHTML = datosHtml;
+                    document.body.classList.add('thermal-printing');
+                    window.print();
+                    setTimeout(() => document.body.classList.remove('thermal-printing'), 500);
+                }
             },
+            
             abrirCaja: async (reason = "Manual") => {
                 if (window.AndroidPOS && typeof window.AndroidPOS.openDrawer === 'function') { window.AndroidPOS.openDrawer(); window.showToast("Gaveta Abierta (App)"); return; }
                 try {
@@ -1387,6 +1473,7 @@
             if(tab === 'gallery') window.renderGalleryAdmin();
             if(tab === 'pos') window.renderCaja();
             if(tab === 'settings') window.renderBankAccounts();
+            if(tab === 'reports') { /* Muestra la pestaña gracias al if de arriba, no requiere render inicial hasta que filtren */ }
         };
 
         window.renderAdminViews = () => {
@@ -1639,6 +1726,112 @@
 
         window.saveSettings = () => { window.STATE.settings.apiKey = document.getElementById('set-api-key').value.trim(); window.STATE.settings.phone = document.getElementById('set-phone').value.trim(); window.STATE.settings.mapEmbed = document.getElementById('set-map-embed').value.trim(); window.STATE.settings.mapLink = document.getElementById('set-map-link').value.trim(); window.STATE.settings.customBasePrice = parseFloat(document.getElementById('set-base-price').value) || 6.00; window.STATE.settings.customExtraPrice = parseFloat(document.getElementById('set-extra-price').value) || 1.50; window.secureSave(); window.renderStorefront(); window.showToast('Sistema Matriz Actualizado', 'success'); };
         window.saveHardwareConfig = () => { window.STATE.hardware.bridgeUrl = document.getElementById('hw-bridge-url').value; window.STATE.hardware.autoOpenDrawer = document.getElementById('hw-auto-drawer').checked; window.secureSave(); window.POSBridge.ping(); };
+
+        window.filteredReportOrders = [];
+
+        window.generateReport = () => {
+            const start = document.getElementById('rep-start').value;
+            const end = document.getElementById('rep-end').value;
+            if(!start || !end) return window.showToast('Debes seleccionar fecha de inicio y fin', 'error');
+            
+            // Establecer el rango exacto desde las 00:00:00 hasta las 23:59:59
+            const startDate = new Date(start).setHours(0,0,0,0);
+            const endDate = new Date(end).setHours(23,59,59,999);
+            
+            window.filteredReportOrders = (window.STATE.orders || []).filter(o => o.timestamp >= startDate && o.timestamp <= endDate && o.status !== 'Cancelada');
+            
+            if (window.filteredReportOrders.length === 0) return window.showToast('No existen órdenes finalizadas en esas fechas', 'error');
+
+            const totalVentas = window.filteredReportOrders.reduce((acc, o) => acc + o.total, 0);
+            // Identificar pagos en efectivo de cualquier método que contenga la palabra "efectivo"
+            const totalEfectivo = window.filteredReportOrders.filter(o => o.payment && o.payment.toLowerCase().includes('efectivo')).reduce((acc, o) => acc + o.total, 0);
+            const totalDigital = totalVentas - totalEfectivo;
+            
+            const logoReporte = window.STATE.settings.logo || 'https://placehold.co/100x100/FF3D00/FFF?text=PC';
+
+            let html = `
+            <div style="text-align: center; margin-bottom: 24px; border-bottom: 2px solid #000; padding-bottom: 16px;">
+                <img src="${logoReporte}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px auto; filter: grayscale(100%);">
+                <h1 style="font-size: 24px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Reporte Administrativo Z</h1>
+                <p style="font-size: 12px; font-weight: bold; color: #555; margin-top: 4px;">Período Auditado: ${start} hasta ${end}</p>
+            </div>
+            <div style="display: flex; gap: 15px; margin-bottom: 24px; text-align: center;">
+                <div style="flex: 1; background: #f3f4f6; padding: 15px; border-radius: 8px; border: 1px solid #d1d5db;">
+                    <p style="font-size: 10px; font-weight: bold; color: #6b7280; text-transform: uppercase; margin: 0;">Órdenes Exitosas</p>
+                    <p style="font-size: 24px; font-weight: 900; margin: 5px 0 0 0; color: #000;">${window.filteredReportOrders.length}</p>
+                </div>
+                <div style="flex: 1; background: #f3f4f6; padding: 15px; border-radius: 8px; border: 1px solid #d1d5db;">
+                    <p style="font-size: 10px; font-weight: bold; color: #6b7280; text-transform: uppercase; margin: 0;">Efectivo (Caja)</p>
+                    <p style="font-size: 24px; font-weight: 900; margin: 5px 0 0 0; color: #15803d;">$${totalEfectivo.toFixed(2)}</p>
+                </div>
+                <div style="flex: 1; background: #f3f4f6; padding: 15px; border-radius: 8px; border: 1px solid #d1d5db;">
+                    <p style="font-size: 10px; font-weight: bold; color: #6b7280; text-transform: uppercase; margin: 0;">Pagos Digitales</p>
+                    <p style="font-size: 24px; font-weight: 900; margin: 5px 0 0 0; color: #1d4ed8;">$${totalDigital.toFixed(2)}</p>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #000; color: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 24px;">
+                <span style="font-weight: 900; text-transform: uppercase; letter-spacing: 2px; font-size: 14px;">Facturación Bruta Total</span>
+                <span style="font-size: 28px; font-weight: 900;">$${totalVentas.toFixed(2)}</span>
+            </div>
+            <table style="width: 100%; text-align: left; font-size: 12px; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #e5e7eb; border-bottom: 2px solid #000;">
+                        <th style="padding: 10px; font-weight: 900; text-transform: uppercase;">Orden ID</th>
+                        <th style="padding: 10px; font-weight: 900; text-transform: uppercase;">Fecha Exacta</th>
+                        <th style="padding: 10px; font-weight: 900; text-transform: uppercase;">Cliente</th>
+                        <th style="padding: 10px; font-weight: 900; text-transform: uppercase;">Forma de Pago</th>
+                        <th style="padding: 10px; text-align: right; font-weight: 900; text-transform: uppercase;">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${window.filteredReportOrders.map(o => `
+                        <tr style="border-bottom: 1px solid #d1d5db;">
+                            <td style="padding: 10px; font-weight: bold;">${o.id}</td>
+                            <td style="padding: 10px; color: #4b5563;">${new Date(o.timestamp).toLocaleString()}</td>
+                            <td style="padding: 10px;">${o.name || 'Sin Nombre'}</td>
+                            <td style="padding: 10px; font-weight: bold; color: ${(o.payment || '').toLowerCase().includes('efectivo') ? '#15803d' : '#1d4ed8'};">${o.payment || 'N/A'}</td>
+                            <td style="padding: 10px; text-align: right; font-weight: 900;">$${o.total.toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <p style="text-align: center; font-size: 9px; color: #9ca3af; margin-top: 30px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Documento generado por ERP Inteligente La Papa Caliente</p>
+            `;
+            
+            document.getElementById('report-print-area').innerHTML = html;
+            document.getElementById('report-results-container').classList.remove('hidden');
+            window.showToast('Reporte Tabulado Exitosamente', 'success');
+        };
+
+        window.exportReportCSV = () => {
+            if(!window.filteredReportOrders || window.filteredReportOrders.length === 0) return window.showToast('Primero presiona "Consultar Datos"', 'error');
+            let csv = "ID Orden,Fecha Hora,Nombre Cliente,Tipo Entrega,Metodo de Pago,Monto Total\n";
+            window.filteredReportOrders.forEach(o => {
+                const date = new Date(o.timestamp).toLocaleString().replace(/,/g, '');
+                const name = (o.name || 'Sin Nombre').replace(/,/g, ' '); // Evitar que comas en el nombre rompan el excel
+                csv += `${o.id},${date},${name},${o.type || 'N/A'},${o.payment || 'N/A'},${o.total.toFixed(2)}\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Corte_Financiero_PapaCaliente_${Date.now()}.csv`;
+            link.click();
+            window.showToast('Descargando Archivo Excel/CSV...', 'success');
+        };
+
+        window.exportReportPDF = () => {
+            if(!window.filteredReportOrders || window.filteredReportOrders.length === 0) return window.showToast('Primero presiona "Consultar Datos"', 'error');
+            const element = document.getElementById('report-print-area');
+            const opt = {
+                margin: 15,
+                filename: `Reporte_Contable_${Date.now()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+            window.showToast('Generando Documento PDF...', 'success');
+        };
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas ? canvas.getContext('2d') : null;
