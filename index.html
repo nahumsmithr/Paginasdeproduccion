@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="referrer" content="no-referrer">
     <title>La Papa Caliente | ERP & Premium Food Truck</title>
     
@@ -77,6 +79,23 @@
         .kds-card.time-warn { border-top: 4px solid #eab308; }
         .kds-card.time-danger { border-top: 4px solid #ef4444; animation: pulse-border 2s infinite; }
         @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        /* --- TICKET REALISTA Y PWA --- */
+        .ticket-real {
+            position: relative;
+            background: #fff;
+            padding-bottom: 20px;
+        }
+        .ticket-real::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 16px;
+            background: radial-gradient(circle, transparent, transparent 4px, #fff 4px, #fff 6px, transparent 6px) -8px 0 / 16px 16px;
+            z-index: 10;
+        }
 
         /* --- EPIC APP LOGIN STYLES --- */
         #app-login-screen {
@@ -347,12 +366,14 @@
                     <i class="ph-fill ph-star text-papa-yellow"></i>
                     <span id="game-score" class="text-white font-black font-ticket text-lg">0</span>
                 </div>
-                <div id="game-overlay" class="absolute inset-0 z-30 bg-black/80 flex flex-col items-center justify-center backdrop-blur-sm transition-opacity duration-300">
-                    <div class="w-20 h-20 bg-papa-fire rounded-full flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(255,61,0,0.6)] animate-pulse-fast cursor-pointer" onclick="window.startGame()">
-                        <i class="ph-fill ph-play text-4xl text-white ml-1"></i>
+                <div id="game-overlay" class="absolute inset-0 z-30 bg-black/90 flex flex-col items-center justify-center backdrop-blur-sm transition-opacity duration-300">
+                    <span class="text-white font-black uppercase tracking-widest text-base mb-6 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">Selecciona Dificultad</span>
+                    <div class="flex flex-col gap-3 w-3/4 max-w-[200px] mb-6">
+                        <button onclick="window.startGame('facil')" class="w-full bg-green-500 hover:bg-green-400 text-white py-3 rounded-xl font-black uppercase text-xs shadow-[0_0_15px_rgba(34,197,94,0.4)] transition-transform hover:scale-105 flex items-center justify-center gap-2"><i class="ph-bold ph-smiley text-lg"></i> Fácil</button>
+                        <button onclick="window.startGame('medio')" class="w-full bg-papa-yellow hover:bg-yellow-400 text-black py-3 rounded-xl font-black uppercase text-xs shadow-[0_0_15px_rgba(255,184,0,0.4)] transition-transform hover:scale-105 flex items-center justify-center gap-2"><i class="ph-bold ph-warning text-lg"></i> Medio</button>
+                        <button onclick="window.startGame('dificil')" class="w-full bg-papa-fire hover:bg-red-500 text-white py-3 rounded-xl font-black uppercase text-xs shadow-[0_0_15px_rgba(255,61,0,0.4)] transition-transform hover:scale-105 flex items-center justify-center gap-2"><i class="ph-bold ph-skull text-lg"></i> Difícil</button>
                     </div>
-                    <span class="text-white font-black uppercase tracking-widest text-sm mb-1">Iniciar Juego</span>
-                    <span id="game-msg" class="text-zinc-400 text-[10px] font-bold uppercase tracking-wider">¡No dejes caer las papas!</span>
+                    <span id="game-msg" class="text-zinc-400 text-[10px] font-bold uppercase tracking-wider text-center px-4">¡Atrapa las papas 🥔, esquiva el fuego 🔥!</span>
                 </div>
                 <canvas id="gameCanvas" width="350" height="450" class="w-full block bg-gradient-to-b from-[#111] to-[#050505] touch-none"></canvas>
             </div>
@@ -425,10 +446,6 @@
             <div class="flex justify-between items-center text-xs pt-3"><span>Subtotal:</span><span id="ticket-subtotal">$0.00</span></div>
             <div class="flex justify-between items-center text-xs mt-1"><span>ITBIS (18%):</span><span id="ticket-itbis">$0.00</span></div>
             <div class="flex justify-between items-center font-black text-lg pt-2 border-t border-black mt-2"><span>TOTAL:</span><span id="ticket-total-price">$0.00</span></div>
-            <div class="mt-4 flex flex-col justify-center items-center w-full overflow-hidden">
-                <svg id="ticket-barcode" class="max-w-full h-16"></svg>
-                <p id="ticket-barcode-text" class="text-[11px] font-mono text-gray-500 tracking-widest mt-1"></p>
-            </div>
             
             <div class="mt-6 w-full flex flex-col gap-2">
                 <button onclick="window.sendOrder(false)" class="w-full bg-[#25D366] hover:bg-[#20b858] text-white py-3.5 rounded-xl font-black uppercase text-xs shadow-[0_5px_15px_rgba(37,211,102,0.4)] transition-transform hover:scale-[1.02] flex items-center justify-center gap-2"><i class="ph-fill ph-whatsapp-logo text-xl"></i> Confirmar vía WhatsApp</button>
@@ -949,7 +966,7 @@
     <!-- VISTA PREVIA TICKETS & ACCIONES ERP (Con margen seguro para móviles) -->
     <div id="ticketPreviewModal" class="modal-overlay fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
         <div class="modal-content bg-white w-[calc(100%-1.5rem)] md:w-full max-w-sm rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] flex flex-col max-h-[85vh] border-2 border-white/20">
-            <div class="p-5 overflow-y-auto no-scrollbar flex-1 bg-white relative">
+            <div class="p-5 overflow-y-auto no-scrollbar flex-1 bg-white relative ticket-real">
                 <div id="ticketPreviewContent" class="text-black text-sm"></div>
             </div>
             <div class="bg-zinc-100 border-t border-gray-300 p-5 shrink-0 flex flex-col gap-3 shadow-[0_-10px_20px_rgba(0,0,0,0.1)]">
@@ -1264,8 +1281,6 @@
             document.getElementById('ticket-itbis').innerText = `$${itbis.toFixed(2)}`;
             document.getElementById('ticket-total-price').innerText = `$${total.toFixed(2)}`;
             
-            try { JsBarcode("#ticket-barcode", orderId, { format: "CODE128", width: 1.5, height: 40, displayValue: false, margin: 0, background: "transparent", lineColor: "#000" }); document.getElementById('ticket-barcode-text').innerText = orderId; } catch(e) {}
-            
             window.openModal('ticketModal'); window.toggleCart();
         };
 
@@ -1428,24 +1443,12 @@
                     if(res.ok) { window.showToast("Impresión Local Enviada"); return; }
                 } catch(e) { console.log("Sin bridge local. Intentando método alternativo."); }
 
-                // SOLUCIÓN AL "SERVER LOST" EN WEB INTO APP / ANDROID
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.POS.isApp;
-                
-                if (isMobile) {
+                if (/Android/i.test(navigator.userAgent)) {
                     window.showToast("Enviando ticket a impresora móvil...");
-                    // Usamos el protocolo intent de RawBT para Android
-                    // Debes descargar la app "RawBT" en la Play Store de tu dispositivo POS
                     const rawbtUrl = "intent://rawbt:" + encodeURIComponent(datosHtml) + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
-                    
-                    // Abrimos la app de impresión sin salir de nuestra app
-                    try {
-                        window.location.href = rawbtUrl;
-                    } catch (err) {
-                        window.showToast("Instala 'RawBT' desde la PlayStore para imprimir.", "error");
-                    }
+                    try { window.location.href = rawbtUrl; } catch (err) { window.showToast("Instala 'RawBT' en Android.", "error"); }
                 } else {
-                    // Impresión normal solo en PC (Windows/Mac)
-                    window.showToast("Usando impresión web estándar");
+                    window.showToast("Iniciando impresión de sistema...");
                     document.getElementById('thermal-print-area').innerHTML = datosHtml;
                     document.body.classList.add('thermal-printing');
                     window.print();
@@ -1461,9 +1464,36 @@
                     if(res.ok) { window.showToast("Gaveta Expulsada OK"); return; }
                 } catch(e) { window.showToast("Sin conexión a Gaveta.", "error"); }
             },
-            compartir: async (title, text) => {
-                if (window.AndroidPOS && typeof window.AndroidPOS.share === 'function') { window.AndroidPOS.share(text); return; }
-                if (navigator.share) { try { await navigator.share({ title: title, text: text }); } catch (err) {} } else { window.showToast("Compartir bloqueado por el Navegador", "error"); }
+            compartir: async (title, text, htmlContent, orderId) => {
+                await Swal.fire({
+                    title: 'Compartir Factura',
+                    text: 'Selecciona cómo enviar el comprobante:',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonText: '<i class="ph-bold ph-whatsapp-logo"></i> WhatsApp',
+                    confirmButtonColor: '#25D366',
+                    denyButtonText: '<i class="ph-bold ph-file-pdf"></i> PDF Oficial',
+                    denyButtonColor: '#e11d48',
+                    cancelButtonText: 'Cancelar',
+                    background: '#111', color: '#fff'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                    } else if (result.isDenied) {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = htmlContent;
+                        tempDiv.style.width = '300px'; tempDiv.style.padding = '15px'; tempDiv.style.background = 'white'; tempDiv.style.color = 'black';
+                        
+                        /* FIJA EL BUG DEL PDF EN BLANCO: Se ancla a la pantalla de forma oculta */
+                        tempDiv.style.position = 'absolute'; tempDiv.style.left = '-9999px'; tempDiv.style.top = '0';
+                        document.body.appendChild(tempDiv);
+                        
+                        html2pdf().set({ margin: 5, filename: `Factura_${orderId}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' } }).from(tempDiv).save().then(() => {
+                            document.body.removeChild(tempDiv); /* Se limpia después de descargar */
+                        });
+                        window.showToast('Descargando PDF', 'success');
+                    }
+                });
             }
         };
 
@@ -1607,7 +1637,28 @@
             window.renderAdminCart();
         };
 
-        window.addToAdminCart = (id) => { const item = window.STATE.menu.find(m => m.id === id); if(item) { window.adminCart.push(JSON.parse(JSON.stringify(item))); window.renderAdminCart(); } };
+        window.playBeep = () => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(); osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
+                const gain = ctx.createGain(); gain.gain.setValueAtTime(0.1, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.1);
+            } catch(e) {}
+        };
+
+        window.addToAdminCart = (id) => { 
+            const item = window.STATE.menu.find(m => m.id === id); 
+            if(item) { 
+                window.adminCart.push(JSON.parse(JSON.stringify(item))); 
+                window.renderAdminCart(); 
+                window.playBeep();
+                const badge = document.getElementById('pos-cart-badge');
+                if(badge) { 
+                    badge.classList.add('bg-green-500', 'scale-110'); 
+                    setTimeout(() => badge.classList.remove('bg-green-500', 'scale-110'), 250); 
+                }
+            } 
+        };
 
         // Novedad: Edición de notas directo en carrito POS Admin
         window.editAdminCartItemNote = async (idx) => {
@@ -1660,11 +1711,11 @@
             const o = window.STATE.orders.find(x => x.id === orderId); if(!o) return '';
             const subtotal = o.total / 1.18; const itbis = o.total - subtotal;
             const itemsHtml = o.items.map(i => `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom: 2px; font-weight:bold;"><span style="flex:1;">- ${i.title}</span><span>$${parseFloat(i.price).toFixed(2)}</span></div>${i.note ? `<div style="font-size: 10px; font-weight:bold; color: #000; padding-left: 10px; margin-bottom: 4px; text-transform: uppercase;">!!! NOTA: ${i.note}</div>` : ''}`).join('');
-            return `<div style="font-family:'Space Mono', monospace; color:#000; width:100%; padding: 0 2mm; box-sizing: border-box;"><div style="text-align:center; border-bottom:2px dashed #000; padding-bottom:10px; margin-bottom:10px;"><h2 style="font-size:20px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing: -1px;">LA PAPA CALIENTE</h2><p style="font-size:11px; margin:4px 0; font-weight:bold; letter-spacing: 1px; border:1px solid #000; display:inline-block; padding: 2px 6px;">COMPROBANTE</p><p style="font-size:11px; margin:4px 0 0 0;">${new Date(o.timestamp).toLocaleString()}</p></div><div style="font-size:12px; margin-bottom:10px; line-height: 1.5; padding: 5px; background: #eee; border-radius: 4px;"><p style="margin:0; font-weight:900; font-size:14px;">TICKET: ${o.id}</p><p style="margin:0;"><strong>TIPO:</strong> ${o.type} ${o.table ? `(#${o.table})` : ''}</p><p style="margin:0;"><strong>CLIENTE:</strong> ${o.name}</p><p style="margin:0;"><strong>PAGO:</strong> ${o.payment}</p></div><div style="border-top:2px solid #000; border-bottom:2px solid #000; padding:10px 0; margin-bottom:10px;">${itemsHtml}</div><div style="font-size:12px; line-height: 1.5; font-weight:bold;"><div style="display:flex; justify-content:space-between;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div><div style="display:flex; justify-content:space-between;"><span>ITBIS (18%):</span><span>$${itbis.toFixed(2)}</span></div></div><div style="font-size:18px; font-weight:900; display:flex; justify-content:space-between; margin-top:5px; border-top:2px dashed #000; padding-top:8px;"><span>TOTAL:</span><span>$${o.total.toFixed(2)}</span></div><div style="text-align:center; margin-top:20px; display:flex; flex-direction:column; align-items:center;"><svg id="barcode-ticket"></svg></div><div style="text-align:center; margin-top:10px; font-size:11px; font-weight:bold;">¡VUELVE PRONTO!</div><div style="text-align:center; font-size:9px; margin-top: 5px;">Sistema ERP Inteligente</div></div>`;
+            return `<div style="font-family:'Space Mono', monospace; color:#000; width:100%; padding: 0 2mm; box-sizing: border-box;"><div style="text-align:center; border-bottom:2px dashed #000; padding-bottom:10px; margin-bottom:10px;"><h2 style="font-size:20px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing: -1px;">LA PAPA CALIENTE</h2><p style="font-size:11px; margin:4px 0; font-weight:bold; letter-spacing: 1px; border:1px solid #000; display:inline-block; padding: 2px 6px;">COMPROBANTE</p><p style="font-size:11px; margin:4px 0 0 0;">${new Date(o.timestamp).toLocaleString()}</p></div><div style="font-size:12px; margin-bottom:10px; line-height: 1.5; padding: 5px; background: #eee; border-radius: 4px;"><p style="margin:0; font-weight:900; font-size:14px;">TICKET: ${o.id}</p><p style="margin:0;"><strong>TIPO:</strong> ${o.type} ${o.table ? `(#${o.table})` : ''}</p><p style="margin:0;"><strong>CLIENTE:</strong> ${o.name}</p><p style="margin:0;"><strong>PAGO:</strong> ${o.payment}</p></div><div style="border-top:2px solid #000; border-bottom:2px solid #000; padding:10px 0; margin-bottom:10px;">${itemsHtml}</div><div style="font-size:12px; line-height: 1.5; font-weight:bold;"><div style="display:flex; justify-content:space-between;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div><div style="display:flex; justify-content:space-between;"><span>ITBIS (18%):</span><span>$${itbis.toFixed(2)}</span></div></div><div style="font-size:18px; font-weight:900; display:flex; justify-content:space-between; margin-top:5px; border-top:2px dashed #000; padding-top:8px;"><span>TOTAL:</span><span>$${o.total.toFixed(2)}</span></div><div style="text-align:center; margin-top:15px; font-size:11px; font-weight:bold;">¡VUELVE PRONTO!</div><div style="text-align:center; font-size:9px; margin-top: 5px;">Sistema ERP Inteligente</div></div>`;
         };
-        window.showTicketPreview = (orderId) => { window.currentPreviewOrderId = orderId; const htmlContent = window.getInvoiceHtml(orderId); if(!htmlContent) return window.showToast("Datos corruptos", "error"); document.getElementById('ticketPreviewContent').innerHTML = htmlContent; try { JsBarcode("#barcode-ticket", orderId, { format: "CODE128", width: 1.5, height: 45, displayValue: true, fontSize: 12, margin: 0, background: "transparent", lineColor: "#000", fontOptions: "bold" }); } catch(e) {} window.openModal('ticketPreviewModal'); };
+        window.showTicketPreview = (orderId) => { window.currentPreviewOrderId = orderId; const htmlContent = window.getInvoiceHtml(orderId); if(!htmlContent) return window.showToast("Datos corruptos", "error"); document.getElementById('ticketPreviewContent').innerHTML = htmlContent; window.openModal('ticketPreviewModal'); };
         window.printCurrentPreview = () => { if(window.currentPreviewOrderId) window.POS.imprimir(document.getElementById('ticketPreviewContent').innerHTML, window.currentPreviewOrderId); };
-        window.shareCurrentPreview = () => { if(!window.currentPreviewOrderId) return; const o = window.STATE.orders.find(x => x.id === window.currentPreviewOrderId); if(o) window.POS.compartir(`Ticket ${o.id}`, `Factura Papa Caliente\nTicket: ${o.id}\nCliente: ${o.name}\nTotal a Pagar: $${o.total.toFixed(2)}\nHorario: ${new Date(o.timestamp).toLocaleString()}\n\n¡Gracias!`); };
+        window.shareCurrentPreview = () => { if(!window.currentPreviewOrderId) return; const o = window.STATE.orders.find(x => x.id === window.currentPreviewOrderId); if(o) window.POS.compartir(`Ticket ${o.id}`, `Factura Papa Caliente\nTicket: ${o.id}\nCliente: ${o.name}\nTotal a Pagar: $${o.total.toFixed(2)}\nHorario: ${new Date(o.timestamp).toLocaleString()}\n\n¡Gracias!`, document.getElementById('ticketPreviewContent').innerHTML, o.id); };
 
         // --- KDS EN COCINA ---
         window.renderKDS = () => {
@@ -1905,7 +1956,7 @@
                 margin: 15,
                 filename: `Reporte_Contable_${Date.now()}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
+                html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             html2pdf().set(opt).from(element).save();
@@ -1915,10 +1966,11 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas ? canvas.getContext('2d') : null;
         let gameActive = false, score = 0, playerX = 150, playerWidth = 70, playerHeight = 15;
-        let items = [], gameInterval;
+        let items = [], gameInterval, currentDifficulty = 'medio';
 
-        window.startGame = () => {
+        window.startGame = (diff = 'medio') => {
             if(!ctx) return;
+            currentDifficulty = diff;
             document.getElementById('game-overlay').classList.add('opacity-0', 'pointer-events-none');
             gameActive = true; score = 0; items = []; playerX = (canvas.width - playerWidth) / 2;
             document.getElementById('game-score').innerText = '0';
@@ -1941,10 +1993,15 @@
             ctx.beginPath(); ctx.roundRect(playerX, canvas.height - 30, playerWidth, playerHeight, 8); ctx.fill();
             ctx.fillStyle = '#FFB800'; ctx.fillRect(playerX + 15, canvas.height - 30, playerWidth - 30, 4);
 
-            // Spawn Items
-            if(Math.random() < 0.03 + (score * 0.0005)) {
-                const isBomb = Math.random() < 0.25;
-                items.push({ x: 10 + Math.random() * (canvas.width - 40), y: -20, isBomb, speed: 2.5 + Math.random() * 2 + (score * 0.03) });
+            // Configuraciones de Dificultad
+            let spawnRate = 0.015, speedBase = 1.2, bombChance = 0.10; // Modo Fácil
+            if(currentDifficulty === 'medio') { spawnRate = 0.035; speedBase = 2.5; bombChance = 0.25; }
+            if(currentDifficulty === 'dificil') { spawnRate = 0.055; speedBase = 4.0; bombChance = 0.40; }
+
+            // Spawn Items (Adaptado a dificultad)
+            if(Math.random() < spawnRate + (score * 0.0003)) {
+                const isBomb = Math.random() < bombChance;
+                items.push({ x: 10 + Math.random() * (canvas.width - 40), y: -20, isBomb, speed: speedBase + Math.random() * 2 + (score * 0.02) });
             }
 
             // Update Items
