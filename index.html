@@ -147,10 +147,11 @@
         /* Estilos de Impresión Térmica */
         #thermal-print-area { display: none; }
         @media print {
+            html, body { overflow: visible !important; height: auto !important; }
             body * { visibility: hidden; }
             body.thermal-printing #thermal-print-area, 
             body.thermal-printing #thermal-print-area * { visibility: visible; color: black !important; }
-            body.thermal-printing #thermal-print-area { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; padding: 0; background: white !important; margin: 0; }
+            body.thermal-printing #thermal-print-area { display: block !important; position: absolute; left: 0; top: 0; width: 80mm; padding: 0; background: white !important; margin: 0; overflow: visible !important; }
             body.thermal-printing { background-color: white; }
             @page { margin: 0; size: 80mm auto; }
         }
@@ -432,7 +433,7 @@
     <div id="ticketModal" class="modal-overlay fixed inset-0 z-[400] flex items-center justify-center p-4">
         <div class="modal-content bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative text-black font-ticket max-h-[90vh] overflow-y-auto">
             <div class="text-center mb-4">
-                <img src="https://placehold.co/100x100/FF3D00/FFF?text=PC" class="w-12 h-12 mx-auto rounded-full mb-2 grayscale object-cover">
+                <img id="ticket-modal-logo" src="https://placehold.co/200x200/000/FFF?text=PAPA" class="w-12 h-12 mx-auto rounded-full mb-2 grayscale object-cover border border-gray-300">
                 <h2 class="font-black text-xl uppercase tracking-tighter">La Papa Caliente</h2>
                 <p class="text-[10px] text-gray-500 font-bold" id="ticket-date"></p>
             </div>
@@ -906,10 +907,10 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                         <div><label class="block font-bold text-[10px] uppercase text-zinc-400 mb-1.5">SKU / Cód Interno <span class="text-papa-fire">*</span></label><input type="text" id="edit-ing-sku" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-semibold focus:border-blue-500 outline-none transition-all placeholder:text-zinc-600" placeholder="Ej: KER-101"></div>
                         <div><label class="block font-bold text-[10px] uppercase text-zinc-400 mb-1.5">Nombre Material <span class="text-papa-fire">*</span></label><input type="text" id="edit-ing-name" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-semibold focus:border-blue-500 outline-none transition-all placeholder:text-zinc-600" placeholder="Ej: Queso Cheddar Líquido"></div>
-                        
-                        <div class="grid grid-cols-3 gap-4 md:col-span-2">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:col-span-2">
                             <div><label class="block font-bold text-[10px] uppercase text-zinc-400 mb-1.5">Costo x U. ($) <span class="text-papa-fire">*</span></label><input type="number" step="0.01" id="edit-ing-cost" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-black focus:border-blue-500 outline-none transition-all text-green-400" placeholder="0"></div>
-                            <div><label class="block font-bold text-[10px] uppercase text-zinc-400 mb-1.5">Stock Inicio:</label><input type="number" step="any" id="edit-ing-stock" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" placeholder="0"></div>
+                            <div><label class="block font-bold text-[10px] uppercase text-papa-yellow mb-1.5">Venta Extra ($)</label><input type="number" step="0.01" id="edit-ing-extra-price" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-black focus:border-papa-yellow outline-none transition-all text-papa-yellow" placeholder="0.00" title="Precio a cobrar si se pide como extra"></div>
+                            <div><label class="block font-bold text-[10px] uppercase text-zinc-400 mb-1.5">Stock Inicial:</label><input type="number" step="any" id="edit-ing-stock" class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-bold focus:border-blue-500 outline-none transition-all" placeholder="0"></div>
                             <div><label class="block font-bold text-[10px] uppercase text-red-400 mb-1.5">Alerta Mín. *</label><input type="number" step="any" id="edit-ing-min" class="w-full bg-black border border-red-500/30 text-white px-4 py-3 rounded-xl text-sm font-bold focus:border-red-500 outline-none transition-all bg-red-950/20" placeholder="10"></div>
                         </div>
 
@@ -976,6 +977,48 @@
                 </div>
                 <button onclick="window.shareCurrentPreview()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3.5 rounded-xl font-black uppercase text-[10px] shadow-lg transition-colors flex items-center justify-center gap-2 tracking-widest"><i class="ph-fill ph-share-network text-lg"></i> Compartir Digital</button>
                 <button onclick="window.closeModal('ticketPreviewModal')" class="w-full mt-2 text-zinc-500 hover:text-zinc-800 font-bold uppercase text-[10px] transition-colors underline text-center">Cerrar Visualizador</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL MODIFICADOR POS (EXTRAS Y NOTAS) -->
+    <div id="posModifierModal" class="modal-overlay fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="modal-content bg-[#111] border border-white/10 w-[calc(100%-1.5rem)] md:w-full max-w-lg rounded-3xl overflow-hidden flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.9)] max-h-[90vh]">
+            <div class="bg-gradient-to-r from-papa-fire to-orange-600 px-6 py-4 border-b border-white/10 flex justify-between items-center shrink-0">
+                <h2 class="font-black text-lg text-white uppercase tracking-widest flex items-center gap-2"><i class="ph-bold ph-magic-wand"></i> Personalizar Plato</h2>
+                <button onclick="window.closeModal('posModifierModal')" class="text-white/80 hover:text-white bg-white/20 p-1.5 rounded-full transition-colors"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            
+            <div class="p-5 overflow-y-auto bg-[#0a0a0a] flex-1 space-y-6 no-scrollbar">
+                <div>
+                    <h3 class="text-white font-black text-sm uppercase tracking-wide mb-1" id="mod-item-name">Nombre del Plato</h3>
+                    <p class="text-papa-yellow font-black text-lg drop-shadow-md" id="mod-item-base-price">$0.00</p>
+                </div>
+                
+                <div class="bg-zinc-950 border border-white/10 p-4 rounded-2xl shadow-inner">
+                    <label class="block text-[10px] font-bold text-papa-yellow uppercase tracking-widest mb-3 flex items-center gap-2"><i class="ph-bold ph-plus-circle text-lg"></i> Agregar Extras del Inventario</label>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <select id="mod-extra-select" class="flex-1 bg-black border border-white/10 text-white px-4 py-3.5 rounded-xl text-xs font-bold outline-none focus:border-papa-fire transition-all"></select>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <input type="number" id="mod-extra-price" placeholder="$0.00" class="w-full sm:w-20 bg-black border border-white/10 text-white px-3 py-3.5 rounded-xl text-xs font-bold text-center outline-none focus:border-papa-fire transition-all">
+                            <button onclick="window.addModExtraFromInventory()" class="bg-papa-fire hover:bg-orange-600 text-white px-5 py-3.5 rounded-xl font-black uppercase text-xs transition-colors shadow-md shrink-0"><i class="ph-bold ph-plus text-lg"></i></button>
+                        </div>
+                    </div>
+                    <div id="mod-extras-list" class="mt-4 space-y-2 empty:hidden"></div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-2"><i class="ph-bold ph-note-pencil text-lg"></i> Nota Especial (Cocina)</label>
+                    <textarea id="mod-special-note" rows="2" placeholder="Ej: Sin cebolla, bien cocido..." class="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-xl text-xs font-medium outline-none focus:border-blue-500 transition-all resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-black p-5 border-t border-white/10 shrink-0 flex flex-col gap-3 shadow-[0_-10px_20px_rgba(0,0,0,0.5)] z-10">
+                <div class="flex justify-between items-center text-sm font-black uppercase mb-1">
+                    <span class="text-zinc-400 tracking-widest">Total Actualizado:</span>
+                    <span id="mod-total-price" class="text-green-400 text-2xl drop-shadow-[0_0_15px_rgba(74,222,128,0.3)]">$0.00</span>
+                </div>
+                <button onclick="window.savePOSModifier()" class="w-full bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl font-black uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(34,197,94,0.4)] transition-transform hover:scale-[1.02] flex justify-center items-center gap-2"><i class="ph-bold ph-check-circle text-lg"></i> Confirmar y Guardar</button>
             </div>
         </div>
     </div>
@@ -1109,7 +1152,11 @@
 
         window.renderStorefront = () => {
             const s = window.STATE.settings;
-            if (s.logo) { const sl = document.getElementById('store-logo'); if(sl) sl.src = s.logo; const bl = document.getElementById('login-brand-logo'); if(bl) bl.src = s.logo; }
+            if (s.logo) { 
+                const sl = document.getElementById('store-logo'); if(sl) sl.src = s.logo; 
+                const bl = document.getElementById('login-brand-logo'); if(bl) bl.src = s.logo; 
+                const tl = document.getElementById('ticket-modal-logo'); if(tl) tl.src = s.logo;
+            }
             if (s.cover) { const inicio = document.getElementById('inicio'); if(inicio) inicio.style.backgroundImage = `url('${s.cover}')`; }
             if (s.nos1) { const n1 = document.getElementById('nos-img-1'); if(n1) n1.src = s.nos1; }
             if (s.nos2) { const n2 = document.getElementById('nos-img-2'); if(n2) n2.src = s.nos2; }
@@ -1270,6 +1317,10 @@
             const subtotal = total / 1.18; const itbis = total - subtotal;
             const orderId = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
             
+            const logoUrl = window.STATE.settings.logo || 'https://placehold.co/200x200/000/FFF?text=PAPA';
+            const modalLogo = document.getElementById('ticket-modal-logo');
+            if(modalLogo) modalLogo.src = logoUrl;
+
             document.getElementById('ticket-date').innerText = new Date().toLocaleString();
             document.getElementById('ticket-turn').innerText = orderId;
             document.getElementById('ticket-client').innerText = name + ' (' + phone + ')';
@@ -1660,15 +1711,107 @@
             } 
         };
 
-        // Novedad: Edición de notas directo en carrito POS Admin
-        window.editAdminCartItemNote = async (idx) => {
+        window.currentModItemIndex = null;
+        window.currentModExtras = [];
+        window.currentModBasePrice = 0;
+
+        window.openPOSModifier = (idx) => {
+            window.currentModItemIndex = idx;
             const item = window.adminCart[idx];
-            const { value: text } = await Swal.fire({
-                title: 'Nota para Cocina', input: 'text', inputPlaceholder: 'Ej: Bien cocido, sin salsa...',
-                inputValue: item.note || '', background: '#111', color: '#fff', confirmButtonColor: '#3b82f6',
-                showCancelButton: true, cancelButtonText: 'Cancelar', confirmButtonText: 'Guardar'
-            });
-            if(text !== undefined) { item.note = window.sanitize(text.trim()); window.renderAdminCart(); }
+            
+            if(item.basePrice === undefined) item.basePrice = item.price;
+            window.currentModBasePrice = item.basePrice;
+            window.currentModExtras = item.extras ? JSON.parse(JSON.stringify(item.extras)) : [];
+
+            document.getElementById('mod-item-name').innerText = item.title;
+            document.getElementById('mod-item-base-price').innerText = `Base: $${window.currentModBasePrice.toFixed(2)}`;
+            document.getElementById('mod-special-note').value = item.note || '';
+
+            const extraSelect = document.getElementById('mod-extra-select');
+            if(extraSelect) {
+                extraSelect.innerHTML = `<option value="" disabled selected>-- Seleccionar Extra --</option>` + 
+                (window.STATE.ingredients || []).map(ing => `
+                    <option value="${ing.id}" data-extra-price="${ing.extraPrice || 0}">
+                        + ${ing.name} (Venta: $${parseFloat(ing.extraPrice || 0).toFixed(2)})
+                    </option>
+                `).join('');
+
+                extraSelect.onchange = (e) => {
+                    const selectedOption = e.target.options[e.target.selectedIndex];
+                    const extraPrice = parseFloat(selectedOption.dataset.extraPrice || 0);
+                    document.getElementById('mod-extra-price').value = extraPrice.toFixed(2);
+                };
+                extraSelect.value = '';
+                document.getElementById('mod-extra-price').value = '';
+            }
+
+            window.updateModPriceUI();
+            window.openModal('posModifierModal');
+        };
+
+        window.addModExtraFromInventory = () => {
+            const selectEl = document.getElementById('mod-extra-select');
+            const ingId = selectEl.value;
+            const price = parseFloat(document.getElementById('mod-extra-price').value || 0);
+
+            if(!ingId) return window.showToast('Seleccione un ingrediente del inventario', 'error');
+            if(price < 0) return window.showToast('Precio inválido', 'error');
+
+            const ingredient = window.STATE.ingredients.find(i => i.id === ingId);
+            if(!ingredient) return;
+
+            const existingIndex = window.currentModExtras.findIndex(e => e.id === ingredient.id && e.unitPrice === price);
+
+            if(existingIndex > -1) {
+                window.currentModExtras[existingIndex].qty += 1;
+                window.currentModExtras[existingIndex].price += price;
+            } else {
+                window.currentModExtras.push({ id: ingredient.id, name: `${ingredient.name}`, price: price, unitPrice: price, qty: 1 });
+            }
+
+            selectEl.value = '';
+            document.getElementById('mod-extra-price').value = '';
+            window.updateModPriceUI();
+        };
+
+        window.removeModExtra = (idx) => {
+            window.currentModExtras.splice(idx, 1);
+            window.updateModPriceUI();
+        };
+
+        window.updateModPriceUI = () => {
+            const list = document.getElementById('mod-extras-list');
+            let extrasTotal = 0;
+            
+            list.innerHTML = window.currentModExtras.map((e, idx) => {
+                extrasTotal += e.price;
+                return `
+                <div class="flex justify-between items-center bg-black border border-white/10 px-3 py-2.5 rounded-xl text-xs font-bold text-white shadow-sm">
+                    <span class="truncate pr-2 uppercase"><span class="text-papa-fire mr-1">${e.qty}x</span> ${e.name}</span>
+                    <div class="flex items-center gap-3 shrink-0">
+                        <span class="text-papa-yellow">+$${e.price.toFixed(2)}</span>
+                        <button onclick="window.removeModExtra(${idx})" class="text-red-500 bg-red-500/10 hover:bg-red-600 hover:text-white p-1.5 rounded transition-colors border border-red-500/20"><i class="ph-bold ph-trash text-sm"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            const finalPrice = window.currentModBasePrice + extrasTotal;
+            document.getElementById('mod-total-price').innerText = `$${finalPrice.toFixed(2)}`;
+        };
+
+        window.savePOSModifier = () => {
+            if(window.currentModItemIndex === null) return;
+            const item = window.adminCart[window.currentModItemIndex];
+            
+            item.note = window.sanitize(document.getElementById('mod-special-note').value.trim());
+            item.extras = [...window.currentModExtras];
+            
+            const extrasTotal = item.extras.reduce((acc, e) => acc + e.price, 0);
+            item.price = item.basePrice + extrasTotal;
+
+            window.renderAdminCart();
+            window.closeModal('posModifierModal');
+            window.showToast('Plato Modificado', 'success');
         };
 
         window.renderAdminCart = () => {
@@ -1676,7 +1819,11 @@
             document.getElementById('pos-cart-badge').innerText = `${window.adminCart.length} Items`;
             if(window.adminCart.length === 0) { container.innerHTML = '<p class="text-xs text-zinc-500 text-center mt-10 font-black uppercase tracking-widest">TICKET VACÍO</p>'; document.getElementById('pos-total-price').innerText = '$0.00'; return; }
             let sum = 0;
-            container.innerHTML = window.adminCart.map((c, idx) => { sum += parseFloat(c.price); return `<div class="bg-black border border-white/5 p-3 rounded-xl flex justify-between items-center shadow-sm mb-2 group hover:border-papa-fire/50 transition-colors"><div class="flex-1 truncate pr-2"><p class="text-[10px] font-black text-white uppercase truncate">${c.title}</p><p class="text-[10px] text-papa-yellow font-black mt-0.5">$${c.price.toFixed(2)}</p>${c.note ? `<p class="text-[9px] text-blue-400 font-bold mt-1 bg-blue-900/20 px-1.5 py-0.5 rounded border border-blue-500/20 inline-block max-w-full truncate" title="${c.note}"><i class="ph-bold ph-pencil-simple"></i> ${c.note}</p>` : ''}</div><div class="flex gap-1.5 shrink-0"><button onclick="window.editAdminCartItemNote(${idx})" class="bg-blue-600/10 border border-blue-500/20 text-blue-400 p-2 rounded-lg hover:bg-blue-600 hover:text-white transition" title="Nota de cocina"><i class="ph-bold ph-pencil-simple text-sm"></i></button><button onclick="window.adminCart.splice(${idx},1); window.renderAdminCart();" class="bg-red-600/10 border border-red-500/20 text-red-500 p-2 rounded-lg hover:bg-red-600 hover:text-white transition" title="Eliminar"><i class="ph-bold ph-trash text-sm"></i></button></div></div>`; }).join('');
+            container.innerHTML = window.adminCart.map((c, idx) => { 
+                sum += parseFloat(c.price); 
+                const extrasCount = (c.extras || []).reduce((acc, e) => acc + e.qty, 0);
+                return `<div class="bg-black border border-white/5 p-3 rounded-xl flex justify-between items-center shadow-sm mb-2 group hover:border-papa-fire/50 transition-colors"><div class="flex-1 min-w-0 pr-2"><p class="text-[10px] font-black text-white uppercase truncate">${c.title}</p><p class="text-[10px] text-papa-yellow font-black mt-0.5">$${c.price.toFixed(2)}</p>${extrasCount > 0 ? `<p class="text-[9px] text-white font-bold mt-1 bg-gradient-to-r from-papa-fire to-orange-600 px-1.5 py-0.5 rounded border border-white/10 inline-block max-w-full truncate shadow-sm"><i class="ph-bold ph-plus"></i> ${extrasCount} Extras</p>` : ''}${c.note ? `<p class="text-[9px] text-blue-400 font-bold mt-1 bg-blue-900/20 px-1.5 py-0.5 rounded border border-blue-500/20 inline-block max-w-full truncate" title="${c.note}"><i class="ph-bold ph-pencil-simple"></i> ${c.note}</p>` : ''}</div><div class="flex gap-1.5 shrink-0"><button onclick="window.openPOSModifier(${idx})" class="bg-blue-600/10 border border-blue-500/20 text-blue-400 p-2 rounded-lg hover:bg-blue-600 hover:text-white transition" title="Modificar Extras y Notas"><i class="ph-bold ph-sliders-horizontal text-sm"></i></button><button onclick="window.adminCart.splice(${idx},1); window.renderAdminCart();" class="bg-red-600/10 border border-red-500/20 text-red-500 p-2 rounded-lg hover:bg-red-600 hover:text-white transition" title="Eliminar"><i class="ph-bold ph-trash text-sm"></i></button></div></div>`; 
+            }).join('');
             document.getElementById('pos-total-price').innerText = `$${sum.toFixed(2)}`;
         };
 
@@ -1694,7 +1841,12 @@
             
             const newOrderObj = { id: orderId, name: clientName, type: orderType === 'Mesa' ? 'Para Comer en Mesa' : 'Local (Takeout)', table: tableNum, payment: paymentType, items: [...window.adminCart], total: total, status: 'Pendiente', timestamp: Date.now() };
             
-            window.adminCart.forEach(cartItem => { const recipeToUse = cartItem.recipe || []; recipeToUse.forEach(rec => { const ing = window.STATE.ingredients.find(i => i.id === rec.id); if(ing) ing.stock -= rec.qty; }); });
+            window.adminCart.forEach(cartItem => { 
+                const recipeToUse = cartItem.recipe || []; 
+                recipeToUse.forEach(rec => { const ing = window.STATE.ingredients.find(i => i.id === rec.id); if(ing) ing.stock -= rec.qty; }); 
+                const extrasToUse = cartItem.extras || [];
+                extrasToUse.forEach(ext => { const ing = window.STATE.ingredients.find(i => i.id === ext.id); if(ing) ing.stock -= ext.qty; });
+            });
 
             if(window.STATE.caja.isOpen && paymentType === 'Efectivo') { window.STATE.caja.total += total; window.STATE.caja.moves.push({ type: 'in', desc: `Venta Directa ${orderId}`, amt: total, time: new Date().toLocaleTimeString(), orderId: orderId }); }
 
@@ -1708,10 +1860,77 @@
 
         // --- VISTA PREVIA Y TICKETS TÉRMICOS ---
         window.getInvoiceHtml = (orderId) => {
-            const o = window.STATE.orders.find(x => x.id === orderId); if(!o) return '';
-            const subtotal = o.total / 1.18; const itbis = o.total - subtotal;
-            const itemsHtml = o.items.map(i => `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom: 2px; font-weight:bold;"><span style="flex:1;">- ${i.title}</span><span>$${parseFloat(i.price).toFixed(2)}</span></div>${i.note ? `<div style="font-size: 10px; font-weight:bold; color: #000; padding-left: 10px; margin-bottom: 4px; text-transform: uppercase;">!!! NOTA: ${i.note}</div>` : ''}`).join('');
-            return `<div style="font-family:'Space Mono', monospace; color:#000; width:100%; padding: 0 2mm; box-sizing: border-box;"><div style="text-align:center; border-bottom:2px dashed #000; padding-bottom:10px; margin-bottom:10px;"><h2 style="font-size:20px; font-weight:900; margin:0; text-transform:uppercase; letter-spacing: -1px;">LA PAPA CALIENTE</h2><p style="font-size:11px; margin:4px 0; font-weight:bold; letter-spacing: 1px; border:1px solid #000; display:inline-block; padding: 2px 6px;">COMPROBANTE</p><p style="font-size:11px; margin:4px 0 0 0;">${new Date(o.timestamp).toLocaleString()}</p></div><div style="font-size:12px; margin-bottom:10px; line-height: 1.5; padding: 5px; background: #eee; border-radius: 4px;"><p style="margin:0; font-weight:900; font-size:14px;">TICKET: ${o.id}</p><p style="margin:0;"><strong>TIPO:</strong> ${o.type} ${o.table ? `(#${o.table})` : ''}</p><p style="margin:0;"><strong>CLIENTE:</strong> ${o.name}</p><p style="margin:0;"><strong>PAGO:</strong> ${o.payment}</p></div><div style="border-top:2px solid #000; border-bottom:2px solid #000; padding:10px 0; margin-bottom:10px;">${itemsHtml}</div><div style="font-size:12px; line-height: 1.5; font-weight:bold;"><div style="display:flex; justify-content:space-between;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div><div style="display:flex; justify-content:space-between;"><span>ITBIS (18%):</span><span>$${itbis.toFixed(2)}</span></div></div><div style="font-size:18px; font-weight:900; display:flex; justify-content:space-between; margin-top:5px; border-top:2px dashed #000; padding-top:8px;"><span>TOTAL:</span><span>$${o.total.toFixed(2)}</span></div><div style="text-align:center; margin-top:15px; font-size:11px; font-weight:bold;">¡VUELVE PRONTO!</div><div style="text-align:center; font-size:9px; margin-top: 5px;">Sistema ERP Inteligente</div></div>`;
+            const o = window.STATE.orders.find(x => x.id === orderId); 
+            if(!o) return ''; 
+            
+            const sub = o.total / 1.18; 
+            const itbis = o.total - sub;
+            
+            const itemsHtml = o.items.map(i => {
+                const extrasHtml = (i.extras || []).map(e => `
+                    <div style="font-size: 10px; font-style: italic; color: #333; margin-top: 4px;">
+                        *Nota: + ${e.qty}x Extra ${e.name} ($${parseFloat(e.price).toFixed(2)})
+                    </div>
+                `).join('');
+                
+                return `
+                <div style="font-size:12px; font-weight:bold; margin-bottom: 8px; text-transform: uppercase;">
+                    <div style="margin-bottom: 2px;">${i.title}</div>
+                    <div>$${parseFloat(i.price).toFixed(2)}</div>
+                    ${extrasHtml}
+                    ${i.note ? `<div style="font-size: 10px; font-style: italic; color: #333; margin-top: 4px;">*Nota: ${i.note}</div>` : ''}
+                </div>
+                <div style="border-top: 1px dashed #d1d5db; margin: 8px 0;"></div>`;
+            }).join('');
+
+            const logoUrl = window.STATE.settings.logo || 'https://placehold.co/200x200/000/FFF?text=PAPA';
+
+            return `
+            <div style="font-family: Arial, Helvetica, sans-serif; color:#000; width:100%; max-width: 80mm; text-align:left; background: white; padding-bottom: 10px; margin: 0 auto;">
+                
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <img src="${logoUrl}" style="width: 70px; height: 70px; object-fit: cover; filter: grayscale(100%) contrast(1.2); border-radius: 50%; margin: 0 auto 5px; display: block;">
+                    <h2 style="font-size:18px; font-weight:900; margin:0; text-transform:uppercase;">LA PAPA CALIENTE</h2>
+                </div>
+
+                <div style="text-align: center; margin: 10px 0;">
+                    <div style="display: block; border: 2px solid #000; padding: 4px; font-size: 14px; font-weight: 900; text-transform: uppercase;">
+                        ORDEN: ${o.id}
+                    </div>
+                    <div style="font-size:10px; font-weight:bold; margin-top:4px;">${new Date(o.timestamp).toLocaleString()}</div>
+                </div>
+
+                <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+                
+                <div style="font-size:11px; font-weight: bold; line-height: 1.6; text-transform: uppercase;">
+                    <div style="margin-bottom: 4px;">CLIENTE:<br>${o.name}</div>
+                    <div style="margin-bottom: 4px;">TIPO:<br>${o.type} ${o.table ? `(Mesa #${o.table})` : ''}</div>
+                    <div style="margin-bottom: 4px;">PAGO:<br>${o.payment}</div>
+                </div>
+
+                <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+                
+                <div style="margin-bottom: 10px;">
+                    ${itemsHtml}
+                </div>
+                
+                <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+                
+                <div style="font-size:12px; font-weight:bold; margin-bottom: 15px; text-transform: uppercase;">
+                    <div style="margin-bottom: 6px;">SUBTOTAL:<br>$${sub.toFixed(2)}</div>
+                    <div style="margin-bottom: 6px;">ITBIS (18%):<br>$${itbis.toFixed(2)}</div>
+                    
+                    <div style="border-top: 2px solid #000; margin: 8px 0;"></div>
+                    
+                    <div style="font-size: 18px; font-weight: 900; margin-top: 6px;">TOTAL:<br>$${o.total.toFixed(2)}</div>
+                </div>
+                
+                <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+                
+                <div style="text-align:center; font-size:11px; font-weight:bold; text-transform: uppercase;">
+                    ¡Gracias por preferirnos!
+                </div>
+            </div>`;
         };
         window.showTicketPreview = (orderId) => { window.currentPreviewOrderId = orderId; const htmlContent = window.getInvoiceHtml(orderId); if(!htmlContent) return window.showToast("Datos corruptos", "error"); document.getElementById('ticketPreviewContent').innerHTML = htmlContent; window.openModal('ticketPreviewModal'); };
         window.printCurrentPreview = () => { if(window.currentPreviewOrderId) window.POS.imprimir(document.getElementById('ticketPreviewContent').innerHTML, window.currentPreviewOrderId); };
@@ -1726,7 +1945,12 @@
                 if(o.status === 'Entregada' || o.status === 'Cancelada') return;
                 const colId = cols[o.status]; if(!colId) return; counts[colId]++;
                 const mins = Math.floor((now - o.timestamp) / 60000); let timeClass = 'time-ok'; if(mins > 10) timeClass = 'time-warn'; if(mins > 20) timeClass = 'time-danger';
-                const itemsStr = o.items.map(i => `<div class="text-[10px] font-bold text-zinc-300">- ${i.title} ${i.note ? `<span class="bg-red-600 text-white font-black px-1.5 py-0.5 rounded ml-1 block mt-1 uppercase tracking-widest shadow-md animate-pulse">ALERTA: ${i.note}</span>` : ''}</div>`).join('');
+                const itemsStr = o.items.map(i => `
+                    <div class="text-[10px] font-bold text-zinc-300 mb-2">
+                        <span class="text-white block mb-1">- ${i.title}</span>
+                        ${i.extras && i.extras.length > 0 ? i.extras.map(e => `<div class="text-papa-yellow ml-2 flex items-center gap-1 mt-0.5"><i class="ph-bold ph-plus text-xs"></i> ${e.qty}x Extra ${e.name}</div>`).join('') : ''}
+                        ${i.note ? `<span class="bg-red-600 text-white font-black px-1.5 py-0.5 rounded ml-1 block mt-1 uppercase tracking-widest shadow-md animate-pulse border border-red-400">ALERTA: ${i.note}</span>` : ''}
+                    </div>`).join('');
                 let btn = '';
                 if(o.status === 'Pendiente') btn = `<button onclick="window.chgStatus('${o.id}','Preparando')" class="w-full bg-blue-600 hover:bg-blue-500 py-2.5 rounded-lg mt-3 text-[10px] font-black uppercase tracking-widest transition-colors shadow-md">Iniciar Cocción</button>`;
                 else if(o.status === 'Preparando') btn = `<button onclick="window.chgStatus('${o.id}','Empacando')" class="w-full bg-yellow-600 hover:bg-yellow-500 py-2.5 rounded-lg mt-3 text-[10px] text-black font-black uppercase tracking-widest transition-colors shadow-md">A Empaque</button>`;
@@ -1807,16 +2031,16 @@
         window.openIngModal = (id = null) => {
             if(id) {
                 const i = window.STATE.ingredients.find(x => x.id === id); if(!i) return;
-                document.getElementById('ing-modal-main-title').innerText = `Editando Insumo`; document.getElementById('edit-ing-id').value = i.id; document.getElementById('edit-ing-sku').value = i.sku || ''; document.getElementById('edit-ing-name').value = i.name || ''; document.getElementById('edit-ing-cost').value = i.cost || 0; document.getElementById('edit-ing-stock').value = i.stock || 0; document.getElementById('edit-ing-min').value = i.min || 0; document.getElementById('edit-ing-unit').value = i.unit || 'uds'; document.getElementById('edit-ing-prov-company').value = i.provCompany || ''; document.getElementById('edit-ing-prov-sku').value = i.provSku || '';
+                document.getElementById('ing-modal-main-title').innerText = `Editando Insumo`; document.getElementById('edit-ing-id').value = i.id; document.getElementById('edit-ing-sku').value = i.sku || ''; document.getElementById('edit-ing-name').value = i.name || ''; document.getElementById('edit-ing-cost').value = i.cost || 0; document.getElementById('edit-ing-extra-price').value = i.extraPrice || 0; document.getElementById('edit-ing-stock').value = i.stock || 0; document.getElementById('edit-ing-min').value = i.min || 0; document.getElementById('edit-ing-unit').value = i.unit || 'uds'; document.getElementById('edit-ing-prov-company').value = i.provCompany || ''; document.getElementById('edit-ing-prov-sku').value = i.provSku || '';
             } else {
-                document.getElementById('ing-modal-main-title').innerText = `Nuevo Producto Interno`; ['edit-ing-id', 'edit-ing-sku', 'edit-ing-name', 'edit-ing-cost', 'edit-ing-stock', 'edit-ing-min', 'edit-ing-prov-company', 'edit-ing-prov-sku'].forEach(field => { const el = document.getElementById(field); if(el) el.value = ''; }); document.getElementById('edit-ing-unit').value = 'uds'; 
+                document.getElementById('ing-modal-main-title').innerText = `Nuevo Producto Interno`; ['edit-ing-id', 'edit-ing-sku', 'edit-ing-name', 'edit-ing-cost', 'edit-ing-extra-price', 'edit-ing-stock', 'edit-ing-min', 'edit-ing-prov-company', 'edit-ing-prov-sku'].forEach(field => { const el = document.getElementById(field); if(el) el.value = ''; }); document.getElementById('edit-ing-unit').value = 'uds'; 
             }
             window.openModal('editIngModal');
         };
         window.saveIngredient = () => {
             const name = window.sanitize(document.getElementById('edit-ing-name').value.trim()); if(!name) return window.showToast('Requiere Nombre de Insumo', 'error');
             const id = document.getElementById('edit-ing-id').value || ('ing-' + Date.now());
-            const ingData = { id: id, sku: window.sanitize(document.getElementById('edit-ing-sku').value.trim()), name: name, cost: parseFloat(document.getElementById('edit-ing-cost').value || 0), stock: parseFloat(document.getElementById('edit-ing-stock').value || 0), min: parseFloat(document.getElementById('edit-ing-min').value || 0), unit: document.getElementById('edit-ing-unit').value, provCompany: window.sanitize(document.getElementById('edit-ing-prov-company').value.trim()), provSku: window.sanitize(document.getElementById('edit-ing-prov-sku').value.trim()) };
+            const ingData = { id: id, sku: window.sanitize(document.getElementById('edit-ing-sku').value.trim()), name: name, cost: parseFloat(document.getElementById('edit-ing-cost').value || 0), extraPrice: parseFloat(document.getElementById('edit-ing-extra-price').value || 0), stock: parseFloat(document.getElementById('edit-ing-stock').value || 0), min: parseFloat(document.getElementById('edit-ing-min').value || 0), unit: document.getElementById('edit-ing-unit').value, provCompany: window.sanitize(document.getElementById('edit-ing-prov-company').value.trim()), provSku: window.sanitize(document.getElementById('edit-ing-prov-sku').value.trim()) };
             if(!window.STATE.ingredients) window.STATE.ingredients = []; const idx = window.STATE.ingredients.findIndex(x => x.id === id); if(idx > -1) { window.STATE.ingredients[idx] = ingData; } else { window.STATE.ingredients.push(ingData); }
             window.secureSave(); window.renderIngredients(); window.closeModal('editIngModal'); setTimeout(() => { window.showToast('Almacenado Corectamente', 'success'); }, 300);
         };
