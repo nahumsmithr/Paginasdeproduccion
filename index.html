@@ -1257,7 +1257,11 @@
             if (s.mapEmbed) { const mapIframe = document.getElementById('map-embed-iframe'); if(mapIframe) mapIframe.src = s.mapEmbed; }
             if (s.mapLink) { const mapBtn = document.getElementById('btn-map-link'); if(mapBtn) mapBtn.href = s.mapLink; }
 
-            window.renderPublicMenu('all'); window.renderPublicGallery(); window.renderCart(); window.renderBankAccountsPublic();
+            // Mantiene el filtro actual seleccionado por el cliente al actualizarse en vivo
+            window.renderPublicMenu(window.currentFilter || 'all'); 
+            window.renderPublicGallery(); 
+            window.renderCart(); 
+            window.renderBankAccountsPublic();
         };
 
         window.currentFilter = 'all';
@@ -1828,9 +1832,27 @@
 
         window.renderAdminViews = () => {
             if(!window.STATE.currentUser) return;
+            
+            // 1. Actualizar KDS de Cocina en vivo
             window.renderKDS();
+            
+            // 2. FORZAR LA ACTUALIZACIÓN DE TODOS LOS PANELES ADMIN EN TIEMPO REAL
             if(window.STATE.currentUser === 'admin') {
-                window.renderDashboardMetrics(); window.renderCaja(); window.renderBankAccounts();
+                window.renderDashboardMetrics(); 
+                window.renderCaja(); 
+                window.renderBankAccounts();
+                window.renderOrdersHistory();
+                window.renderIngredients();
+                window.renderAdminCatalog();
+                window.renderGalleryAdmin();
+                
+                // Si la persona tiene abierto el POS en ese momento, actualizarlo también
+                const terminalPanel = document.getElementById('panel-admin-terminal');
+                if (terminalPanel && !terminalPanel.classList.contains('hidden')) {
+                    window.renderAdminTerminal();
+                }
+
+                // Repopular datos de ajustes
                 if(document.getElementById('set-phone')) document.getElementById('set-phone').value = window.STATE.settings.phone || '';
                 if(document.getElementById('set-api-key')) document.getElementById('set-api-key').value = window.STATE.settings.apiKey || '';
                 if(document.getElementById('set-map-embed')) document.getElementById('set-map-embed').value = window.STATE.settings.mapEmbed || '';
