@@ -187,9 +187,11 @@
             /* Mostrar SOLO el ticket, obligando a que la altura del documento sea exacta */
             body.thermal-printing #thermal-print-area { 
                 display: block !important; 
-                width: 80mm !important; 
-                margin: 0 !important; 
-                padding: 0 !important;
+                width: 100% !important; 
+                max-width: 80mm !important;
+                margin: 0 auto !important; 
+                padding: 0 4mm !important; /* SOLUCIÓN: Relleno de 4mm a la izq y der para que no se moche */
+                box-sizing: border-box !important;
                 position: relative !important; 
             }
             body.thermal-printing #thermal-print-area * { 
