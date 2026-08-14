@@ -1131,6 +1131,8 @@
         window.adminCart = []; window.currentEditOrderId = null; window.currentPreviewOrderId = null;
         let app, db, isSaving = false;
 
+        let previousOrdersCount = 0; // Variable para detectar si hay órdenes nuevas
+
         async function initCloudSystem() {
             try {
                 app = initializeApp(firebaseConfig);
@@ -1139,25 +1141,36 @@
                 onValue(ref(db, 'lapapacaliente/erp_state'), (snapshot) => {
                     if (snapshot.exists() && !isSaving) {
                         const cloudData = snapshot.val();
-                        window.STATE = { ...window.STATE, ...cloudData };
                         
-                        // Protección Anti-Vacío
-                        if (!window.STATE.menu) window.STATE.menu = [];
-                        if (!window.STATE.ingredients) window.STATE.ingredients = [];
-                        if (!window.STATE.orders) window.STATE.orders = [];
-                        if (!window.STATE.gallery) window.STATE.gallery = [];
-                        if (!window.STATE.cart) window.STATE.cart = [];
-                        if (!window.STATE.caja) window.STATE.caja = { isOpen: false, startAmt: 0, total: 0, moves: [], usuario: null, turnoId: null, startTime: null };
-                        if (!window.STATE.caja.moves) window.STATE.caja.moves = [];
-                        if (!window.STATE.settings) window.STATE.settings = { logo: '', cover: '', phone: '', apiKey: '', mapEmbed: '', mapLink: '', banks: [], customBasePrice: 6.00, customExtraPrice: 1.50, nos1: '', nos2: '', nos3: '' };
-                        if (!window.STATE.settings.banks) window.STATE.settings.banks = [];
-                        if (!window.STATE.hardware) window.STATE.hardware = { bridgeUrl: 'http://localhost:3000', autoOpenDrawer: true };
+                        // FORZAR LA SINCRONIZACIÓN EXACTA (Evita que Firebase borre datos y desincronice)
+                        window.STATE.menu = cloudData.menu || [];
+                        window.STATE.ingredients = cloudData.ingredients || [];
+                        window.STATE.orders = cloudData.orders || [];
+                        window.STATE.gallery = cloudData.gallery || [];
+                        window.STATE.cart = cloudData.cart || [];
+                        window.STATE.caja = cloudData.caja || { isOpen: false, startAmt: 0, total: 0, moves: [], usuario: null, turnoId: null, startTime: null };
+                        window.STATE.settings = cloudData.settings || { logo: '', cover: '', phone: '', apiKey: '', mapEmbed: '', mapLink: '', banks: [], customBasePrice: 6.00, customExtraPrice: 1.50, nos1: '', nos2: '', nos3: '' };
+                        window.STATE.hardware = cloudData.hardware || { bridgeUrl: 'http://localhost:3000', autoOpenDrawer: true };
+                        
+                        // SISTEMA DE NOTIFICACIÓN DE NUEVAS ÓRDENES EN TIEMPO REAL
+                        if (window.STATE.currentUser && previousOrdersCount > 0 && window.STATE.orders.length > previousOrdersCount) {
+                            const nuevaOrden = window.STATE.orders[window.STATE.orders.length - 1];
+                            if (nuevaOrden && nuevaOrden.status === 'Pendiente') {
+                                // 1. Reproducir el sonido de alerta de cocina
+                                const audio = document.getElementById('kds-alert');
+                                if(audio) { audio.currentTime = 0; audio.play().catch(e => console.log('Autoplay de audio bloqueado')); }
+                                
+                                // 2. Mostrar la notificación flotante en pantalla
+                                window.showToast(`🚨 ¡NUEVA ORDEN WEB! 🚨<br>Cliente: ${nuevaOrden.name}<br>Total: $${nuevaOrden.total.toFixed(2)}`, 'success');
+                            }
+                        }
+                        previousOrdersCount = window.STATE.orders.length; // Actualizar el contador para la próxima
                         
                         window.renderStorefront(); window.renderAdminViews();
                     } else if (!snapshot.exists()) {
                         window.secureSave(); 
                     }
-                }, (error) => { console.error("Cloud Error", error); });
+                }, (error) => { console.error("Cloud Error", error); window.showToast("Error de conexión a BD", "error"); });
             } catch(e) { console.error("Firebase Init Error:", e); }
         }
 
@@ -1414,7 +1427,7 @@
             window.openModal('ticketModal'); window.toggleCart();
         };
 
-        window.sendOrder = (isLocalPrint = false) => {
+        window.sendOrder = async (isLocalPrint = false) => {
             const type = document.getElementById('order-type').value;
             const payment = document.getElementById('payment-method').value;
             const orderId = document.getElementById('ticket-turn').innerText;
@@ -1426,19 +1439,31 @@
                 payment: payment, items: [...window.STATE.cart], total: total, status: 'Pendiente', timestamp: Date.now()
             };
             
-            window.STATE.cart.forEach(cartItem => { const recipe = cartItem.recipe || []; recipe.forEach(rec => { const ing = window.STATE.ingredients.find(i => i.id === rec.id); if(ing) ing.stock -= rec.qty; }); });
+            // 🔥 SOLUCIÓN INVENTARIO: Descontar Receta + Extras de las órdenes Web 🔥
+            window.STATE.cart.forEach(cartItem => { 
+                const recipeToUse = cartItem.recipe || []; 
+                recipeToUse.forEach(rec => { const ing = window.STATE.ingredients.find(i => i.id === rec.id); if(ing) ing.stock -= rec.qty; }); 
+                const extrasToUse = cartItem.extras || [];
+                extrasToUse.forEach(ext => { const ing = window.STATE.ingredients.find(i => i.id === ext.id); if(ing) ing.stock -= ext.qty; });
+            });
 
-            window.STATE.orders = window.STATE.orders || []; window.STATE.orders.push(newOrderPayload);
+            window.STATE.orders = window.STATE.orders || []; 
+            window.STATE.orders.push(newOrderPayload);
             
             let message = `¡Hola! Confirmo mi orden en La Papa Caliente:\n\n*Ticket:* ${orderId}\n*Cliente:* ${newOrderPayload.name}\n*Tipo:* ${newOrderPayload.type} ${newOrderPayload.table ? `(${newOrderPayload.table})` : ''}\n*Pago:* ${payment}\n\n*Detalle de Productos:*\n${newOrderPayload.items.map(i => `🔸 ${i.title} ($${i.price})${i.note ? `\n   📝 Nota: ${i.note}` : ''}`).join('\n')}\n\n*Total a Pagar:* $${total.toFixed(2)}\n\n_Enviado desde App Web_`;
             
-            window.STATE.cart = []; window.secureSave(); window.closeModal('ticketModal');
+            window.STATE.cart = []; 
+            
+            window.showToast('Enviando a la cocina...', 'success');
+            await window.secureSave(); 
+            
+            window.closeModal('ticketModal');
             
             if(isLocalPrint && window.POS) {
                 // Logic for native app printing is bypassed for WhatsApp generic flow.
             } else {
-                window.showToast('¡Orden Registrada!', 'success');
-                setTimeout(() => { window.open(`https://wa.me/${window.STATE.settings.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank'); }, 1000);
+                window.showToast('¡Orden Registrada exitosamente!', 'success');
+                setTimeout(() => { window.open(`https://wa.me/${window.STATE.settings.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank'); }, 1500);
             }
         };
 
